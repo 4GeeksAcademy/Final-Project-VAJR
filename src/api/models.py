@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Float, Integer, Enum, DateTime, ForeignKey
@@ -16,17 +16,17 @@ class SpecialtyType(enum.Enum):
     NEUROLOGY = "Neurology"
 
 class StatusAppointment(enum.Enum):
-    confirmada = "confirm"
-    cancelada = "cancelled"
-    revisado = "checked"
+    confirmed = "confirmed"
+    cancelled = "cancelled"
+    pending = "Pending"
 
 class Pacient(db.Model):
     __tablename__ = "pacient"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(100),nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
-    phone: Mapped[float] = mapped_column(Float, unique=True)
+    phone: Mapped[str] = mapped_column(String(50), unique=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="pacient")
 
@@ -49,6 +49,7 @@ class Doctors(db.Model):
     latitud: Mapped[float] = mapped_column(Float)
     longitud: Mapped[float] = mapped_column(Float)
     picture: Mapped[Optional[str]] = mapped_column(String(500))
+    phone: Mapped[str] = mapped_column(String(50), unique=True)
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
     availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
@@ -81,8 +82,16 @@ class Appointments(db.Model):
 class Availability(db.Model):
     __tablename__ = 'availability'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    days: Mapped[str] = mapped_column(String(100)) 
-    start_time: Mapped[float] = mapped_column(Float) 
-    end_time: Mapped[float] = mapped_column(Float)
+    days: Mapped[str] = mapped_column(String(100), nullable=False) 
+    start_time: Mapped[time] = mapped_column(db.Time(timezone=False), nullable=False)
+    end_time: Mapped[time] = mapped_column(db.Time(timezone=False), nullable=False)
     id_doctor: Mapped[int] = mapped_column(ForeignKey("doctors.id"), nullable=False)
     doctor: Mapped["Doctors"] = relationship(back_populates="availability")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "days": self.days,
+            "start_time": self.start_time.strftime("%H:%M"), 
+            "end_time": self.end_time.strftime("%H:%M")  
+        }
