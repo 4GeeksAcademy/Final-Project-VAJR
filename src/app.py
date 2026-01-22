@@ -108,9 +108,32 @@ def create_appointment():
     db.session.commit()
     return jsonify({"msg": "Cita creada exitosamente", "id": new_appointment.id, "Name": pacients.name}), 201
 
-   # get doctor appointments
 
-@app.route('/doctors/appointments', methods=['GET'])
+#listar citas pacientes 
+@app.route('/appointments', methods=['GET'])
+@jwt_required()
+def get_appointments():
+    user_id=get_jwt_identity()
+
+    appointments=Appointments.query.filter_by(pacient_id=user_id).all()
+
+    return jsonify([appointment.serialize() for appointment in appointments]),200
+
+#listar cita especifica paciente
+@app.route('/appointments/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_appointment(id):            
+    user_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
+
+
+# listar citas doctor
+
+@app.route('/appointments/doctors', methods=['GET'])
 @jwt_required()
 def get_doctor_appointments():
         doctor_id=get_jwt_identity()
@@ -119,9 +142,18 @@ def get_doctor_appointments():
             return jsonify({"msg":"No hay citas para este doctor"}),404
         return jsonify([appointment.serialize() for appointment in appointments]),200
 
-        
+#listar cita especifica doctor
+@app.route('/appointments/doctors/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_doctor_appointment(id):
+    doctor_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
 
-   #cancel appointment
+#cancelar cita paciente 
 @app.route('/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
