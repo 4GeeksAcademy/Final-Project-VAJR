@@ -154,7 +154,22 @@ def edit_doctor(doctor_id):
     if 'phone' in body:
         doctor.phone = body['phone']
     return jsonify({'msg': 'doctor update succesfully',
-                    'data': doctor.serialize()}),200
+                    'data': doctor.serialize()}), 200
+
+
+@app.route('/doctors', methods=['GET'])
+def specialidad():
+    speciality = request.args.get("specialty")
+
+    query = Doctors.query
+
+    if speciality:
+        if speciality not in SpecialtyType.__members__:
+            return jsonify({'msg': 'Invalid speciality'}), 400
+        query = query.filter(Doctors.specialties == SpecialtyType[speciality])
+
+        doctors = query.all()
+        return jsonify([doct.serialize() for doct in doctors]), 200
 
 
 # this only runs if `$ python src/main.py` is executed
