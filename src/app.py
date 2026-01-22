@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, Doctors,SpecialtyType
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -64,6 +64,46 @@ def serve_any_other_file(path):
     response = send_from_directory(static_file_dir, path)
     response.cache_control.max_age = 0  # avoid cache memory
     return response
+
+@app.route('/doctor', methods=['POST'])
+def add_doctors():
+    body=request.get_json(silent=True)
+    if body is None:
+        return jsonify({"msg":"body can not empty"}), 400
+    if 'name' not in body:
+        return jsonify({"msg":'Name is required.'}),400
+    if 'email' not in body:
+        return jsonify({'msg': 'Email is required'}),400
+    # if ' password' not in body:
+    #     return jsonify({'msg': 'password is required'}),400
+    if 'specialities' not in body:
+        return jsonify({'msg': 'Specialities is required'}),400
+    if 'biography' not in body:
+        return jsonify({'msg': 'biography is required'}),400
+    if 'latitud' not in body:
+        return jsonify({'msg': 'latitude is required'}),400
+    if 'longitud' not in body:
+        return jsonify({'msg': 'longitude is required'}),400
+    if 'picture' not in body:
+        return jsonify({'msg':'need to upload some picture'}),400
+    if 'phone' not in body:
+        return jsonify({'msg': 'phone is required'}),400
+    
+    new_doctor = Doctors()
+
+    new_doctor.name=body['name']
+    new_doctor.email=body['email']
+    # new_doctor.password=body['password']
+    new_doctor.specialties=SpecialtyType[body['specialities']]
+    new_doctor.biography=body['biography']
+    new_doctor.latitud=body['latitud']
+    new_doctor.longitud=body['longitud']
+    new_doctor.picture=body['picture']
+    new_doctor.phone=body['phone']
+    db.session.add(new_doctor)
+    db.session.commit()
+    return jsonify({'msg': f'Your new post doctor: {new_doctor} added succesfully'}),200
+
 
 
 # this only runs if `$ python src/main.py` is executed
