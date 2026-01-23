@@ -10,6 +10,7 @@ from api.models import db, Pacient, Doctors, Appointments, Availability, Special
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from datetime import datetime, timedelta, time
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -52,6 +53,56 @@ setup_admin(app)
 
 # add the admin
 setup_commands(app)
+
+@api.route('/doctor/<int:doctor_id>/availability', methods=['GET'])
+def get_doctor_availability(doctor_id):
+    # obtenemos config horario doctor
+    availabilities = Availability.query.filter_by(id_doctor=doctor_id).all()
+    # citas ya reservadas
+    booked_appointments = Appointments.query.filter_by(
+        doctors_id=doctor_id).all()
+    # guardar horas ocupadas
+    booked_hours = [appt.appointment_hour for appt in booked_appointments]
+
+    all_slots = []
+
+    for entry in availabilities:
+        start_dt = datetime.combine(datetime.today(), entry.start_time)
+        end_dt = datetime.combine(datetime.today(), entry.end_time)
+        # genero intervalos de 30min
+        current_slot = start_dt
+        while current_slot + timedelta(minutes=30) <= end_dt:
+            time_str = current_slot.strftime("%H:%M")
+            # si ya existe una cita a esa hora el slot lo deberia omitir
+            if time_str not in booked_hours:
+                all_slots.append({
+                    "day": entry.days,
+                    "hour": time_str,
+                    "availability_id": entry.id
+                })
+
+            current_slot += timedelta(minutes=30)
+
+    return jsonify(all_slots), 200
+
+
+@app.route('/api/availability', methods=['POST'])
+def de_set_availability():
+    data = request.json
+    # Lo que espero: {"doctor_id": 1, "days": "Monday", "start": "09:00", "end": "17:00"}
+
+    new_availability = Availability(
+        days=data['days'],
+        # convertir str en obj time de python
+        start_time=time.fromisoformat(data['start']),
+        end_time=time.fromisoformat(data['end']),
+        id_doctor=data['doctor_id']
+    )
+
+    db.session.add(new_availability)
+    db.session.commit()
+
+    return jsonify({"msg": "Schedule set successfully"})
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')

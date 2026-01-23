@@ -93,6 +93,5 @@ class Availability(db.Model):
             "id": self.id,
             "days": self.days,
             "start_time": self.start_time.strftime("%H:%M"), 
-            "end_time": self.end_time.strftime("%H:%M"),
-            "id_doctor":self.id_doctor  
+            "end_time": self.end_time.strftime("%H:%M") 
         }
