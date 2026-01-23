@@ -117,6 +117,7 @@ def get_doctor_appointments():
         if not appointments:
             return jsonify({"msg":"No hay citas para este doctor"}),404
         return jsonify([appointment.serialize() for appointment in appointments]),200
+
 #listar cita especifica doctor
 @app.route('/appointments/doctors/<int:id>', methods=['GET'])     
 @jwt_required()
