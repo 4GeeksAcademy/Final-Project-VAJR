@@ -1,11 +1,17 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory
+from flask_cors import CORS
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
+from flask_bcrypt import Bcrypt
+from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
+from api.models import db, Pacient, Doctors, Appointments, Availability
+from api.routes import api
+from api.admin import setup_admin
+from api.commands import setup_commands
+# from models import Person
 from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType
 from api.routes import api
 from api.admin import setup_admin
@@ -22,12 +28,17 @@ from flask_bcrypt import Bcrypt
 
 # from models import Person
 
-
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+CORS(app)
+
 
 CORS(app)
 app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
@@ -43,16 +54,15 @@ if db_url is not None:
         "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
-db.init_app(app)
 
+db.init_app(app)
 # add the admin
 setup_admin(app)
-
 # add the admin
 setup_commands(app)
+
 
 @api.route('/doctor/<int:doctor_id>/availability', methods=['GET'])
 def get_doctor_availability(doctor_id):
@@ -104,27 +114,22 @@ def de_set_availability():
 
     return jsonify({"msg": "Schedule set successfully"})
 
+
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
-
 # Handle/serialize errors like a JSON object
-
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
 # generate sitemap with all your endpoints
-
 
 @app.route('/')
 def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
-
 # any other endpoint will try to serve it like a static file
-
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
@@ -133,6 +138,9 @@ def serve_any_other_file(path):
     response = send_from_directory(static_file_dir, path)
     response.cache_control.max_age = 0  # avoid cache memory
     return response
+
+
+
 
 # PACIENT
   
@@ -259,107 +267,93 @@ def update_pacient_info():
   
 @app.route('/doctor', methods=['POST'])
 def add_doctors():
+
+   
+
+
+#Appointments
+
+# crear cita
+# @app.route('/appointments', methods=['POST'])
+@jwt_required()
+def create_appointment():
+    user_id = get_jwt_identity()
     body = request.get_json(silent=True)
-    if body is None:
-        return jsonify({"msg": "body can not empty"}), 400
-    if 'name' not in body:
-        return jsonify({"msg": 'Name is required.'}), 400
-    if 'email' not in body:
-        return jsonify({'msg': 'Email is required'}), 400
-    # if ' password' not in body:
-    #     return jsonify({'msg': 'password is required'}),400
-    if 'specialities' not in body:
-        return jsonify({'msg': 'Specialities is required'}), 400
-    if 'biography' not in body:
-        return jsonify({'msg': 'biography is required'}), 400
-    if 'latitud' not in body:
-        return jsonify({'msg': 'latitude is required'}), 400
-    if 'longitud' not in body:
-        return jsonify({'msg': 'longitude is required'}), 400
-    if 'picture' not in body:
-        return jsonify({'msg': 'need to upload some picture'}), 400
-    if 'phone' not in body:
-        return jsonify({'msg': 'phone is required'}), 400
-
-    new_doctor = Doctors()
-
-    new_doctor.name = body['name']
-    new_doctor.email = body['email']
-    # new_doctor.password=body['password']
-    new_doctor.specialties = SpecialtyType[body['specialities']]
-    new_doctor.biography = body['biography']
-    new_doctor.latitud = body['latitud']
-    new_doctor.longitud = body['longitud']
-    new_doctor.picture = body['picture']
-    new_doctor.phone = body['phone']
-    db.session.add(new_doctor)
+    if not body:
+            return jsonify({"msg": "el campo esta vacio"}), 400
+    doctor_id = body.get('doctor_id')
+    hour = body.get('hour')
+    dateTime = body.get('dateTime')
+    reason = body.get('reason')
+    pacients = Pacient.query.get(user_id)
+    if not pacients:
+        return jsonify({"msg": "el usuario no existe"}), 404
+    exists_appointment = Appointments.query.filter_by(
+        doctor_id=doctor_id, dateTime=dateTime).first()
+    if exists_appointment:
+        return jsonify({"msg": "ya existe una cita para este doctor en esta fecha"}), 400
+    new_appointment = Appointments(
+        pacient_id=user_id,
+        doctor_id=doctor_id,
+        dateTime=dateTime,
+        reason=reason,
+        status='confirmada'
+    )
+    db.session.add(new_appointment)
     db.session.commit()
-    return jsonify({'msg': 'Doctor add successfully'}), 200
+    return jsonify({"msg": "Cita creada exitosamente", "id": new_appointment.id, "Name": pacients.name}), 201
 
+#listar citas pacientes 
+@app.route('/appointments', methods=['GET'])
+@jwt_required()
+def get_appointments():
+    user_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(pacient_id=user_id).all()
+    return jsonify([appointment.serialize() for appointment in appointments]),200
 
-@app.route('/doctor', methods=['GET'])
-def get_all_doctors():
-    doctores = Doctors.query.all()
-    new_serialise_doctors = []
+#listar cita especifica paciente
+@app.route('/appointments/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_appointment(id):            
+    user_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
 
-    for doctor in doctores:
-        new_serialise_doctors.append(doctor.serialize())
-    return jsonify({'msg': new_serialise_doctors}), 200
+# listar citas doctor
+@app.route('/appointments/doctors', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+        doctor_id=get_jwt_identity()
+        appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
+        if not appointments:
+            return jsonify({"msg":"No hay citas para este doctor"}),404
+        return jsonify([appointment.serialize() for appointment in appointments]),200
 
+#listar cita especifica doctor
+@app.route('/appointments/doctors/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_doctor_appointment(id):
+    doctor_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
 
-@app.route('/doctor/<int:doctor_id>', methods=['GET'])
-def get_single_doctor(doctor_id):
-    doctor = Doctors.query.get(doctor_id)
-    if doctor is None:
-        return jsonify({'msg': 'Doctor not exist'}), 400
-    return jsonify({'data': doctor.serialize()}), 200
-
-
-@app.route('/doctor/<int:doctor_id>', methods=['PUT'])
-def edit_doctor(doctor_id):
-    body = request.get_json(silent=True)
-    if body is None:
-        return jsonify({'msg': 'body can not empty'}), 400
-
-    doctor = Doctors.query.get(doctor_id)
-
-    if doctor is None:
-        return jsonify({'msg': 'can not find this doctor'}), 400
-
-    if 'name' in body:
-        doctor.name = body['name']
-    if 'email' in body:
-        doctor.email = body['email']
-    if 'specialties' in body:
-        doctor.specialties = body['specialties']
-    if 'biography' in body:
-        doctor.biography = body['biography']
-    if "latitud" in body:
-        doctor.latitud = body['latitud']
-    if 'longitud' in body:
-        doctor.longitud = body['longitud']
-    if 'picture' in body:
-        doctor.picture = body['picture']
-    if 'phone' in body:
-        doctor.phone = body['phone']
-    return jsonify({'msg': 'doctor update succesfully',
-                    'data': doctor.serialize()}), 200
-
-
-@app.route('/doctors', methods=['GET'])
-def specialidad():
-    speciality = request.args.get("specialty")
-
-    query = Doctors.query
-
-    if speciality:
-        if speciality not in SpecialtyType.__members__:
-            return jsonify({'msg': 'Invalid speciality'}), 400
-        query = query.filter(Doctors.specialties == SpecialtyType[speciality])
-
-        doctors = query.all()
-        return jsonify([doct.serialize() for doct in doctors]), 200
-
+#cancelar cita paciente 
+@app.route('/appointments/<int:id>', methods=['DELETE'])
+@jwt_required()
+def cancel_appointment(id):
+    user_id=get_jwt_identity()  
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    if not appointments:
+        return jsonify({"msg":"Cita no encontrada"}),404
+    appointments.status="cancelled"
+    db.session.commit()
+    return jsonify({"msg":"Cita cancelada exitosamente"}),200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
