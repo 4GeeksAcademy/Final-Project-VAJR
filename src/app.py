@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -83,7 +83,8 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
-
+# PACIENT
+  
 @app.route('/pacient/signup', methods=['POST'])
 def pacient_signup():
     request_body = request.get_json(silent=True)
@@ -202,6 +203,111 @@ def update_pacient_info():
 
     db.session.commit()
     return jsonify({'msg': 'Profile updated successfully', 'data': pacient.serialize()}), 200
+ 
+# DOCTOR
+  
+@app.route('/doctor', methods=['POST'])
+def add_doctors():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({"msg": "body can not empty"}), 400
+    if 'name' not in body:
+        return jsonify({"msg": 'Name is required.'}), 400
+    if 'email' not in body:
+        return jsonify({'msg': 'Email is required'}), 400
+    # if ' password' not in body:
+    #     return jsonify({'msg': 'password is required'}),400
+    if 'specialities' not in body:
+        return jsonify({'msg': 'Specialities is required'}), 400
+    if 'biography' not in body:
+        return jsonify({'msg': 'biography is required'}), 400
+    if 'latitud' not in body:
+        return jsonify({'msg': 'latitude is required'}), 400
+    if 'longitud' not in body:
+        return jsonify({'msg': 'longitude is required'}), 400
+    if 'picture' not in body:
+        return jsonify({'msg': 'need to upload some picture'}), 400
+    if 'phone' not in body:
+        return jsonify({'msg': 'phone is required'}), 400
+
+    new_doctor = Doctors()
+
+    new_doctor.name = body['name']
+    new_doctor.email = body['email']
+    # new_doctor.password=body['password']
+    new_doctor.specialties = SpecialtyType[body['specialities']]
+    new_doctor.biography = body['biography']
+    new_doctor.latitud = body['latitud']
+    new_doctor.longitud = body['longitud']
+    new_doctor.picture = body['picture']
+    new_doctor.phone = body['phone']
+    db.session.add(new_doctor)
+    db.session.commit()
+    return jsonify({'msg': 'Doctor add successfully'}), 200
+
+
+@app.route('/doctor', methods=['GET'])
+def get_all_doctors():
+    doctores = Doctors.query.all()
+    new_serialise_doctors = []
+
+    for doctor in doctores:
+        new_serialise_doctors.append(doctor.serialize())
+    return jsonify({'msg': new_serialise_doctors}), 200
+
+
+@app.route('/doctor/<int:doctor_id>', methods=['GET'])
+def get_single_doctor(doctor_id):
+    doctor = Doctors.query.get(doctor_id)
+    if doctor is None:
+        return jsonify({'msg': 'Doctor not exist'}), 400
+    return jsonify({'data': doctor.serialize()}), 200
+
+
+@app.route('/doctor/<int:doctor_id>', methods=['PUT'])
+def edit_doctor(doctor_id):
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'body can not empty'}), 400
+
+    doctor = Doctors.query.get(doctor_id)
+
+    if doctor is None:
+        return jsonify({'msg': 'can not find this doctor'}), 400
+
+    if 'name' in body:
+        doctor.name = body['name']
+    if 'email' in body:
+        doctor.email = body['email']
+    if 'specialties' in body:
+        doctor.specialties = body['specialties']
+    if 'biography' in body:
+        doctor.biography = body['biography']
+    if "latitud" in body:
+        doctor.latitud = body['latitud']
+    if 'longitud' in body:
+        doctor.longitud = body['longitud']
+    if 'picture' in body:
+        doctor.picture = body['picture']
+    if 'phone' in body:
+        doctor.phone = body['phone']
+    return jsonify({'msg': 'doctor update succesfully',
+                    'data': doctor.serialize()}), 200
+
+
+@app.route('/doctors', methods=['GET'])
+def specialidad():
+    speciality = request.args.get("specialty")
+
+    query = Doctors.query
+
+    if speciality:
+        if speciality not in SpecialtyType.__members__:
+            return jsonify({'msg': 'Invalid speciality'}), 400
+        query = query.filter(Doctors.specialties == SpecialtyType[speciality])
+
+        doctors = query.all()
+        return jsonify([doct.serialize() for doct in doctors]), 200
 
 
 # this only runs if `$ python src/main.py` is executed
