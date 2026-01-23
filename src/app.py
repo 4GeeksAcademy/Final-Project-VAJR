@@ -11,12 +11,24 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_bcrypt import Bcrypt
+
 # from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+app.config['JWT_SECRET_KEY']=os.getenv('SUPER_SECRET_TOKEN')
+jwt = JWTManager(app)
+
 app.url_map.strict_slashes = False
 
 # database condiguration
@@ -57,6 +69,71 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # any other endpoint will try to serve it like a static file
+
+@app.route('/doctor/register', methods=['POST'])
+def register_doctor():
+    body=request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Need to send something in body'}),400
+    if 'name' not in body:
+        return jsonify({'msg': 'Name is requiered'}),400
+    if 'email' not in body:
+        return jsonify({'msg': 'Email is required'}),400
+    if 'specialties' not in body:
+        return jsonify({'msg': 'This field is required'}),400
+    if 'password' not in body:
+        return jsonify({'msg': 'Password is required'}),400
+    if 'phone' not in body:
+        return jsonify({'msg': 'Phone is required'}),400
+    
+    user = Doctors.query.filter_by(email=body['email']).first()
+
+    if user !=None:
+        return jsonify({'msg': 'this email already have an account.'}),400
+    
+    new_doctor = Doctors()
+
+    new_doctor.name = body['name']
+    new_doctor.phone=body['phone']
+    new_doctor.email=body['email']
+    new_doctor.specialties=SpecialtyType[body['specialties']]
+    pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
+    new_doctor.password=pw_hash
+    new_doctor.biography=''
+    new_doctor.latitud = 0.0
+    new_doctor.longitud = 0.0
+    new_doctor.picture =''
+    db.session.add(new_doctor)
+    db.session.commit()
+    return jsonify({'msg': 'User create succesfully.'}), 200
+
+@app.route('/doctor/login', methods=['POST'])
+def doctor_login():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'All field required.'}),400
+    if 'email' not in body:
+        return jsonify({'msg': 'email is required'}),400
+    if 'password' not in body:
+        return jsonify({'msg': 'password is required'}),400
+    
+    user = Doctors.query.filter_by(email=body['email']).first()
+
+    if user is None:
+        return jsonify({'msg': 'Email or password is incorrect'}),400
+    is_hash_pw_correct = bcrypt.check_password_hash(user.password, body['password'])
+    if is_hash_pw_correct == False:
+        return jsonify({'msg': 'Email or password is incorrect'}), 400
+    
+    access_token = create_access_token(identity = user.email)
+    return jsonify({'msg': 'login successfully',
+                    'token': access_token})
+
+@app.route('/doctor/private', methods=['GET'])
+@jwt_required()
+def private_doctor():
+    user_doctor = get_jwt_identity()
+    return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
 
 @app.route('/<path:path>', methods=['GET'])
@@ -117,7 +194,6 @@ def get_all_doctors():
         new_serialise_doctors.append(doctor.serialize())
     return jsonify({'msg': new_serialise_doctors}), 200
 
-
 @app.route('/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
     doctor = Doctors.query.get(doctor_id)
@@ -142,7 +218,7 @@ def edit_doctor(doctor_id):
     if 'email' in body:
         doctor.email = body['email']
     if 'specialties' in body:
-        doctor.specialties = body['specialties']
+        doctor.specialties = SpecialtyType[body['specialties']]
     if 'biography' in body:
         doctor.biography = body['biography']
     if "latitud" in body:
@@ -153,9 +229,9 @@ def edit_doctor(doctor_id):
         doctor.picture = body['picture']
     if 'phone' in body:
         doctor.phone = body['phone']
+    db.session.commit()
     return jsonify({'msg': 'doctor update succesfully',
                     'data': doctor.serialize()}), 200
-
 
 @app.route('/doctors', methods=['GET'])
 def specialidad():
@@ -170,7 +246,6 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
-
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
