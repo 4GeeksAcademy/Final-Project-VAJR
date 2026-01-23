@@ -15,6 +15,7 @@ from api.commands import setup_commands
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
@@ -137,7 +138,7 @@ def cancel_appointment(id):
     appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
     if not appointments:
         return jsonify({"msg":"Cita no encontrada"}),404
-    appointments.status="cancelada"
+    appointments.status="cancelled"
     db.session.commit()
     return jsonify({"msg":"Cita cancelada exitosamente"}),200
 
