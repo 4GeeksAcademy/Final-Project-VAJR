@@ -26,7 +26,7 @@ class Pacient(db.Model):
     name: Mapped[str] = mapped_column(String(100),nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
-    phone: Mapped[str] = mapped_column(String(50), unique=True)
+    phone: Mapped[str] = mapped_column(String(50), unique=True, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="pacient")
 
@@ -43,7 +43,7 @@ class Doctors(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(120), nullable=False)
+    password: Mapped[str] = mapped_column(String(120), nullable=True)
     specialties: Mapped[SpecialtyType] = mapped_column(Enum(SpecialtyType), nullable=False)
     biography: Mapped[str] = mapped_column(String(250))
     latitud: Mapped[float] = mapped_column(Float)
