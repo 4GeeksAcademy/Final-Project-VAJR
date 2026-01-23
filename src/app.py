@@ -271,9 +271,10 @@ def add_doctors():
    
 
 
+#Appointments
 
 # crear cita
-@app.route('/appointments', methods=['POST'])
+# @app.route('/appointments', methods=['POST'])
 @jwt_required()
 def create_appointment():
     user_id = get_jwt_identity()
