@@ -21,6 +21,7 @@ from flask_bcrypt import Bcrypt
 
 # from models import Person
 
+
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
@@ -31,6 +32,8 @@ CORS(app)
 app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
+
+app.json.sort_keys = False
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -86,11 +89,6 @@ def pacient_signup():
     request_body = request.get_json(silent=True)
     if request_body is None:
         return jsonify({'msg': 'Body is empty'}), 400
-
-    existing_email = Pacient.query.filter_by(
-        email=request_body['email']).first()
-    if existing_email:
-        return jsonify({'msg': 'Pacient already exists'}), 400
     if 'name' not in request_body:
         return jsonify({'msg': 'Please provide a name'}), 400
     if 'email' not in request_body:
@@ -120,7 +118,11 @@ def pacient_signup():
 
     db.session.add(new_pacient)
     db.session.commit()
-    return jsonify({'msg': 'New user created successfully'}), 201
+
+    token = create_access_token(identity=new_pacient.email)
+
+    return jsonify({'msg': 'New user created successfully',
+                    'token': token}), 201
 
 
 @app.route('/pacient/login', methods=['POST'])
@@ -128,7 +130,7 @@ def pacient_login():
     request_body = request.get_json(silent=True)
     if request_body is None:
         return jsonify({'msg': 'The body is empty'}), 400
-    if 'password' not in request_body and 'email' not in request_body:
+    if 'password' not in request_body or 'email' not in request_body:
         return jsonify({'msg': 'You must provide an email and password'}), 400
 
     pacient = Pacient.query.filter_by(email=request_body['email']).first()
@@ -140,7 +142,7 @@ def pacient_login():
     if pw_check == False:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
-    token = create_access_token(identity=pacient.id)
+    token = create_access_token(identity=pacient.email)
     return jsonify({
         'msg': 'Login successful',
         'token': token
@@ -150,8 +152,8 @@ def pacient_login():
 @app.route('/pacient', methods=['GET'])
 @jwt_required()
 def get_pacient():
-    pacient_id = get_jwt_identity()
-    pacient = Pacient.query.get(pacient_id)
+    email = get_jwt_identity()
+    pacient = Pacient.query.filter_by(email=email).first()
 
     if pacient is None:
         return jsonify({'msg': 'Patient not found'}), 404
@@ -166,8 +168,8 @@ def update_pacient_info():
     if request_body is None:
         return jsonify({'msg': 'Body is empty'}), 400
 
-    pacient_id = get_jwt_identity()
-    pacient = Pacient.query.get(pacient_id)
+    email = get_jwt_identity()
+    pacient = Pacient.query.filter_by(email=email).first()
     if pacient is None:
         return jsonify({'msg': 'Pacient does not exist'}), 404
 
@@ -188,6 +190,8 @@ def update_pacient_info():
             return jsonify({'msg': 'This phone is already in use by another account'}), 400
         pacient.phone = request_body['phone']
 
+    if 'password' in request_body:
+        return jsonify({'msg': 'To change password, you must provide your old and new password'}), 400
     if 'new_password' in request_body and 'old_password' in request_body:
         if not bcrypt.check_password_hash(pacient.password, request_body['old_password']):
             return jsonify({'msg': 'Old password is incorrect'}), 401
