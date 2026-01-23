@@ -73,7 +73,7 @@ class Appointments(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     pacient_id: Mapped[int] = mapped_column(ForeignKey('pacient.id'), nullable=False)
     doctor_id: Mapped[int] = mapped_column(ForeignKey('doctors.id'), nullable=False)
-    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    dateTime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     reason: Mapped[str] = mapped_column(String(120), nullable=False)
     status: Mapped[StatusAppointment] = mapped_column(Enum(StatusAppointment), nullable=False)
     pacient: Mapped["Pacient"] = relationship(back_populates="appointments")
@@ -84,9 +84,9 @@ class Appointments(db.Model):
             "id": self.id,
             "pacient_id":self.pacient_id,
             "doctor_id":self.doctor_id,
-            "date_time":self.date_time.strftime("%Y-%m-%d %H:%M"),
+            "dateTime":self.dateTime.strftime("%Y-%m-%d %H:%M"),
             "reason":self.reason,
-            "status":self.status.value
+            "status":StatusAppointment.confirmed
         }
 
 class Availability(db.Model):
