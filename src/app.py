@@ -7,24 +7,11 @@ from flask import Flask, request, jsonify, url_for, send_from_directory, Bluepri
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability
-from api.routes import api
-from api.admin import setup_admin
-from api.commands import setup_commands
-# from models import Person
 from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
-from datetime import datetime, timedelta, time
 
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
-
-from flask_cors import CORS
-from flask_bcrypt import Bcrypt
 
 # from models import Person
 
