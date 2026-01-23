@@ -26,7 +26,7 @@ class Pacient(db.Model):
     name: Mapped[str] = mapped_column(String(100),nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
-    phone: Mapped[str] = mapped_column(String(50), unique=True)
+    phone: Mapped[str] = mapped_column(String(50), unique=True, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="pacient")
 
@@ -103,6 +103,5 @@ class Availability(db.Model):
             "id": self.id,
             "days": self.days,
             "start_time": self.start_time.strftime("%H:%M"), 
-            "end_time": self.end_time.strftime("%H:%M"),
-            "id_doctor":self.id_doctor  
+            "end_time": self.end_time.strftime("%H:%M") 
         }
