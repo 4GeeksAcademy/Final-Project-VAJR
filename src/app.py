@@ -251,7 +251,7 @@ def update_pacient_info():
     db.session.commit()
     return jsonify({'msg': 'Profile updated successfully', 'data': pacient.serialize()}), 200
  
-# DOCTOR
+# DOCTORS
   
 
    
