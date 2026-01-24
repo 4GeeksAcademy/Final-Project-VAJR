@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { FoundDoc } from "../components/FoundDoc.jsx";
 
 export const Home = () => {
 
@@ -38,6 +39,8 @@ export const Home = () => {
 			<p className="lead">
 				<img src={rigoImageUrl} className="img-fluid rounded-circle mb-3" alt="Rigo Baby" />
 			</p>
+
+			<FoundDoc />
 			<div className="alert alert-info">
 				{store.message ? (
 					<span>{store.message}</span>
