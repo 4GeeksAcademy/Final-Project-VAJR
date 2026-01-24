@@ -127,9 +127,6 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
-
-
-
 # PACIENT
   
 @app.route('/pacient/signup', methods=['POST'])
@@ -276,7 +273,7 @@ def add_doctors():
         return jsonify({'msg': 'need to upload some picture'}), 400
     if 'phone' not in body:
         return jsonify({'msg': 'phone is required'}), 400
-
+    
     new_doctor = Doctors()
 
     new_doctor.name = body['name']
@@ -291,7 +288,6 @@ def add_doctors():
     db.session.add(new_doctor)
     db.session.commit()
     return jsonify({'msg': 'Doctor add successfully'}), 200
-
 
 @app.route('/doctor', methods=['GET'])
 def get_all_doctors():
