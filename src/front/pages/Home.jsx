@@ -6,47 +6,25 @@ export const Home = () => {
 
 	const { store, dispatch } = useGlobalReducer()
 
-	const loadMessage = async () => {
-		try {
-			const backendUrl = import.meta.env.VITE_BACKEND_URL
-
-			if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
-
-			const response = await fetch(backendUrl + "/api/hello")
-			const data = await response.json()
-
-			if (response.ok) dispatch({ type: "set_hello", payload: data.message })
-
-			return data
-
-		} catch (error) {
-			if (error.message) throw new Error(
-				`Could not fetch the message from the backend.
-				Please check if the backend is running and the backend port is public.`
-			);
-		}
-
-	}
-
-	useEffect(() => {
-		loadMessage()
-	}, [])
-
 	return (
-		<div className="text-center mt-5">
-			<h1 className="display-4">Hello Rigo!!</h1>
-			<p className="lead">
-				<img src={rigoImageUrl} className="img-fluid rounded-circle mb-3" alt="Rigo Baby" />
-			</p>
-			<div className="alert alert-info">
-				{store.message ? (
-					<span>{store.message}</span>
-				) : (
-					<span className="text-danger">
-						Loading message from the backend (make sure your python 🐍 backend is running)...
-					</span>
-				)}
+		<div>
+			<div className="container-fluid p-3 d-flex justify-content-center" style={{backgroundColor: "#E9F5FF"}}>
+				<div>
+					<h1 style={{fontSize: "50px"}} className="text-center mt-5"><b>Find the right care, right now</b></h1>
+					<p className="text-center fs-5">More than 10+ specialties available, and over 1,000+ verified doctors signed up</p>
+					<div className="d-flex justify-content-center">
+						
+						<button type="button" className="btn fs-3 shadow mt-3" style={{backgroundColor: "#1A5799", color: "#E9F5FF"}}>
+							 <i class="fa-solid fa-magnifying-glass" style={{color: "#e9f5ff"}}></i> Book now
+						</button>
+					</div>
+				</div>
+				<img src="https://cdn.dribbble.com/userupload/7843601/file/original-1c817c79717d27c25a72dd4e6e0d5af6.png" 
+				alt="Doctor image" 
+				style={{height: "300px"}}
+				className="ms-5"
+				/>
 			</div>
 		</div>
 	);
-}; 
+};
