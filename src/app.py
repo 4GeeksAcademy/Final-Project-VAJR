@@ -1,6 +1,7 @@
 
 import os
 from flask_cors import CORS
+from datetime import datetime, time
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from flask_bcrypt import Bcrypt
 from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
@@ -252,8 +253,6 @@ def update_pacient_info():
  
 # DOCTOR
   
-@app.route('/doctor', methods=['POST'])
-def add_doctors():
 
    
 
@@ -261,7 +260,7 @@ def add_doctors():
 #Appointments
 
 # crear cita
-# @app.route('/appointments', methods=['POST'])
+@app.route('/appointments', methods=['POST'])
 @jwt_required()
 def create_appointment():
     user_id = get_jwt_identity()
