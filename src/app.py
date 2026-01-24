@@ -20,12 +20,6 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
-
 # from models import Person
 
 
@@ -333,46 +327,6 @@ def update_pacient_info():
     return jsonify({'msg': 'Profile updated successfully', 'data': pacient.serialize()}), 200
  
 # DOCTOR
-  
-@app.route('/doctor', methods=['POST'])
-def add_doctors():
-    body = request.get_json(silent=True)
-    if body is None:
-        return jsonify({"msg": "body can not empty"}), 400
-    if 'name' not in body:
-        return jsonify({"msg": 'Name is required.'}), 400
-    if 'email' not in body:
-        return jsonify({'msg': 'Email is required'}), 400
-    # if ' password' not in body:
-    #     return jsonify({'msg': 'password is required'}),400
-    if 'specialities' not in body:
-        return jsonify({'msg': 'Specialities is required'}), 400
-    if 'biography' not in body:
-        return jsonify({'msg': 'biography is required'}), 400
-    if 'latitud' not in body:
-        return jsonify({'msg': 'latitude is required'}), 400
-    if 'longitud' not in body:
-        return jsonify({'msg': 'longitude is required'}), 400
-    if 'picture' not in body:
-        return jsonify({'msg': 'need to upload some picture'}), 400
-    if 'phone' not in body:
-        return jsonify({'msg': 'phone is required'}), 400
-
-    new_doctor = Doctors()
-
-    new_doctor.name = body['name']
-    new_doctor.email = body['email']
-    # new_doctor.password=body['password']
-    new_doctor.specialties = SpecialtyType[body['specialities']]
-    new_doctor.biography = body['biography']
-    new_doctor.latitud = body['latitud']
-    new_doctor.longitud = body['longitud']
-    new_doctor.picture = body['picture']
-    new_doctor.phone = body['phone']
-    db.session.add(new_doctor)
-    db.session.commit()
-    return jsonify({'msg': 'Doctor add successfully'}), 200
-
 
 @app.route('/doctor', methods=['GET'])
 def get_all_doctors():
