@@ -36,11 +36,13 @@ export const DoctorProfile = () => {
     return (
 
         <div className="doctor-card mt-4">
-            <Link to={"/doctorpage/"} className="text-decoration-none"  style={{ color: "#121212" }}>
+            
                 <ul className="doctor-card-ul d-flex justify-content-between overflow-auto overflow-x-auto flex-sm-nowrap">
                     {
                         store.doctors.map((item) =>
                         (
+                            <Link to={`/doctorpage/${item.id}  `} className="text-decoration-none"  style={{ color: "#121212" }}>
+                            
                             <li className="p-3 doctor flex-shrink-0" style={{ width: "338px", borderRadius: "10px" }} key={item.id}>
                                 <div className="d-flex ">
                                     <img
@@ -71,13 +73,11 @@ export const DoctorProfile = () => {
 
 
                             </li>
+                            </Link>
                         )
                         )
                     }
                 </ul>
-            </Link>
-
-
         </div>
     )
 }
