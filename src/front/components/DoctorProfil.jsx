@@ -41,7 +41,7 @@ export const DoctorProfile = () => {
                     {
                         store.doctors.map((item) =>
                         (
-                            <Link to={`/doctorpage/${item.id}  `} className="text-decoration-none"  style={{ color: "#121212" }}>
+                            <Link to={`/doctorpage/${item.id}`} className="text-decoration-none"  style={{ color: "#121212" }}>
                             
                             <li className="p-3 doctor flex-shrink-0" style={{ width: "338px", borderRadius: "10px" }} key={item.id}>
                                 <div className="d-flex ">

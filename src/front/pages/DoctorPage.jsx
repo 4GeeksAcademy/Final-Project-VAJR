@@ -6,7 +6,7 @@ import { Biography } from "./Biography"
 export const DoctorPage = () => {
 
     const { doctorId } = useParams()
-    const { store } = useGlobalReducer
+    const { store } = useGlobalReducer()
 
     const [doctor, setDoctor] = useState({})
     const [filtraDoctorRelate, setFiltraDoctorRelate] = useState([])
@@ -15,65 +15,68 @@ export const DoctorPage = () => {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/${doctorId}`)
         const data = await response.json()
         setDoctor(data.data)
-        if (data.data && data.data.specialties) {
-
-            getRelatedDoc(data.data.specialties)
-        }
     }
 
+    const getRelatedDoctor = async () => {
+        try {
+            if (!doctor.specialties) return;
+
+            const specialtyNameMap = {
+                "Cardiology": "CARDIOLOGY",
+                "Dermatology": "DERMATOLOGY",
+                "Pediatrics": "PEDIATRICS",
+                "General Practice": "GENERAL_PRACTICE",
+                "Neurology": "NEUROLOGY"
+            }
+
+            const specialtyEnumName = specialtyNameMap[doctor.specialties];
+
+            const url = `${import.meta.env.VITE_BACKEND_URL}doctors?specialty=${specialtyEnumName}`;
+            // console.log("Fetching related doctors from:", url);
+
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log("API response for related doctors:", data);
+
+            const doctorsArray = Array.isArray(data) ? data : (Array.isArray(data.msg) ? data.msg : []);
+
+            if (!Array.isArray(doctorsArray)) {
+                console.log("Related doctors data is not an array:", doctorsArray);
+                setFiltraDoctorRelate([]);
+                return;
+            }
+
+            const related = doctorsArray.filter(d => d.id !== doctor.id);
+            setFiltraDoctorRelate(related);
+
+        } catch (error) {
+            console.error("error fetching related doctor:", error);
+            setFiltraDoctorRelate([]);
+        }
+    };
+
     useEffect(() => {
-        if (doctorId) getDoctor()
+
+        if (doctorId)
+            getDoctor()
+
     }, [doctorId])
 
+    useEffect(() => {
+        if (doctor?.specialties) {
+            getRelatedDoctor()
+        }
+
+    }, [doctor])
+
     // console.log(doctor)
-
-    // const getRelatedDoc = async (specialty) => {
-
-    //     if (!specialty) {
-    //         console.log("no receive specialty")
-    //         return
-    //     }
-
-    //     console.log("Fetching related doctors for specialty:", specialty)
-
-    //     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}?specialty=${specialty}`)
-
-    //     const data = await response.json()
-    //     console.log("backend:", data)
-
-    //     const filtrar = data.filter(doct => doct.specialties=== specialty&& doct.id !== Number(doctorId))
-
-    // console.log("Filtered related doctors:", filtrar)
-
-    //     setFiltraDoctorRelate(filtrar)
-    // }
-
-
-
-const getRelatedDoc = async (specialty) => {
-    if (!specialty) return;
-
-    console.log("Fetching related doctors for specialty:", specialty);
-
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctors`);
-    const doctorsArray = await response.json(); // <- aquí ya es array
-
-    const filtrar = doctorsArray.filter(
-        doct => doct.specialties === specialty && doct.id !== Number(doctorId)
-    );
-
-    console.log("Filtered related doctors:", filtrar);
-    setFiltraDoctorRelate(filtrar);
-};
-
 
 
     console.log(filtraDoctorRelate)
 
-
     return (
         <div>
-            <div className="w-25">
+            <div className="w-25 mt-5 p-3 ms-3">
                 <li className="d-block">
                     <div className="d-flex ">
                         <img
@@ -101,13 +104,15 @@ const getRelatedDoc = async (specialty) => {
                     </div>
                 </li>
             </div>
-            <h4>Other doctor in {doctor.specialties}</h4>
-
-            <div>
+            <hr />
+            <h4 className="ms-3 mt-2">Other doctor in {doctor.specialties}</h4>
+            <hr />
+            <div className="w-25 mt-3">
                 {
                     filtraDoctorRelate.map(item =>
-                        <li key={item.id}>
-                            <div>
+                     
+                        <li className=" ms-3 pt-2 ps-3" key={item.id}>
+                            <div className="d-flex">
                                 <img
                                     src={item.picture}
                                     alt="imagen"
@@ -118,16 +123,22 @@ const getRelatedDoc = async (specialty) => {
                                         objectFit: "cover"
                                     }}
                                 />
-                                <div className="ms-3 mbs">
+                                <div className="ms-3">
                                     <h4> Dr. {item.name} </h4>
                                     <p className="text-center mt-1" style={{ color: "#468BE6" }}>{item.specialties}</p>
                                 </div>
                             </div>
-
+                            <div className="pb-2">
+                                <div className=" mbs">
+                                    <p className="mb-2 fw-semibold " style={{ color: "#27fb8a" }} > New patient appts</p>
+                                    <p className="mb-2 fw-light ">New patient appointments • Highly recommended • Excellent wait time</p>
+                                </div>
+                                < Biography text={item.biography} />
+                            </div>
+                            <hr />
                         </li>
                     )
                 }
-
             </div>
         </div>
     )
