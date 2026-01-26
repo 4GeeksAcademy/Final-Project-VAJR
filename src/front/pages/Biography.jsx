@@ -7,7 +7,7 @@ export const Biography = ({ text }) => {
     if (!text) return null
 
     return (
-        <p style={{ lineHeight: "1.5", color: "#555" }} >
+        <p style={{ lineHeight: "1.5", color: "#050505" }} >
 
             {expandTexto ? text : text.slice(0, 60) + ("....")}
 
