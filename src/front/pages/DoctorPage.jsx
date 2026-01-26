@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import useGlobalReducer from "../hooks/useGlobalReducer"
 import { Biography } from "./Biography"
+import { DocttoCalendar } from "./DoctorCalendar"
 
 export const DoctorPage = () => {
 
@@ -75,8 +76,8 @@ export const DoctorPage = () => {
     console.log(filtraDoctorRelate)
 
     return (
-        <div>
-            <div className="w-25 mt-5 p-3 ms-3">
+        <div className="">
+            <div className="w-25 mt-5 p-3 ms-3 d flex">
                 <li className="d-block">
                     <div className="d-flex ">
                         <img
@@ -110,7 +111,7 @@ export const DoctorPage = () => {
             <div className="w-25 mt-3">
                 {
                     filtraDoctorRelate.map(item =>
-                     
+
                         <li className=" ms-3 pt-2 ps-3" key={item.id}>
                             <div className="d-flex">
                                 <img
