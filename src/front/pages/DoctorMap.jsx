@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
 export const DoctorMap = ({ doctor }) => {
-    
+
   if (!doctor?.location?.lat || !doctor?.location?.lng) {
     return <p className="fw-light">I can't find this location</p>;
   }
@@ -9,7 +9,6 @@ export const DoctorMap = ({ doctor }) => {
   const mapsUrl = /iPad|iPhone|iPod/.test(navigator.userAgent)
     ? `https://maps.apple.com/?daddr=${doctor.location.lat},${doctor.location.lng}`
     : `https://www.google.com/maps/dir/?api=1&destination=${doctor.location.lat},${doctor.location.lng}`;
-
   return (
     <div style={{ width: "100%" }}>
       <MapContainer
@@ -33,7 +32,7 @@ export const DoctorMap = ({ doctor }) => {
       </MapContainer>
 
       <div className="mt-3">
-        <a
+        {/* <a
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -41,7 +40,7 @@ export const DoctorMap = ({ doctor }) => {
           style={{ color: "#468BE6" }}
         >
           See directions on the map
-        </a>
+        </a> */}
       </div>
     </div>
   );
