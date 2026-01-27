@@ -17,7 +17,6 @@ export const DocttoCalendar = ( {doctorId} ) => {
              const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}availability/${doctorId}`)
              const data = await response.json()
              
-
              const calendarEvent = data.map(slot=>({
                 id:slot.id,
                 title: `${slot.availableSlots} slots`,
