@@ -17,11 +17,11 @@ export const FoundDoc = () => {
                 : `${backendUrl}/doctor`;
 
             const response = await fetch(url);
-            
+
             if (response.ok) {
                 const data = await response.json();
                 const payload = specialty ? data : data.msg;
-                
+
                 dispatch({ type: "set_doctors", payload: payload || [] });
             } else {
                 console.error("Error response from server");
@@ -40,7 +40,7 @@ export const FoundDoc = () => {
     return (
         <div className="container py-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="fw-bold" style={{ color: "#092F64" }}>Doctors Available</h3>
+                <h3 className="fw-bold" style={{ color: "#092F64" }}>Top Rated Doctors</h3>
                 <select
                     className="form-select w-auto shadow-sm"
                     style={{ borderRadius: "8px", color: "#1A5799" }}
