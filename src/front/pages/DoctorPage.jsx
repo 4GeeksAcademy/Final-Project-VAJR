@@ -17,7 +17,7 @@ export const DoctorPage = () => {
         const data = await response.json()
         setDoctor(data.data)
     }
-
+    
     const getRelatedDoctor = async () => {
         try {
             if (!doctor.specialties) return;

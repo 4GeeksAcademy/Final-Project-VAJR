@@ -143,6 +143,8 @@ def register_doctor():
         return jsonify({'msg': 'Password is required'}), 400
     if 'phone' not in body:
         return jsonify({'msg': 'Phone is required'}), 400
+    if 'address' not in body:
+        return jsonify({'msg': 'address is required'}), 400
 
     user = Doctors.query.filter_by(email=body['email']).first()
 
@@ -158,6 +160,7 @@ def register_doctor():
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_doctor.password = pw_hash
     new_doctor.biography = ''
+    new_doctor.address = body['address']
     new_doctor.latitud = 0.0
     new_doctor.longitud = 0.0
     new_doctor.picture = ''
@@ -367,6 +370,8 @@ def edit_doctor(doctor_id):
         doctor.specialties = SpecialtyType[body['specialties']]
     if 'biography' in body:
         doctor.biography = body['biography']
+    if "address" in body: 
+        doctor.address = body['address']
     if "latitud" in body:
         doctor.latitud = body['latitud']
     if 'longitud' in body:
