@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams } from "react-router-dom"
 import useGlobalReducer from "../hooks/useGlobalReducer"
 import { Biography } from "./Biography"
@@ -14,6 +14,9 @@ export const DoctorPage = () => {
 
     const [doctor, setDoctor] = useState({})
     const [filtraDoctorRelate, setFiltraDoctorRelate] = useState([])
+
+    const aboutRef = useRef(null)
+    const locationRef = useRef(null)
 
     const getDoctor = async () => {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/${doctorId}`)
@@ -74,8 +77,15 @@ export const DoctorPage = () => {
     }, [doctor])
 
     // console.log(doctor)
+    // console.log(filtraDoctorRelate)
 
-    console.log(filtraDoctorRelate)
+    const scrollToAbout = () => {
+        aboutRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+
+    const scrollToLocation = () => {
+        locationRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
 
     return (
         <>
@@ -105,9 +115,9 @@ export const DoctorPage = () => {
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">
                             <span className="fw-semibold ">Highlights</span>
-                            <span className="fw-semibold ms-3"> About </span>
+                            <span className="fw-semibold ms-3" onClick={scrollToAbout} style={{ cursor: "pointer" }}> About </span>
                             <span className="fw-semibold ms-3"> Insurances </span>
-                            <span className="fw-semibold ms-3"> Location </span>
+                            <span className="fw-semibold ms-3"  onClick={scrollToLocation}  style={{ cursor: "pointer" }}> Location </span>
                             <span className="fw-semibold ms-3">FAQs</span>
                         </div>
                     </li>
@@ -139,7 +149,7 @@ export const DoctorPage = () => {
                 </div>
             </div>
 
-            <div className="mt-5 doctor-section-profile">
+            <div ref={aboutRef} className="mt-5 doctor-section-profile">
                 <h4> About Dr. {doctor.name}</h4>
                 <h5 className="mt-3 fw-medium" >Clientele seen</h5>
                 <div className="ms-3">
@@ -252,19 +262,29 @@ export const DoctorPage = () => {
 
                 <h5 className="mt-5">Office location</h5>
 
-                <div className="mt-4" >
+                <div className="mt-4  d-flex justify-content-between"
+                    style={{
+                        width: "80%"
+                    }}  ref={locationRef}>
 
-                    <div className="">
+                    <div className=""
+                        style={{ width: "30%" }}>
+                        <h6>Direction</h6>
+                        <p> {doctor.address} </p>
+                        <h6>Business hours</h6>
+                        <p>Check availability.</p>
+                        <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitud},${doctor.longitud}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn "
+                        >
+                            Get directions
+                        </a>
+                    </div>
+                    <div style={{ width: "70%", height: "300px" }}>
                         <DoctorMap doctor={doctor} />
                     </div>
-
-                    <div className="">
-
-
-                    </div>
-
-
-
                 </div>
             </div>
         </>
