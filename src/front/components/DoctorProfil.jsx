@@ -4,6 +4,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLocationDot, faCalendar } from "@fortawesome/free-solid-svg-icons"
 
+
 export const DoctorProfile = () => {
 
     const { store, dispatch } = useGlobalReducer()

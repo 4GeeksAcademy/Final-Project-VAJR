@@ -9,7 +9,7 @@ export const Biography = ({ text }) => {
     return (
         <p style={{ lineHeight: "1.5", color: "#050505" }} >
 
-            {expandTexto ? text : text.slice(0, 60) + ("....")}
+            {expandTexto ? text : text.slice(0, 58) + ("....")}
 
             <span style={{ color: "#468BE6", cursor: "pointer", fontWeight: "500" }}
                 onClick={() =>  setExpandTexto(!expandTexto)} >

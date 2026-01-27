@@ -29,12 +29,40 @@ h4 {
   border-radius: 0.4rem;
 }
 
+.profile-doctor {
+  margin-top: 0 !important;
+}
+
+.doctor-section-profile {
+  width: 86%;
+  margin: auto;
+}
+
+.about-stection-customer {
+  width: 75%;
+}
+
+.modal-insurance {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid #1a5799;
+}
+.modal-insurance:hover{
+ color: #468BE6;
+
+}
+
 @media (min-width: 300px) and (max-width: 800px) {
   .doctor-card {
-    width: 98%
+    width: 98%;
   }
 
   .doctor-card-ul::-webkit-scrollbar {
-  height: 8px;
-}
+    height: 8px;
+  }
 }
