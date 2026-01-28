@@ -43,7 +43,7 @@ class Doctors(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(120), nullable=True)
+    password: Mapped[str] = mapped_column(String(120), nullable=False)
     specialties: Mapped[SpecialtyType] = mapped_column(Enum(SpecialtyType), nullable=False)
     biography: Mapped[str] = mapped_column(String(250))
     latitud: Mapped[float] = mapped_column(Float)
@@ -66,6 +66,7 @@ class Doctors(db.Model):
                 "lng": self.longitud
             },
             "phone": self.phone,
+            
         }
 
 class Appointments(db.Model):
@@ -103,5 +104,5 @@ class Availability(db.Model):
             "id": self.id,
             "days": self.days,
             "start_time": self.start_time.strftime("%H:%M"), 
-            "end_time": self.end_time.strftime("%H:%M") 
+            "end_time": self.end_time.strftime("%H:%M")  
         }
