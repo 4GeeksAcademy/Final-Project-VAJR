@@ -20,7 +20,6 @@ python-dotenv = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-bcrypt = "*"
-flask-jwt-extended = "*"
 flask-cors = "*"
 
 [requires]
