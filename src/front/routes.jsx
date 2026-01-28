@@ -11,6 +11,8 @@ import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import { LoginDoctor } from "./pages/LoginDoctor";  
+import { SignupDoctor } from "./pages/SigunpDoctor";
 
 
 export const router = createBrowserRouter(
@@ -30,6 +32,8 @@ export const router = createBrowserRouter(
         <Route path="/demo" element={<Demo />} />
         <Route path="/api/pacient/signup" element={<Signup />} />
         <Route path="/pacient/login" element={<Login />} />
+        <Route path="/doctor/register" element={<SignupDoctor />} />
+        <Route path="/doctor/login" element={<LoginDoctor />} />
         
       </Route>
     )
