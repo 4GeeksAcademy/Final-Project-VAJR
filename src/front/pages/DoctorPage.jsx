@@ -17,6 +17,10 @@ export const DoctorPage = () => {
 
     const aboutRef = useRef(null)
     const locationRef = useRef(null)
+    const highLightsRef = useRef(null)
+    const insurancesRef = useRef(null)
+    const faqsRef = useRef(null)
+    const [activeTab, setActiveTab] = useState("highlights")
 
     const getDoctor = async () => {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/${doctorId}`)
@@ -66,31 +70,25 @@ export const DoctorPage = () => {
 
         if (doctorId)
             getDoctor()
-
     }, [doctorId])
 
     useEffect(() => {
         if (doctor?.specialties) {
             getRelatedDoctor()
         }
-
     }, [doctor])
 
     // console.log(doctor)
-    // console.log(filtraDoctorRelate)
 
-    const scrollToAbout = () => {
-        aboutRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
-
-    const scrollToLocation = () => {
-        locationRef.current?.scrollIntoView({ behavior: "smooth" })
+    const handleTabClick = (tabName, scrollRef) => {
+        setActiveTab(tabName)
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" })
     }
 
     return (
         <>
-            <div className="profile-doctor" style={{ background: "#e9f5ff87" }}>
-                <div className=" p-3 ms-5 " >
+            <div className="profile-doctor d-sm-flex justify-content-sm-start" style={{ background: "#e9f5ff87" }}>
+                <div className=" p-3 ms-5" >
                     <li className="d-block ms-5 mt-5">
                         <div className="d-flex ">
                             <img
@@ -110,20 +108,37 @@ export const DoctorPage = () => {
                             </div>
                         </div>
                         <div className="pt-4 fw-light">
-                            <p>< Biography text={doctor.biography} /> </p>
+                            <p >< Biography text={doctor.biography} /> </p>
                         </div>
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">
-                            <span className="fw-semibold ">Highlights</span>
-                            <span className="fw-semibold ms-3" onClick={scrollToAbout} style={{ cursor: "pointer" }}> About </span>
-                            <span className="fw-semibold ms-3"> Insurances </span>
-                            <span className="fw-semibold ms-3"  onClick={scrollToLocation}  style={{ cursor: "pointer" }}> Location </span>
+                            <span
+                                className={`fw-semibold pb-2 ${activeTab === "highlights" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
+                                onClick={() => handleTabClick("highlights", highLightsRef)}
+                                style={{ cursor: "pointer" }}
+                            >    Highlights </span>
+                            <span
+                                className={`fw-semibold pb-2 ${activeTab === "about" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
+                                onClick={() => handleTabClick("about", aboutRef)}
+                                style={{ cursor: "pointer" }}>
+                                About
+                            </span>
+                            <span className={`fw-semibold pb-2 ${activeTab === "insurances" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
+                                onClick={() => handleTabClick("insurances", insurancesRef)}
+                                style={{ cursor: "pointer" }}>
+                                Insurances
+                            </span>
+                            <span className={`fw-semibold pb-2 ${activeTab === "location" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
+                                onClick={() => handleTabClick("location", locationRef)}
+                                style={{ cursor: "pointer" }} >
+                                Location
+                            </span>
                             <span className="fw-semibold ms-3">FAQs</span>
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
                         <div className="me-2 fs-2" style={{ color: "#1A5799" }}><FontAwesomeIcon icon={faCalendar} /></div>
-                        <div className="mt-2">
+                        <div className="mt-2" ref={highLightsRef}>
                             <span className="fs-5 fw-medium ">New patient appointments </span>
                             <p className="fw-light">Appointments available for new patients on <span className="fw-semibold">HiDoc</span></p>
                         </div>
@@ -145,6 +160,18 @@ export const DoctorPage = () => {
                             <p> AmeriHealth, Ambether, Aetna, UnitedHealthOne </p>
                             <p className=" fw-medium">(10+) more in-network plans</p>
                         </div>
+                    </div>
+                </div>
+                <div className="ms-5 p-5 calendar-doctor">
+                    <h5>Book an appointment for free</h5>
+                    <p>The office partners with HiDoc to schedule appointments</p>
+                    <div className="mt-3">
+                        <p className="fw-semibold "> Available appointments</p>
+                        <div className="mt-3">
+                            <DocttoCalendar />
+                        </div>
+
+
                     </div>
                 </div>
             </div>
@@ -183,7 +210,7 @@ export const DoctorPage = () => {
                     <p>< Biography text={doctor.biography} /> </p>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4" ref={insurancesRef}>
                     <h5 className="fw-medium"> Is this doctor in your insurance network? </h5>
                     <p>Check if your insurance is part of the list</p>
                     <p className="fw-semibold mt-4">In-network insurances</p>
@@ -262,27 +289,29 @@ export const DoctorPage = () => {
 
                 <h5 className="mt-5">Office location</h5>
 
-                <div className="mt-4  d-flex justify-content-between"
+                <div className="mt-4 p-2 d-flex justify-content-between"
                     style={{
-                        width: "80%"
-                    }}  ref={locationRef}>
+                        width: "80%", borderRadius:"1rem",
+                        border:"4px, solid, #E9F5FF"
+                    }} ref={locationRef}>
 
-                    <div className=""
+                    <div className="mt-1 rounded-2 border border-primary p-2"
                         style={{ width: "30%" }}>
                         <h6>Direction</h6>
                         <p> {doctor.address} </p>
-                        <h6>Business hours</h6>
-                        <p>Check availability.</p>
+                        <hr />
+                        <h6 className="mt-1">Business hours</h6>
+                        <p className="mt-1">Check availability.</p>
                         <a
                             href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitud},${doctor.longitud}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn "
+                            className="btn btn-outline-info mt-2 "
                         >
                             Get directions
                         </a>
                     </div>
-                    <div style={{ width: "70%", height: "300px" }}>
+                    <div className=" rounded-2 border border-primary" style={{ width: "67%", height: "300px" }}>
                         <DoctorMap doctor={doctor} />
                     </div>
                 </div>
