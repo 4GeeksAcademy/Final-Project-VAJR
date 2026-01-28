@@ -1,0 +1,35 @@
+
+.fondo-form {
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 500px; /* Un poco más ancho para que quepan icono y texto en una línea */
+}
+
+.vip-background {
+  /* Reemplaza con una URL válida de imagen */
+
+  background-size: cover;      
+  background-position: center;  
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;           
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#titlesigun{
+  color:#035aa6;
+
+
+}
+
+#btn-drop{
+  background-color:#035aa6;
+}
+.dropdown-item.active {
+    background-color: #18aded !important;
+    color: rgb(46, 99, 214);
+}
