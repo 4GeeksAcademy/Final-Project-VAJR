@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { FindYourDoctor } from "../components/FindYourDoctor";
 
 export const Home = () => {
 
@@ -14,7 +15,7 @@ export const Home = () => {
 					<p className="text-center fs-5">More than 10+ specialties available, and over 1,000+ verified doctors signed up</p>
 					<div className="d-flex justify-content-center">
 						
-						<button type="button" className="btn fs-3 shadow mt-3" style={{backgroundColor: "#1A5799", color: "#E9F5FF"}}>
+						<button id="BookNow-button" type="button" className="btn fs-3 shadow mt-3" style={{backgroundColor: "#1A5799", color: "#E9F5FF"}}>
 							<i className="fa-solid fa-magnifying-glass" style={{color: "#e9f5ff"}}></i> Book now
 						</button>
 					</div>
@@ -25,6 +26,7 @@ export const Home = () => {
 				className="ms-5"
 				/>
 			</div>
+			<FindYourDoctor />
 		</div>
 	);
 };
