@@ -6,6 +6,7 @@ import { DocttoCalendar } from "./DoctorCalendar"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCalendar } from "@fortawesome/free-regular-svg-icons"
 import { DoctorMap } from "./DoctorMap"
+import { DoctorStickyProfile } from "./DocttoStickProfile"
 
 export const DoctorPage = () => {
 
@@ -22,62 +23,21 @@ export const DoctorPage = () => {
     const faqsRef = useRef(null)
     const [activeTab, setActiveTab] = useState("highlights")
 
+    const topProfileRef = useRef(null)
+    const calendarRef = useRef(null)
+    const [showSticky, setShowSticky] = useState(false)
+
     const getDoctor = async () => {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/${doctorId}`)
         const data = await response.json()
         setDoctor(data.data)
     }
 
-    const getRelatedDoctor = async () => {
-        try {
-            if (!doctor.specialties) return;
-
-            const specialtyNameMap = {
-                "Cardiology": "CARDIOLOGY",
-                "Dermatology": "DERMATOLOGY",
-                "Pediatrics": "PEDIATRICS",
-                "General Practice": "GENERAL_PRACTICE",
-                "Neurology": "NEUROLOGY"
-            }
-
-            const specialtyEnumName = specialtyNameMap[doctor.specialties];
-
-            const url = `${import.meta.env.VITE_BACKEND_URL}doctors?specialty=${specialtyEnumName}`;
-            // console.log("Fetching related doctors from:", url);
-
-            const response = await fetch(url);
-            const data = await response.json();
-            console.log("API response for related doctors:", data);
-
-            const doctorsArray = Array.isArray(data) ? data : (Array.isArray(data.msg) ? data.msg : []);
-
-            if (!Array.isArray(doctorsArray)) {
-                console.log("Related doctors data is not an array:", doctorsArray);
-                setFiltraDoctorRelate([]);
-                return;
-            }
-
-            const related = doctorsArray.filter(d => d.id !== doctor.id);
-            setFiltraDoctorRelate(related);
-
-        } catch (error) {
-            console.error("error fetching related doctor:", error);
-            setFiltraDoctorRelate([]);
-        }
-    };
-
     useEffect(() => {
 
         if (doctorId)
             getDoctor()
     }, [doctorId])
-
-    useEffect(() => {
-        if (doctor?.specialties) {
-            getRelatedDoctor()
-        }
-    }, [doctor])
-
     // console.log(doctor)
 
     const handleTabClick = (tabName, scrollRef) => {
@@ -85,9 +45,30 @@ export const DoctorPage = () => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" })
     }
 
+    useEffect(() => {
+        if (!calendarRef.current) return
+
+        const handleScroll = () => {
+            const calendarBottom = calendarRef.current.getBoundingClientRect().bottom
+
+            setShowSticky(calendarBottom < 0)
+        }
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
+
+
     return (
         <>
-            <div className="profile-doctor d-sm-flex justify-content-sm-start" style={{ background: "#e9f5ff87" }}>
+            {showSticky && (
+                <DoctorStickyProfile
+                    doctor={doctor}
+                    onClick={() =>
+                        topProfileRef.current?.scrollIntoView({ behavior: "smooth" })
+                    }
+                />
+            )}
+            <div ref={topProfileRef} className="profile-doctor d-sm-flex justify-content-sm-start" style={{ background: "#e9f5ff87" }}>
                 <div className=" p-3 ms-5" >
                     <li className="d-block ms-5 mt-5">
                         <div className="d-flex ">
@@ -162,7 +143,9 @@ export const DoctorPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="ms-5 p-5 calendar-doctor">
+                <div className="ms-5 p-5 calendar-doctor"
+                    ref={calendarRef}
+                >
                     <h5>Book an appointment for free</h5>
                     <p>The office partners with HiDoc to schedule appointments</p>
                     <div className="mt-3">
@@ -170,8 +153,6 @@ export const DoctorPage = () => {
                         <div className="mt-3">
                             <DocttoCalendar />
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -291,8 +272,8 @@ export const DoctorPage = () => {
 
                 <div className="mt-4 p-2 d-flex justify-content-between"
                     style={{
-                        width: "80%", borderRadius:"1rem",
-                        border:"4px, solid, #E9F5FF"
+                        width: "80%", borderRadius: "1rem",
+                        border: "4px, solid, #E9F5FF"
                     }} ref={locationRef}>
 
                     <div className="mt-1 rounded-2 border border-primary p-2"
