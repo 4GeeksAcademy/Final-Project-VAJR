@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 
 export const DoctorCard = ({ doctor }) => {
     if (!doctor) return null;
@@ -50,7 +50,7 @@ export const DoctorCard = ({ doctor }) => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         doctor_id: doctor.id,
-                        patient_id: store.user?.id, 
+                        patient_id: store.user?.id,
                         hour: slot.hour,
                         day: slot.day
                     })
@@ -98,14 +98,11 @@ export const DoctorCard = ({ doctor }) => {
                         <i className="fa-solid fa-location-dot me-2 text-primary"></i>
                         {typeof doctor.location === 'object' ? "Tampa, FL" : doctor.location || "Tampa, FL"}
                     </div>
-                    <div className="text-success fw-medium">
-                        <i className="fa-solid fa-calendar-check me-2"></i>New patient appts
-                    </div>
                 </div>
 
                 <div className="mt-auto">
                     <p className="fw-bold mb-2 small text-dark">Next available today:</p>
-                    <div className="d-flex gap-2 mb-3">
+                    <div className="d-flex gap-2 mb-3 justify-content-center">
                         {loading ? (
                             <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
                         ) : slots.length > 0 ? (
