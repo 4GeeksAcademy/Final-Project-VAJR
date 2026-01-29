@@ -6,20 +6,19 @@ export const Navbar = () => {
 	const token = localStorage.getItem("token")
 
 	const verifyToken = (token) => {
-
+		
 		if (!token) return false
 
 		try {
 			const decoded = jwtDecode(token)
 			const TimeNow = Date.now() / 1000
-			return decoded > TimeNow
+			return decoded.exp > TimeNow
 		}
 		catch (erorr) {
 			return (false)
 		}
 
 	}
-
 
 	return (
 		<nav className="navbar bg-none" data-bs-theme="light" style={{ backgroundColor: "#E9F5FF" }}>
