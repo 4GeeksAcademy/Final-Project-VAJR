@@ -1,4 +1,3 @@
-
 import os
 from flask_cors import CORS
 from datetime import datetime, time
@@ -22,22 +21,12 @@ static_file_dir = os.path.join(os.path.dirname(
 
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
-
-app.config['JWT_SECRET_KEY']=os.getenv('SUPER_SECRET_TOKEN')
-jwt = JWTManager(app)
 
 app.url_map.strict_slashes = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 CORS(app)
-
-
-CORS(app)
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
-jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
 
 app.json.sort_keys = False
 
@@ -190,60 +179,8 @@ def private_doctor():
     user_doctor = get_jwt_identity()
     return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
-
-@app.route('/<path:path>', methods=['GET'])
-def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
-    return response
-
-
-
-
 # PACIENT
-  
-@app.route('/pacient/signup', methods=['POST'])
-def pacient_signup():
-    request_body = request.get_json(silent=True)
-    if request_body is None:
-        return jsonify({'msg': 'Body is empty'}), 400
-    if 'name' not in request_body:
-        return jsonify({'msg': 'Please provide a name'}), 400
-    if 'email' not in request_body:
-        return jsonify({'msg': 'Please provide an email'}), 400
-
-    existing_email = Pacient.query.filter_by(
-        email=request_body['email']).first()
-    if existing_email:
-        return jsonify({'msg': 'Email already registered'}), 400
-
-    if 'password' not in request_body:
-        return jsonify({'msg': 'Please provide a password'}), 400
-
-    pw_hash = bcrypt.generate_password_hash(
-        request_body['password']).decode('utf-8')
-    new_pacient = Pacient(email=request_body['email'],
-                          password=pw_hash, name=request_body['name'], is_active=True)
-
-    pacients_phone = None
-    if 'phone' in request_body and request_body['phone']:
-        existing_phone = Pacient.query.filter_by(
-            phone=request_body['phone']).first()
-        if existing_phone:
-            return jsonify({'msg': 'Phone already in use'}), 400
-        pacients_phone = request_body['phone']
-        new_pacient.phone = pacients_phone
-
-    db.session.add(new_pacient)
-    db.session.commit()
-
-    token = create_access_token(identity=new_pacient.email)
-
-    return jsonify({'msg': 'New user created successfully',
-                    'token': token}), 201
-
+ 
 
 @app.route('/pacient/login', methods=['POST'])
 def pacient_login():
@@ -257,8 +194,7 @@ def pacient_login():
     if pacient is None:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
-    pw_check = bcrypt.check_password_hash(
-        pacient.password, request_body['password'])
+    pw_check = bcrypt.check_password_hash(pacient.password, request_body['password'])
     if pw_check == False:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
@@ -387,7 +323,95 @@ def specialidad():
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
 
-# this only runs if `$ python src/main.py` is executed
+#Appointments
+
+# crear cita
+@app.route('/appointments', methods=['POST'])
+@jwt_required()
+def create_appointment():
+    user_id = get_jwt_identity()
+    body = request.get_json(silent=True)
+    if not body:
+            return jsonify({"msg": "el campo esta vacio"}), 400
+    doctor_id = body.get('doctor_id')
+    hour = body.get('hour')
+    dateTime = body.get('dateTime')
+    reason = body.get('reason')
+    pacients = Pacient.query.get(user_id)
+    if not pacients:
+        return jsonify({"msg": "el usuario no existe"}), 404
+    exists_appointment = Appointments.query.filter_by(
+        doctor_id=doctor_id, dateTime=dateTime).first()
+    if exists_appointment:
+        return jsonify({"msg": "ya existe una cita para este doctor en esta fecha"}), 400
+    new_appointment = Appointments(
+        pacient_id=user_id,
+        doctor_id=doctor_id,
+        dateTime=dateTime,
+        reason=reason,
+        status='confirmada'
+    )
+    db.session.add(new_appointment)
+    db.session.commit()
+    return jsonify({"msg": "Cita creada exitosamente", "id": new_appointment.id, "Name": pacients.name}), 201
+
+#listar citas pacientes 
+@app.route('/appointments', methods=['GET'])
+@jwt_required()
+def get_appointments():
+    user_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(pacient_id=user_id).all()
+    return jsonify([appointment.serialize() for appointment in appointments]),200
+
+#listar cita especifica paciente
+@app.route('/appointments/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_appointment(id):            
+    user_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
+
+# listar citas doctor
+@app.route('/appointments/doctors', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+        doctor_id=get_jwt_identity()
+        appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
+        if not appointments:
+            return jsonify({"msg":"No hay citas para este doctor"}),404
+        return jsonify([appointment.serialize() for appointment in appointments]),200
+
+#listar cita especifica doctor
+@app.route('/appointments/doctors/<int:id>', methods=['GET'])     
+@jwt_required()
+def get_doctor_appointment(id):
+    doctor_id=get_jwt_identity()
+    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
+    
+    if not appointments:
+          return jsonify({"msg":"Cita no encontrada"}),404
+    return jsonify([appointment.serialize() for appointment in appointments]),200
+
+#cancelar cita paciente 
+@app.route('/appointments/<int:id>', methods=['DELETE'])
+@jwt_required()
+def cancel_appointment(id):
+    user_id=get_jwt_identity()  
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    if not appointments:
+        return jsonify({"msg":"Cita no encontrada"}),404
+    appointments.status="cancelled"
+    db.session.commit()
+    return jsonify({"msg":"Cita cancelada exitosamente"}),200
+ 
+# this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
+
+    
+
+
