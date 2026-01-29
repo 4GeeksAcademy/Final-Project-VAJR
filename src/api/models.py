@@ -43,7 +43,7 @@ class Doctors(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(120), nullable=True)
+    password: Mapped[str] = mapped_column(String(120), nullable=False)
     specialties: Mapped[SpecialtyType] = mapped_column(Enum(SpecialtyType), nullable=False)
     biography: Mapped[str] = mapped_column(String(250))
     latitud: Mapped[float] = mapped_column(Float)
@@ -66,18 +66,29 @@ class Doctors(db.Model):
                 "lng": self.longitud
             },
             "phone": self.phone,
+            
         }
 
 class Appointments(db.Model):
     __tablename__ = 'appointments'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     pacient_id: Mapped[int] = mapped_column(ForeignKey('pacient.id'), nullable=False)
-    doctors_id: Mapped[int] = mapped_column(ForeignKey('doctors.id'), nullable=False)
-    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    doctor_id: Mapped[int] = mapped_column(ForeignKey('doctors.id'), nullable=False)
+    dateTime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     reason: Mapped[str] = mapped_column(String(120), nullable=False)
     status: Mapped[StatusAppointment] = mapped_column(Enum(StatusAppointment), nullable=False)
     pacient: Mapped["Pacient"] = relationship(back_populates="appointments")
     doctor: Mapped["Doctors"] = relationship(back_populates="appointments")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "pacient_id":self.pacient_id,
+            "doctor_id":self.doctor_id,
+            "dateTime":self.dateTime.strftime("%Y-%m-%d %H:%M"),
+            "reason":self.reason,
+            "status":StatusAppointment.confirmed
+        }
 
 class Availability(db.Model):
     __tablename__ = 'availability'
@@ -93,5 +104,5 @@ class Availability(db.Model):
             "id": self.id,
             "days": self.days,
             "start_time": self.start_time.strftime("%H:%M"), 
-            "end_time": self.end_time.strftime("%H:%M") 
+            "end_time": self.end_time.strftime("%H:%M")  
         }

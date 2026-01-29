@@ -162,12 +162,12 @@
         },
         "flask-jwt-extended": {
             "hashes": [
-                "sha256:63a28fc9731bcc6c4b8815b6f954b5904caa534fc2ae9b93b1d3ef12930dca95",
-                "sha256:9215d05a9413d3855764bcd67035e75819d23af2fafb6b55197eb5a3313fdfb2"
+                "sha256:52f35bf0985354d7fb7b876e2eb0e0b141aaff865a22ff6cc33d9a18aa987978",
+                "sha256:8085d6757505b6f3291a2638c84d207e8f0ad0de662d1f46aa2f77e658a0c976"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7' and python_version < '4'",
-            "version": "==4.6.0"
+            "markers": "python_version >= '3.9' and python_version < '4'",
+            "version": "==4.7.1"
         },
         "flask-migrate": {
             "hashes": [
@@ -194,6 +194,14 @@
             ],
             "index": "pypi",
             "version": "==0.2.14"
+        },
+        "flask-swagger-ui": {
+            "hashes": [
+                "sha256:5ecff6c284d7c5559f3473bd534a31fa5dfc0022502d63f4a04728c2b10596f6",
+                "sha256:872d038dc11a68eacab88f6f05be3c533aa300453e273775dad3e029b31e03d4"
+            ],
+            "index": "pypi",
+            "version": "==5.21.0"
         },
         "greenlet": {
             "hashes": [
