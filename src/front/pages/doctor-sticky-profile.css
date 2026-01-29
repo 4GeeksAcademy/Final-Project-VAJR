@@ -7,7 +7,7 @@
     z-index: 999;
     gap: 12px;
     padding: 10px 35px;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 2px solid rgba(128, 128, 128, 0.655);
 }
 
 .doctor-sticky img {
