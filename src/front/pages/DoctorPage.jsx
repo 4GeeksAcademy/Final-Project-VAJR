@@ -107,14 +107,16 @@ export const DoctorPage = () => {
                             <span className={`fw-semibold pb-2 ${activeTab === "insurances" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
                                 onClick={() => handleTabClick("insurances", insurancesRef)}
                                 style={{ cursor: "pointer" }}>
-                                Insurances
+                                Insurances  
                             </span>
                             <span className={`fw-semibold pb-2 ${activeTab === "location" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
                                 onClick={() => handleTabClick("location", locationRef)}
                                 style={{ cursor: "pointer" }} >
                                 Location
                             </span>
-                            <span className="fw-semibold ms-3">FAQs</span>
+                            <span className={`fw-semibold pb-2 ${activeTab === "faqs" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
+                                onClick={()=> handleTabClick("faqs", faqsRef)}
+                           style={{cursor:"pointer"}} >Faqs</span>
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
@@ -295,6 +297,54 @@ export const DoctorPage = () => {
                     <div className=" rounded-2 border border-primary" style={{ width: "67%", height: "300px" }}>
                         <DoctorMap doctor={doctor} />
                     </div>
+                </div>
+                <div className="mt-5 doctor-faqs" style={{ width: "80%" }}
+                ref={faqsRef} >
+                    <h5> Frequently asked questions </h5>
+                    <p className="mt-3 fw-medium"> How soon can I make an appointment with Dr. Burton Waisbren? </p>
+                    <p className="faqs-p mt-2">Generally, Dr. {doctor.name} has appointments available on Zocdoc within 1 week. You can see Dr.
+                        {doctor.name} earliest availability on HiDoc and <span className="fw-medium"
+                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        > make an appointment online.</span></p>
+                    <p className="mt-3 fw-medium"> Is Dr. {doctor.name} accepting new patients? </p>
+                    <p className="faqs-p mt-2">Dr. {doctor.name} generally accepts new patients on HiDoc. You can see Dr.
+                        <span className="fw-medium"
+                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >  {doctor.name} earliest availability</span> on HiDoc and schedule an appointment online.</p>
+                    <p className="mt-3 fw-medium">Can I make an appointment with Dr. {doctor.name} online? </p>
+                    <p className="faqs-p mt-2">Yes, you can
+                        <span className="fw-medium"
+                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
+                    <p className="mt-3 fw-medium">Can I make an appointment with Dr. {doctor.name} online? </p>
+                    <p className="faqs-p mt-2">Yes, you can
+                        <span className="fw-medium"
+                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
+                    <p className="mt-3 fw-medium">Can I make an appointment with Dr. {doctor.name} online? </p>
+                    <p className="faqs-p mt-2">Yes, you can
+                        <span className="fw-medium"
+                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
+
+
+
+
                 </div>
             </div>
         </>
