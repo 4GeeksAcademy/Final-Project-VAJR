@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { DoctorProfile } from "../components/DoctorProfil.jsx";
 
 export const Home = () => {
 
@@ -27,7 +26,6 @@ export const Home = () => {
 				/>
 			</div>
 
-			 <DoctorProfile/>
 		</div>
 	);
 };
