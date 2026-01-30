@@ -370,6 +370,8 @@ def edit_doctor(doctor_id):
     if 'phone' in body:
         doctor.phone = body['phone']
     db.session.commit()
+    if 'cal_link' in body:
+        doctor.cal_link = body['cal_link']
     return jsonify({'msg': 'doctor update succesfully',
                     'data': doctor.serialize()}), 200
 
@@ -386,6 +388,8 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
+
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

@@ -50,6 +50,7 @@ class Doctors(db.Model):
     longitud: Mapped[float] = mapped_column(Float)
     picture: Mapped[Optional[str]] = mapped_column(String(500))
     phone: Mapped[str] = mapped_column(String(50), unique=True)
+    cal_link = db.Column(db.String(200), nullable=True)
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
     availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
@@ -66,6 +67,7 @@ class Doctors(db.Model):
                 "lng": self.longitud
             },
             "phone": self.phone,
+            "cal_link": self.cal_link,
             
         }
 
