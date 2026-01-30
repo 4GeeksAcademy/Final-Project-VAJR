@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { FindYourDoctor } from "../components/FindYourDoctor";
+import { MostSearchedSpecialists } from "../components/MostSearchedSpecialists.jsx";
 
 export const Home = () => {
 
@@ -27,6 +28,7 @@ export const Home = () => {
 				/>
 			</div>
 			<FindYourDoctor />
+			<MostSearchedSpecialists />
 		</div>
 	);
 };
