@@ -100,7 +100,6 @@ export const SymptomChecker = () => {
 
     useEffect(() => {
         const verifyToken = (token) => {
-            return true
             if (!token) return false
             try {
                 const decoded = jwtDecode(token)
