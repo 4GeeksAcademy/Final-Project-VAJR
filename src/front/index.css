@@ -17,6 +17,7 @@
 #FindYourSpecialist-button:hover {
     transform: translateY(-5px);
     transition: all 0.3s ease;
+}
 
 .fondo-form {
   background-color: rgba(255, 255, 255, 0.9); 
@@ -51,4 +52,9 @@
 .dropdown-item.active {
     background-color: #18aded !important;
     color: rgb(46, 99, 214);
+}
+
+.specialties-button:hover {
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
 }

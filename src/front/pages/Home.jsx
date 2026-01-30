@@ -3,6 +3,7 @@ import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { FoundDoc } from "../components/FoundDoc.jsx";
 import { FindYourDoctor } from "../components/FindYourDoctor";
+import { MostSearchedSpecialists } from "../components/MostSearchedSpecialists.jsx";
 
 export const Home = () => {
 
@@ -31,6 +32,7 @@ export const Home = () => {
 				<FoundDoc />
 			</div>
 			<FindYourDoctor />
+			<MostSearchedSpecialists />
 		</div>
 	);
 };
