@@ -21,7 +21,10 @@ export default function storeReducer(store, action = {}) {
     case 'select_slot':
       return {
         ...store,
-        selectedAppointment: action.payload
+        selectedAppointment: {
+            ...store.selectedAppointment,
+            ...action.payload
+        }
       };
 
     case "login_pacient":

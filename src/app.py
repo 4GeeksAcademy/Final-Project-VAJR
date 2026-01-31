@@ -1,6 +1,9 @@
+from api.models import db, Doctors, Availability, Appointments
+from datetime import datetime, timedelta, time
+from flask import jsonify
 import os
 from flask_cors import CORS
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from flask_bcrypt import Bcrypt
 from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
@@ -49,63 +52,81 @@ setup_commands(app)
 
 @api.route('/doctor/<int:doctor_id>/availability', methods=['GET'])
 def get_doctor_availability(doctor_id):
-    # obtenemos config horario doctor
+    # 1. Verificar existencia del doctor
+    doctor = Doctors.query.get(doctor_id)
+    if not doctor:
+        return jsonify({"msg": "Doctor no encontrado"}), 404
+
+    # 2. Obtener rangos de horario configurados en tu tabla 'availability'
     availabilities = Availability.query.filter_by(id_doctor=doctor_id).all()
-    # citas ya reservadas
+
+    # 3. Obtener citas ya reservadas para este doctor
     booked_appointments = Appointments.query.filter_by(
-        doctors_id=doctor_id).all()
-    # guardar horas ocupadas
-    booked_hours = [appt.appointment_hour for appt in booked_appointments]
+        doctor_id=doctor_id).all()
+    # Normalizamos a formato "HH:MM" para comparar fácilmente
+    booked_hours = [appt.dateTime.strftime(
+        "%H:%M") for appt in booked_appointments if appt.dateTime]
 
     all_slots = []
 
+    # 4. Lógica de generación de intervalos de 30 minutos
     for entry in availabilities:
-        start_dt = datetime.combine(datetime.today(), entry.start_time)
-        end_dt = datetime.combine(datetime.today(), entry.end_time)
-        # genero intervalos de 30min
-        current_slot = start_dt
-        while current_slot + timedelta(minutes=30) <= end_dt:
-            time_str = current_slot.strftime("%H:%M")
-            # si ya existe una cita a esa hora el slot lo deberia omitir
+        today = datetime.today()
+        # Combinamos la hora de la tabla con la fecha de hoy para calcular deltas
+        current_dt = datetime.combine(today, entry.start_time)
+        end_dt = datetime.combine(today, entry.end_time)
+
+        while current_dt + timedelta(minutes=30) <= end_dt:
+            time_str = current_dt.strftime("%H:%M")
+
+            # Filtramos si el slot ya está en 'booked_hours'
             if time_str not in booked_hours:
                 all_slots.append({
                     "day": entry.days,
                     "hour": time_str,
-                    "availability_id": entry.id
+                    "availability_id": entry.id,
+                    "doctor_id": doctor_id
                 })
 
-            current_slot += timedelta(minutes=30)
+            # Sumar 30 minutos al siguiente intervalo
+            current_dt += timedelta(minutes=30)
 
     return jsonify(all_slots), 200
 
+# POST: Crear un nuevo rango de disponibilidad
 
-@app.route('/api/availability', methods=['POST'])
-def de_set_availability():
+
+@api.route('/availability', methods=['POST'])
+def set_availability():
     data = request.json
-    # Lo que espero: {"doctor_id": 1, "days": "Monday", "start": "09:00", "end": "17:00"}
+    # Esperamos: {"doctor_id": 1, "days": "Monday", "start": "09:00", "end": "12:00"}
 
-    new_availability = Availability(
-        days=data['days'],
-        # convertir str en obj time de python
-        start_time=time.fromisoformat(data['start']),
-        end_time=time.fromisoformat(data['end']),
-        id_doctor=data['doctor_id']
-    )
-
-    db.session.add(new_availability)
-    db.session.commit()
-
-    return jsonify({"msg": "Schedule set successfully"})
+    try:
+        new_availability = Availability(
+            days=data['days'],
+            # Convertimos strings "HH:MM" a objetos 'time' de Python
+            start_time=time.fromisoformat(data['start']),
+            end_time=time.fromisoformat(data['end']),
+            id_doctor=data['doctor_id']
+        )
+        db.session.add(new_availability)
+        db.session.commit()
+        return jsonify({"msg": "Horario configurado correctamente"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": str(e)}), 400
 
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
 # Handle/serialize errors like a JSON object
 
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 # generate sitemap with all your endpoints
+
 
 @app.route('/')
 def sitemap():
@@ -114,64 +135,68 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 # any other endpoint will try to serve it like a static file
 
+
 @app.route('/doctor/register', methods=['POST'])
 def register_doctor():
-    body=request.get_json(silent=True)
+    body = request.get_json(silent=True)
     if body is None:
-        return jsonify({'msg': 'Need to send something in body'}),400
+        return jsonify({'msg': 'Need to send something in body'}), 400
     if 'name' not in body:
-        return jsonify({'msg': 'Name is requiered'}),400
+        return jsonify({'msg': 'Name is requiered'}), 400
     if 'email' not in body:
-        return jsonify({'msg': 'Email is required'}),400
+        return jsonify({'msg': 'Email is required'}), 400
     if 'specialties' not in body:
-        return jsonify({'msg': 'This field is required'}),400
+        return jsonify({'msg': 'This field is required'}), 400
     if 'password' not in body:
-        return jsonify({'msg': 'Password is required'}),400
+        return jsonify({'msg': 'Password is required'}), 400
     if 'phone' not in body:
-        return jsonify({'msg': 'Phone is required'}),400
-    
+        return jsonify({'msg': 'Phone is required'}), 400
+
     user = Doctors.query.filter_by(email=body['email']).first()
 
-    if user !=None:
-        return jsonify({'msg': 'this email already have an account.'}),400
-    
+    if user != None:
+        return jsonify({'msg': 'this email already have an account.'}), 400
+
     new_doctor = Doctors()
 
     new_doctor.name = body['name']
-    new_doctor.phone=body['phone']
-    new_doctor.email=body['email']
-    new_doctor.specialties=SpecialtyType[body['specialties']]
+    new_doctor.phone = body['phone']
+    new_doctor.email = body['email']
+    new_doctor.specialties = SpecialtyType[body['specialties']]
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
-    new_doctor.password=pw_hash
-    new_doctor.biography=''
+    new_doctor.password = pw_hash
+    new_doctor.biography = ''
     new_doctor.latitud = 0.0
     new_doctor.longitud = 0.0
-    new_doctor.picture =''
+    new_doctor.picture = ''
     db.session.add(new_doctor)
     db.session.commit()
     return jsonify({'msg': 'User create succesfully.'}), 200
+
 
 @app.route('/doctor/login', methods=['POST'])
 def doctor_login():
     body = request.get_json(silent=True)
     if body is None:
-        return jsonify({'msg': 'All field required.'}),400
+        return jsonify({'msg': 'All field required.'}), 400
     if 'email' not in body:
-        return jsonify({'msg': 'email is required'}),400
+        return jsonify({'msg': 'email is required'}), 400
     if 'password' not in body:
-        return jsonify({'msg': 'password is required'}),400
-    
+        return jsonify({'msg': 'password is required'}), 400
+
     user = Doctors.query.filter_by(email=body['email']).first()
 
     if user is None:
-        return jsonify({'msg': 'Email or password is incorrect'}),400
-    is_hash_pw_correct = bcrypt.check_password_hash(user.password, body['password'])
+        return jsonify({'msg': 'Email or password is incorrect'}), 400
+    is_hash_pw_correct = bcrypt.check_password_hash(
+        user.password, body['password'])
     if is_hash_pw_correct == False:
         return jsonify({'msg': 'Email or password is incorrect'}), 400
-    
-    access_token = create_access_token(identity = user.email)
+
+    access_token = create_access_token(identity=user.email)
     return jsonify({'msg': 'login successfully',
                     'token': access_token})
+
 
 @app.route('/doctor/private', methods=['GET'])
 @jwt_required()
@@ -180,7 +205,7 @@ def private_doctor():
     return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
 # PACIENT
- 
+
 
 @app.route('/pacient/login', methods=['POST'])
 def pacient_login():
@@ -194,7 +219,8 @@ def pacient_login():
     if pacient is None:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
-    pw_check = bcrypt.check_password_hash(pacient.password, request_body['password'])
+    pw_check = bcrypt.check_password_hash(
+        pacient.password, request_body['password'])
     if pw_check == False:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
@@ -258,8 +284,9 @@ def update_pacient_info():
 
     db.session.commit()
     return jsonify({'msg': 'Profile updated successfully', 'data': pacient.serialize()}), 200
- 
+
 # DOCTOR
+
 
 @app.route('/doctor', methods=['GET'])
 def get_all_doctors():
@@ -269,6 +296,7 @@ def get_all_doctors():
     for doctor in doctores:
         new_serialise_doctors.append(doctor.serialize())
     return jsonify({'msg': new_serialise_doctors}), 200
+
 
 @app.route('/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
@@ -309,6 +337,7 @@ def edit_doctor(doctor_id):
     return jsonify({'msg': 'doctor update succesfully',
                     'data': doctor.serialize()}), 200
 
+
 @app.route('/doctors', methods=['GET'])
 def specialidad():
     speciality = request.args.get("specialty")
@@ -323,16 +352,18 @@ def specialidad():
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
 
-#Appointments
+# Appointments
 
 # crear cita
+
+
 @app.route('/appointments', methods=['POST'])
 @jwt_required()
 def create_appointment():
     user_id = get_jwt_identity()
     body = request.get_json(silent=True)
     if not body:
-            return jsonify({"msg": "el campo esta vacio"}), 400
+        return jsonify({"msg": "el campo esta vacio"}), 400
     doctor_id = body.get('doctor_id')
     hour = body.get('hour')
     dateTime = body.get('dateTime')
@@ -355,63 +386,73 @@ def create_appointment():
     db.session.commit()
     return jsonify({"msg": "Cita creada exitosamente", "id": new_appointment.id, "Name": pacients.name}), 201
 
-#listar citas pacientes 
+# listar citas pacientes
+
+
 @app.route('/appointments', methods=['GET'])
 @jwt_required()
 def get_appointments():
-    user_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(pacient_id=user_id).all()
-    return jsonify([appointment.serialize() for appointment in appointments]),200
+    user_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(pacient_id=user_id).all()
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
-#listar cita especifica paciente
-@app.route('/appointments/<int:id>', methods=['GET'])     
+# listar cita especifica paciente
+
+
+@app.route('/appointments/<int:id>', methods=['GET'])
 @jwt_required()
-def get_appointment(id):            
-    user_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
-    
+def get_appointment(id):
+    user_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(
+        id=id, pacient_id=user_id).first()
+
     if not appointments:
-          return jsonify({"msg":"Cita no encontrada"}),404
-    return jsonify([appointment.serialize() for appointment in appointments]),200
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
 # listar citas doctor
+
+
 @app.route('/appointments/doctors', methods=['GET'])
 @jwt_required()
 def get_doctor_appointments():
-        doctor_id=get_jwt_identity()
-        appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
-        if not appointments:
-            return jsonify({"msg":"No hay citas para este doctor"}),404
-        return jsonify([appointment.serialize() for appointment in appointments]),200
+    doctor_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+    if not appointments:
+        return jsonify({"msg": "No hay citas para este doctor"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
-#listar cita especifica doctor
-@app.route('/appointments/doctors/<int:id>', methods=['GET'])     
+# listar cita especifica doctor
+
+
+@app.route('/appointments/doctors/<int:id>', methods=['GET'])
 @jwt_required()
 def get_doctor_appointment(id):
-    doctor_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
-    
-    if not appointments:
-          return jsonify({"msg":"Cita no encontrada"}),404
-    return jsonify([appointment.serialize() for appointment in appointments]),200
+    doctor_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(
+        id=id, doctor_id=doctor_id).first()
 
-#cancelar cita paciente 
+    if not appointments:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
+
+# cancelar cita paciente
+
+
 @app.route('/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
-    user_id=get_jwt_identity()  
-    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    user_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(
+        id=id, pacient_id=user_id).first()
     if not appointments:
-        return jsonify({"msg":"Cita no encontrada"}),404
-    appointments.status="cancelled"
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    appointments.status = "cancelled"
     db.session.commit()
-    return jsonify({"msg":"Cita cancelada exitosamente"}),200
- 
+    return jsonify({"msg": "Cita cancelada exitosamente"}), 200
+
+
 # this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-
-    
-
-
