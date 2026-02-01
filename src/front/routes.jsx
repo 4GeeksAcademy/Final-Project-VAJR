@@ -11,6 +11,8 @@ import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
 import { Doctors } from "./pages/Doctors";
 import { DoctorPage } from "./pages/DoctorPage";
+import { PrivateDoctorRoute } from "./pages/PrivateDoctorRoute";
+import { DoctorDashboard } from "./pages/DoctorDashboard";
 
 
 export const router = createBrowserRouter(
@@ -31,6 +33,14 @@ export const router = createBrowserRouter(
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/doctorpage/:doctorId" element={<DoctorPage />} />
 
+        <Route
+        path="/doctor/dashboard"
+        element={
+          <PrivateDoctorRoute>
+            <DoctorDashboard />
+          </PrivateDoctorRoute>
+        }
+        />
 
     </Route>
   )

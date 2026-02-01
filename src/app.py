@@ -370,7 +370,7 @@ def edit_doctor(doctor_id):
         doctor.specialties = SpecialtyType[body['specialties']]
     if 'biography' in body:
         doctor.biography = body['biography']
-    if "address" in body: 
+    if "address" in body:
         doctor.address = body['address']
     if "latitud" in body:
         doctor.latitud = body['latitud']
@@ -398,6 +398,22 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
+
+
+# Doctor-only endpoint
+# Returns appointments for the authenticated doctor
+
+@app.route('/doctor/appointments', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+    doctor_email = get_jwt_identity()
+
+    doctor = Doctors.query.filter_by(email=doctor_email).first()
+    if not doctor:
+        return jsonify({'msg': 'doctor not found'}), 404
+
+    appointments = Appointments.query.filter_by(doctors_id=doctor.id).all()
+    return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
 # this only runs if `$ python src/main.py` is executed
