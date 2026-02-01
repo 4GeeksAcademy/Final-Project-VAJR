@@ -14,7 +14,7 @@ export const initialStore = () => {
       }
     ],
 
-    doctors: []
+    appointments: []
 
   }
 
@@ -23,10 +23,10 @@ export const initialStore = () => {
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
 
-    case 'set_doctor':
+    case 'set_appointments':
       return {
         ...store,
-        doctors: action.payload.doctor
+        appointments: action.payload
       };
 
     default:
