@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import useGlobalReducer from "../hooks/useGlobalReducer"
 import { Biography } from "./Biography"
 import { DocttoCalendar } from "./DoctorCalendar"
@@ -86,10 +86,14 @@ export const DoctorPage = () => {
                                 <h4 className="fs-3"> Dr. {doctor.name} </h4>
                                 <p className=" mt-1" style={{ color: "#468BE6" }}>{doctor.specialties}</p>
                                 <p className="fw-lighter"> {doctor.address} </p>
+
+                                {localStorage.getItem("doctorToken") && (
+                                    <Link to="doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
+                                )}
                             </div>
                         </div>
                         <div className="pt-4 fw-light">
-                            <p >< Biography text={doctor.biography} /> </p>
+                           < Biography text={doctor.biography} /> 
                         </div>
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">
@@ -107,7 +111,7 @@ export const DoctorPage = () => {
                             <span className={`fw-semibold pb-2 ${activeTab === "insurances" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
                                 onClick={() => handleTabClick("insurances", insurancesRef)}
                                 style={{ cursor: "pointer" }}>
-                                Insurances  
+                                Insurances
                             </span>
                             <span className={`fw-semibold pb-2 ${activeTab === "location" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
                                 onClick={() => handleTabClick("location", locationRef)}
@@ -115,8 +119,8 @@ export const DoctorPage = () => {
                                 Location
                             </span>
                             <span className={`fw-semibold pb-2 ${activeTab === "faqs" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
-                                onClick={()=> handleTabClick("faqs", faqsRef)}
-                           style={{cursor:"pointer"}} >Faqs</span>
+                                onClick={() => handleTabClick("faqs", faqsRef)}
+                                style={{ cursor: "pointer" }} >Faqs</span>
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
@@ -244,7 +248,7 @@ export const DoctorPage = () => {
                             <p>150+ more in-network plans</p>
                             <button type="button" className="modal-insurance ms-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop"> View all</button>
                         </div>
-                        <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                             <div className="modal-dialog">
                                 <div className="modal-content">
                                     <div className="modal-header">
@@ -299,7 +303,7 @@ export const DoctorPage = () => {
                     </div>
                 </div>
                 <div className="mt-5 doctor-faqs" style={{ width: "80%" }}
-                ref={faqsRef} >
+                    ref={faqsRef} >
                     <h5> Frequently asked questions </h5>
                     <p className="mt-3 fw-medium"> How soon can I make an appointment with Dr. Burton Waisbren? </p>
                     <p className="faqs-p mt-2">Generally, Dr. {doctor.name} has appointments available on Zocdoc within 1 week. You can see Dr.

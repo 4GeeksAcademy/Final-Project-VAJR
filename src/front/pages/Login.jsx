@@ -23,11 +23,14 @@ export const Login = () => {
 
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pacient/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json"
+        headers: {
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           email: email,
-          password: password})});
+          password: password
+        })
+      });
 
       const text = await response.text();
       console.log("Respuesta:", text);
@@ -43,7 +46,6 @@ export const Login = () => {
         localStorage.setItem("token", data.token);
         dispatch({ type: "login_pacient", payload: data.token, pacient: data.pacient });
         console.log("login exitoso");
-        navigate("/appointments");
       } else {
         alert(data.msg || "Error al iniciar sesión");
       }
@@ -84,13 +86,13 @@ export const Login = () => {
                 <div className="d-flex justify-content-center pb-2">
                   <button type="button" className="btn btn-link">
                     Forgot Password
-               </button>
+                  </button>
+                </div>
+              </form>
             </div>
-            </form>
           </div>
-       </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
