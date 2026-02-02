@@ -1,46 +1,115 @@
 import { Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Navbar = () => {
+	const { store } = useGlobalReducer();
 
 	return (
-		<nav className="navbar bg-none" data-bs-theme="light" style={{backgroundColor: "#E9F5FF"}}>
+		<nav
+			className="navbar bg-none"
+			data-bs-theme="light"
+			style={{ backgroundColor: "#E9F5FF" }}
+		>
 			<div className="container">
 				<Link to="/" className="text-decoration-none">
-					<i className="fa-solid fa-house-medical" style={{color: "#1a5799", fontSize: "30px"}}></i>
+					<i
+						className="fa-solid fa-house-medical"
+						style={{ color: "#1a5799", fontSize: "30px" }}
+					></i>
 					<span className="navbar-brand mb-0 h1 fs-3 ms-2">HiDoc</span>
 				</Link>
-				<button type="button" className="btn nav-item dropdown ms-auto me-2">
-					<a className="nav-link dropdown-toggle fs-5" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-						Log in
-					</a>
-					<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-						<p className="ms-4 mb-0"><b>Doctors</b></p>
-						<li>
-							<Link className="dropdown-item ms-2">Log in</Link>
-						</li>
-						<li><hr className="dropdown-divider"/></li>
-						<p className="ms-4 mb-0"><b>Pacients</b></p>
-						<li>
-							<Link className="dropdown-item ms-2">Log in</Link>
-						</li>
-					</ul>
-				</button> 
-				<button type="button" className="btn nav-item dropdown" style={{backgroundColor: "#1A5799", color: "#E9F5FF"}}>
-					<a className="nav-link dropdown-toggle fs-5" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-						Sign up
-					</a>
-					<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-						<p className="ms-4 mb-0"><b>Doctors</b></p>
-						<li>
-							<Link className="dropdown-item ms-2">Sign up</Link>
-						</li>
-						<li><hr className="dropdown-divider"/></li>
-						<p className="ms-4 mb-0"><b>Pacients</b></p>
-						<li>
-							<Link className="dropdown-item ms-2">Sign up</Link>
-						</li>
-					</ul>
-				</button>
+
+				{/* Si el usuario NO está logueado */}
+				{!store.token ? (
+					<>
+						<button
+							type="button"
+							className="btn nav-item dropdown ms-auto me-2"
+						>
+							<a
+								className="nav-link dropdown-toggle fs-5"
+								href="#"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false"
+							>
+								Log in
+							</a>
+							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
+								<p className="ms-4 mb-0">
+									<b>Doctors</b>
+								</p>
+								<li>
+									<Link className="dropdown-item ms-2" to="/doctor/login">
+										Log in
+									</Link>
+								</li>
+								<li>
+									<hr className="dropdown-divider" />
+								</li>
+								<p className="ms-4 mb-0">
+									<b>Pacients</b>
+								</p>
+								<li>
+									<Link className="dropdown-item ms-2" to="/login">
+										Log in
+									</Link>
+								</li>
+							</ul>
+						</button>
+
+						<button
+							type="button"
+							className="btn nav-item dropdown"
+							style={{ backgroundColor: "#1A5799", color: "#E9F5FF" }}
+						>
+							<a
+								className="nav-link dropdown-toggle fs-5"
+								href="#"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false"
+							>
+								Sign up
+							</a>
+							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
+								<p className="ms-4 mb-0">
+									<b>Doctors</b>
+								</p>
+								<li>
+									<Link className="dropdown-item ms-2" to="/doctor/register">
+										Sign up
+									</Link>
+								</li>
+								<li>
+									<hr className="dropdown-divider" />
+								</li>
+								<p className="ms-4 mb-0">
+									<b>Pacients</b>
+								</p>
+								<li>
+									<Link className="dropdown-item ms-2" to="/register">
+										Sign up
+									</Link>
+								</li>
+							</ul>
+						</button>
+					</>
+				) : (
+					// Si está logueado
+					<div className="ms-auto">
+						<span className="me-3">Hello, {store.doctor?.name || "User"}</span>
+						<button
+							className="btn btn-outline-danger"
+							onClick={() => {
+								localStorage.removeItem("token");
+								window.location.reload();
+							}}
+						>
+							Logout
+						</button>
+					</div>
+				)}
 			</div>
 		</nav>
 	);

@@ -11,26 +11,31 @@ export const initialStore = () => {
         id: 2,
         title: "Do my homework",
         background: null,
-      }
+      },
     ],
 
-    appointments: []
-
-  }
-
-}
+    appointments: [],
+    doctor: null,
+    token: null,
+  };
+};
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-
-    case 'set_appointments':
+    case "set_appointments":
       return {
         ...store,
-        appointments: action.payload
+        appointments: action.payload,
+      };
+
+    case "login_doctor":
+      return {
+        ...store,
+        doctor: action.payload.doctor,
+        token: action.payload.token,
       };
 
     default:
-      throw Error('Unknown action.');
-  };
-
+      throw Error("Unknown action.");
+  }
 }
