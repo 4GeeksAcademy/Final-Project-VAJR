@@ -1,9 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Navbar = () => {
-	const { store } = useGlobalReducer();
 
+	const { store, dispatch } = useGlobalReducer();
+	const navigate = useNavigate()
+
+	const handleLogout = () => {
+		localStorage.removeItem('token')
+		localStorage.removeItem('doctor')
+
+		dispatch({ type: 'logout' })
+		navigate('doctor/login')
+	}
+	console.log("store: ", store)
+	console.log('doctor:', store.doctor)
 	return (
 		<nav
 			className="navbar bg-none"
@@ -19,7 +30,6 @@ export const Navbar = () => {
 					<span className="navbar-brand mb-0 h1 fs-3 ms-2">HiDoc</span>
 				</Link>
 
-				{/* Si el usuario NO está logueado */}
 				{!store.token ? (
 					<>
 						<button
@@ -96,15 +106,12 @@ export const Navbar = () => {
 						</button>
 					</>
 				) : (
-					// Si está logueado
+
 					<div className="ms-auto">
-						<span className="me-3">Hello, {store.doctor?.name || "User"}</span>
+						<span className="me-3">Hello Dr, {store.doctor?.name}</span>
 						<button
 							className="btn btn-outline-danger"
-							onClick={() => {
-								localStorage.removeItem("token");
-								window.location.reload();
-							}}
+							onClick={handleLogout}
 						>
 							Logout
 						</button>

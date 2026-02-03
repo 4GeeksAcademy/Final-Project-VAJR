@@ -1,22 +1,10 @@
 export const initialStore = () => {
   return {
     message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      },
-    ],
 
     appointments: [],
-    doctor: null,
-    token: null,
+    doctor: JSON.parse(localStorage.getItem("doctor")) || null,
+    token: localStorage.getItem("token") || null,
   };
 };
 
@@ -33,6 +21,14 @@ export default function storeReducer(store, action = {}) {
         ...store,
         doctor: action.payload.doctor,
         token: action.payload.token,
+      };
+
+    case "logout":
+      return {
+        ...store,
+        doctor: null,
+        token: null,
+        appointments: [],
       };
 
     default:

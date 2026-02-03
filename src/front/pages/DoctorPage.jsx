@@ -14,7 +14,6 @@ export const DoctorPage = () => {
     const { store } = useGlobalReducer()
 
     const [doctor, setDoctor] = useState({})
-    const [filtraDoctorRelate, setFiltraDoctorRelate] = useState([])
 
     const aboutRef = useRef(null)
     const locationRef = useRef(null)
@@ -87,7 +86,7 @@ export const DoctorPage = () => {
                                 <p className=" mt-1" style={{ color: "#468BE6" }}>{doctor.specialties}</p>
                                 <p className="fw-lighter"> {doctor.address} </p>
 
-                                {localStorage.getItem("doctorToken") && (
+                                {localStorage.getItem("token") && (
                                     <Link to="doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
                                 )}
                             </div>
