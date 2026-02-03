@@ -8,6 +8,7 @@ export const initialStore = () => {
     appointments: [],
     token: null 
   }
+
 }
 
 export default function storeReducer(store, action = {}) {

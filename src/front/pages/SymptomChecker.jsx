@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export const SymptomChecker = () => {
-
+    
     const token = localStorage.getItem("token")
     const navigate = useNavigate()
     const resultsRef = useRef(null)
