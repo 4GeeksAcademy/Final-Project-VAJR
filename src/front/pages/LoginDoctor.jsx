@@ -16,44 +16,45 @@ export const LoginDoctor = () => {
     setPassword(e.target.value);
   }
 
- const handleLoginDoctor = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/doctor/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      
-      localStorage.setItem("doctorToken", data.token);
-
-      dispatch({
-        type: "login_doctor",
-        payload: {
-          doctor: data.doctor,
-          token: data.token
-        }
+  const handleLoginDoctor = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/doctor/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
       });
 
-      console.log("login exitoso");
-      navigate("/doctor/dashboard");
-    } else {
-      alert(data.msg || "Error al iniciar sesión");
+      const data = await response.json();
+      console.log(data)
+
+      if (response.ok) {
+        localStorage.setItem("doctor", JSON.stringify(data.doctor))
+        localStorage.setItem("token", data.token);
+
+        dispatch({
+          type: "login_doctor",
+          payload: {
+            doctor: data.doctor,
+            token: data.token
+          }
+        });
+
+        console.log("login exitoso");
+        navigate("/doctor/dashboard");
+      } else {
+        alert(data.msg || "Error al iniciar sesión");
+      }
+    } catch (error) {
+      console.error("Error en login:", error);
+      alert("Error de conexión con el servidor");
     }
-  } catch (error) {
-    console.error("Error en login:", error);
-    alert("Error de conexión con el servidor");
-  }
-};
+  };
 
   return (
     <div className="vip-background">

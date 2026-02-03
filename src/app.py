@@ -190,7 +190,8 @@ def doctor_login():
 
     access_token = create_access_token(identity=user.email)
     return jsonify({'msg': 'login successfully',
-                    'token': access_token})
+                    'token': access_token,
+                    'doctor': user.serialize()}), 200
 
 
 @app.route('/doctor/private', methods=['GET'])
