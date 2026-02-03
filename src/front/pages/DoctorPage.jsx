@@ -57,6 +57,10 @@ export const DoctorPage = () => {
         return () => window.removeEventListener("scroll", handleScroll)
     }, [])
 
+    if(!doctor){
+        return <p className="text-center mt-5 fs-2"> Don't have this Doctor id... </p>
+    }
+
 
     return (
         <>
