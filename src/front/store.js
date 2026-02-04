@@ -1,9 +1,21 @@
 export const initialStore = () => {
+  const getDoctor = () => {
+    try {
+      const doctorString = localStorage.getItem("doctor");
+      if (doctorString !== undefined || doctorString !== null) {
+        return JSON.parse(doctorString);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error parsing  doctor from localStorage", error);
+      return null;
+    }
+  };
+
   return {
     message: null,
-
     appointments: [],
-    doctor: JSON.parse(localStorage.getItem("doctor")) || null,
+    doctor: getDoctor(),
     token: localStorage.getItem("token") || null,
   };
 };

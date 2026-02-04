@@ -417,6 +417,26 @@ def get_doctor_appointments():
     return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
+@app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
+@jwt_required()
+def update_appointment_status(apt_id):
+    doctor_id = apt_id
+    body = request.get_json()
+
+    appointment = Appointments.query.filter_by(
+        id=apt_id,
+        doctor_id=doctor_id
+    ).first()
+
+    if not appointment:
+        return jsonify({'msg': 'Appoinment not found'}), 400
+
+    appointment.status = body.get('status')
+    db.session.commit()
+
+    return jsonify({'msg': appointment.serialize()}), 200
+
+
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))

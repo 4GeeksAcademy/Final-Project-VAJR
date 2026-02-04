@@ -34,12 +34,39 @@ export const DoctorDashboard = () => {
     fetchAppointments()
   }, [])
 
+  const updateAppointmentStatus= async (id, status) => {
+    try{
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments/${id}`, {
+        method: 'PUT',
+        headers:{
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({status})
+      })
+
+      const updateAppointment = await res.json()
+
+      dispatch({
+        type:"set-appointments",
+        payload: store.appointments.map(apt =>
+          apt.id === updateAppointment.id ? updateAppointment : apt
+        )
+      })
+
+    } catch(error){
+        console.error('Error updating appointment ', error)
+    }
+  }
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Doctor Dashboard</h2>
 
       <DashboardStats appointments={store.appointments} />
-      <AppointmentsTable appointments={store.appointments} />
+      <AppointmentsTable appointments={store.appointments}
+      onUpdateStatus = {updateAppointmentStatus}
+      />
     </div>
   )
 }
