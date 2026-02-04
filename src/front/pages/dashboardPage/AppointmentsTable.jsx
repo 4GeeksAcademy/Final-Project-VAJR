@@ -1,6 +1,6 @@
 import { AppointmentRow } from "./AppointmentRow"
 
-export const AppointmentsTable= ({ appointments }) => {
+export const AppointmentsTable= ({ appointments , onUpdateStatus}) => {
 
     return(
         <div className="card">
@@ -18,7 +18,9 @@ export const AppointmentsTable= ({ appointments }) => {
                     </thead>
                     <tbody>
                         { appointments?.map(apt =>(
-                            <AppointmentRow key={apt.id} apt={apt} />
+                            <AppointmentRow key={apt.id} apt={apt}
+                             onUpdateStatus={onUpdateStatus}
+                            />
                         )) }
                     </tbody>
 

@@ -1,6 +1,5 @@
 
-
-export const AppointmentRow = ({ apt }) =>{
+export const AppointmentRow = ({ apt,  onUpdateStatus }) =>{
     return(
        <tr>
         <td> {apt.appointment_date} </td>
@@ -23,8 +22,12 @@ export const AppointmentRow = ({ apt }) =>{
             {
                 apt.status === "Pending" && (
                     <>
-                        <button className="btn btn-sm btn-success me-2"> Confirm </button>
-                        <button className="btn btn-sm btn-danger">Cancel</button>
+                        <button className="btn btn-sm btn-success me-2"
+                        onClick={() => onUpdateStatus(apt.id, "Confirmed")}
+                        > Confirm </button>
+                        <button className="btn btn-sm btn-danger"
+                        onClick={() => onUpdateStatus(apt.id, "Cancelled")}
+                        >Cancel</button>
                     </>
                 )
             }
