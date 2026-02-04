@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory, Bluepri
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType,StatusAppointment
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -388,8 +388,65 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
+    
+@app.route('/hooks/cal-booking', methods=['POST'])
+def cal_webhook_receiver():
+    # 1. Capturar los datos crudos
+    data = request.get_json(silent=True)
+    
+    print("\n--- NUEVA NOTIFICACIÓN DE CAL.COM ---")
+    if not data:
+        print("❌ Error: Payload vacío")
+        return jsonify({"msg": "Payload vacío"}), 400
 
+    payload = data.get('payload', {})
+    
+    # Extraer emails para identificación
+    doctor_email = payload.get('organizer', {}).get('email')
+    attendees = payload.get('attendees', [{}])
+    pacient_email = attendees[0].get('email') if attendees else None
 
+    print(f" Evento: {data.get('triggerEvent')}")
+    print(f" Doctor (Cal.com email): {doctor_email}")
+    print(f"Paciente (Cal.com email): {pacient_email}")
+
+    # Buscar en tu base de datos
+    doctor = Doctors.query.filter_by(email=doctor_email).first()
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
+
+    # Validaciones de existencia
+    if not doctor:
+        print(f" Alerta: El doctor {doctor_email} no existe en nuestra DB.")
+        return jsonify({"msg": "Doctor no encontrado"}), 404
+
+    if not pacient:
+        print(f"ℹInfo: El email {pacient_email} no pertenece a un paciente registrado. Saltando registro.")
+        return jsonify({"msg": "Paciente no registrado, cita ignorada"}), 200
+
+    # 4. Procesar la cita
+    try:
+        # Cal envía: "2026-02-04T18:00:00Z"
+        start_time_str = payload.get('startTime').replace('Z', '')
+        dt_object = datetime.fromisoformat(start_time_str)
+
+        new_appointment = Appointments(
+            pacient_id=pacient.id, 
+            doctor_id=doctor.id,
+            dateTime=dt_object,
+            reason=f"Cal.com: {payload.get('title')}",
+            status= StatusAppointment.confirmed
+        )
+
+        db.session.add(new_appointment)
+        db.session.commit()
+        
+        print(f" ÉXITO: Cita registrada para el paciente {pacient.name} con el Dr. {doctor.name}")
+        return jsonify({"msg": "Cita sincronizada exitosamente"}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ ERROR al guardar en DB: {str(e)}")
+        return jsonify({"msg": "Error interno al procesar la cita"}), 500
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
