@@ -1,11 +1,10 @@
-import React, { useEffect } from "react"; // 1. Añadimos useEffect
+import React, { useEffect } from "react"; 
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { MapView } from "../components/MapView.jsx";
 import { DoctorSearchCard } from "../components/DoctorSearchCard";
 
 export const DoctorsList = () => {
     const { store, dispatch } = useGlobalReducer();
-    // En src/front/pages/DoctorsList.jsx
 useEffect(() => {
     const fetchDoctors = async () => {
         try {
@@ -31,7 +30,7 @@ useEffect(() => {
             <div className="row g-0">
                 <div className="col-lg-7 col-xl-8 vh-100 overflow-auto p-4 bg-light">
                     <div className="mb-4">
-                        <h2 className="fw-bold" style={{ color: "#092F64" }}>Doctors in Venezuela</h2>
+                        <h2 className="fw-bold" style={{ color: "#092F64" }}>All </h2>
                         <p className="text-muted">Find and book appointments with top-rated specialists.</p>
                     </div>
                     <div className="d-flex flex-column gap-3">
