@@ -34,14 +34,14 @@ export const Navbar = () => {
 								Log in
 							</a>
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-								<p className="ms-4 mb-0"><b>Doctors</b></p>
+								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
-									<Link className="dropdown-item ms-2">Log in</Link>
+									<Link className="dropdown-item dropdown-button">Log in</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
-								<p className="ms-4 mb-0"><b>Pacients</b></p>
+								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
-									<Link className="dropdown-item ms-2">Log in</Link>
+									<Link className="dropdown-item dropdown-button">Log in</Link>
 								</li>
 							</ul>
 						</button>
@@ -50,14 +50,14 @@ export const Navbar = () => {
 								Sign up
 							</a>
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-								<p className="ms-4 mb-0"><b>Doctors</b></p>
+								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
-									<Link className="dropdown-item ms-2">Sign up</Link>
+									<Link className="dropdown-item dropdown-button">Sign up</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
-								<p className="ms-4 mb-0"><b>Pacients</b></p>
+								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
-									<Link className="dropdown-item ms-2">Sign up</Link>
+									<Link className="dropdown-item dropdown-button">Sign up</Link>
 								</li>
 							</ul>
 						</button>
