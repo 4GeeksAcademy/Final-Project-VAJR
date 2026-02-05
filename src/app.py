@@ -385,7 +385,7 @@ def get_appointments_p(id):
 #listar cita
 @app.route('/api/appointments', methods=['GET'])     
 @jwt_required()
-def get_appointments():            
+def get_appointments_p():            
     pacient_email=get_jwt_identity()
    
     pacient=Pacient.query.filter_by(email=pacient_email).first()
@@ -405,7 +405,7 @@ def get_appointments():
 # listar citas doctor
 @app.route('/appointments/doctor', methods=['GET'])
 @jwt_required()
-def get_doctor_appointments():
+def get_doctor_appointments ():
         doctor_id=get_jwt_identity()
         appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
         if not appointments:
@@ -514,6 +514,17 @@ def cal_webhook_receiver():
         db.session.rollback()
         print(f"ERROR al guardar en DB: {str(e)}")
         return jsonify({"msg": "Error interno al procesar la cita"}), 500
+    
+@app.route('/api/appointments/<int:id>', methods=['DELETE'])
+@jwt_required()
+def cancel_appointment(id):
+    user_id=get_jwt_identity()  
+    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    if not appointments:
+        return jsonify({"msg":"Cita no encontrada"}),404
+    appointments.status="cancelled"
+    db.session.commit()
+    return jsonify({"msg":"Cita cancelada exitosamente"}),200
 
 # this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
