@@ -17,8 +17,7 @@ export const DoctorSearchCard = ({ doctor }) => {
             });
         })();
     }, []);
-
-    // Helper traducido al inglés
+    
     const getLocationString = (loc) => {
         if (!loc) return "Location not available";
         return typeof loc === 'object' ? "Caracas, Venezuela" : loc;
