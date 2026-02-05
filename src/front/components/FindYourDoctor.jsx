@@ -18,7 +18,7 @@ export const FindYourDoctor = () => {
 						<div className="d-flex ">
 							<Link to="/symptom-checker">
 								<button id="FindYourDoctor-button" type="button" className="btn btn-outline-info fs-5 shadow mt-3" style={{ color: "#1A5799", borderColor: "#1A5799" }}>
-									<i className="fa-solid fa-comment-medical" style={{ color: "#1A5799" }}></i> Find the best doctor
+									<i className="fa-solid fa-comment-medical" style={{ color: "#E9F5FF" }}></i> Find the best doctor
 								</button>
 							</Link>
 						</div>
