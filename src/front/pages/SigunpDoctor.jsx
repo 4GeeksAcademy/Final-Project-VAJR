@@ -15,8 +15,9 @@ export const SignupDoctor = () => {
         biography: "",
         picture: "",
         phone: "",
-        latitud: 0,
-        longitud: 0
+        address:" ",
+        latitud: "0",
+        longitud: "0"
 
     })
 
@@ -144,18 +145,13 @@ export const SignupDoctor = () => {
 
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="latitud" className="form-label">
-                                    <strong>Latitud:</strong>
+                                <label htmlFor="address" className="form-label">
+                                    <strong>Address:</strong>
                                 </label>
-                                <input type="text" className="form-control" id="latitud" name="latitud" onChange={hadleChange} required />
+                                <input type="text" className="form-control" id="address" name="address" onChange={hadleChange} required />
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="longitud" className="form-label">
-                                    <strong>Longitud:</strong>
-                                </label>
-                                <input type="text" className="form-control" id="longitud" name="longitud" onChange={hadleChange} required />
-                            </div>
-                             <div className="mb-3">
+                            
+                               <div>
                                 <label htmlFor="name" className="form-label">
                                     <strong>Phone:</strong>
                                 </label>
