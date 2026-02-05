@@ -22,7 +22,7 @@ export const DoctorSearchCard = ({ doctor }) => {
             <div className="row g-0 align-items-center">
                 <div className="col-md-8 p-4 d-flex align-items-center bg-white">
                     <img
-                        src={doctor.picture || "https://via.placeholder.com/150"}
+                        src={doctor.picture}
                         className="rounded-circle me-4 shadow-sm"
                         style={{ width: "100px", height: "100px", objectFit: "cover", border: "3px solid #f0f7ff" }}
                         alt={doctor.name}
