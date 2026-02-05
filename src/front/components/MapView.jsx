@@ -17,7 +17,6 @@ L.Icon.Default.mergeOptions({
 export const MapView = ({ doctors }) => {
     const caracasCenter = [10.4806, -66.9036];
 
-    // 2. Inicializamos Cal.com para que los botones del Popup funcionen
     useEffect(() => {
         (async function () {
             const cal = await getCalApi();
@@ -52,38 +51,32 @@ export const MapView = ({ doctors }) => {
                         return (
                             <Marker key={doc.id} position={[lat, lng]}>
                                 <Popup className="custom-popup">
-                                    {/* 3. Diseño Premium del Popup */}
                                     <div className="d-flex flex-column align-items-center text-center p-2" style={{ minWidth: "150px" }}>
-                                        
-                                        {/* Foto del Doctor */}
-                                        <img 
-                                            src={doc.picture || "https://via.placeholder.com/150"} 
-                                            alt={doc.name} 
-                                            style={{ 
-                                                width: "60px", 
-                                                height: "60px", 
-                                                objectFit: "cover", 
-                                                borderRadius: "50%", 
+                                        <img
+                                            src={doc.picture || "https://via.placeholder.com/150"}
+                                            alt={doc.name}
+                                            style={{
+                                                width: "60px",
+                                                height: "60px",
+                                                objectFit: "cover",
+                                                borderRadius: "50%",
                                                 border: "2px solid #092F64",
                                                 marginBottom: "8px"
                                             }}
                                         />
-                                        
-                                        {/* Nombre y Especialidad */}
+
                                         <h6 className="mb-1 fw-bold" style={{ color: "#092F64", fontSize: "14px" }}>
                                             Dr. {doc.name}
                                         </h6>
                                         <span className="badge bg-light text-primary border mb-2">
                                             {doc.specialties || "General"}
                                         </span>
-
-                                        {/* Botón de Acción */}
                                         <button
-                                            data-cal-link={doc.cal_link} // Esto activa el modal automáticamente
+                                            data-cal-link={doc.cal_link}
                                             className="btn btn-sm btn-primary w-100 fw-bold"
-                                            style={{ backgroundColor: "#092F64", fontSize: "12px" }}
+                                            style={{ backgroundColor: "#468be6", fontSize: "12px" }}
                                         >
-                                            Agendar Cita
+                                            Book Appointment
                                         </button>
                                     </div>
                                 </Popup>

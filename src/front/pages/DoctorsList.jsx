@@ -2,13 +2,11 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { MapView } from "../components/MapView.jsx";
 import { DoctorSearchCard } from "../components/DoctorSearchCard";
-
-// 1. IMPORTAMOS EL CSS AQUÍ
-import "./DoctorsList.css"; 
+import "./DoctorsList.css";
 
 export const DoctorsList = () => {
     const { store, dispatch } = useGlobalReducer();
-    
+
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
 
@@ -16,12 +14,12 @@ export const DoctorsList = () => {
         const fetchDoctors = async () => {
             try {
                 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                const response = await fetch(`${backendUrl}/doctor`); 
+                const response = await fetch(`${backendUrl}/doctor`);
                 if (response.ok) {
                     const data = await response.json();
-                    dispatch({ 
-                        type: "set_doctors", 
-                        payload: Array.isArray(data.msg) ? data.msg : [] 
+                    dispatch({
+                        type: "set_doctors",
+                        payload: Array.isArray(data.msg) ? data.msg : []
                     });
                 }
             } catch (error) {
@@ -46,7 +44,7 @@ export const DoctorsList = () => {
                     <div className="col-md-4 mb-3 mb-md-0">
                         <h4 className="search-title">Doctors Network</h4>
                         <small className="search-subtitle">
-                            {store.doctors.length === 0 ? "Conectando..." : `${filteredDoctors.length} doctores disponibles`}
+                            {store.doctors.length === 0 ? "Conectando..." : `${filteredDoctors.length} Available Doctors`}
                         </small>
                     </div>
                     <div className="col-md-8">
@@ -56,29 +54,29 @@ export const DoctorsList = () => {
                                     <span className="input-group-text border-0 bg-transparent ps-2">
                                         <i className="fa-solid fa-magnifying-glass search-icon"></i>
                                     </span>
-                                    <input 
-                                        type="text" 
-                                        className="form-control form-control-clean" 
-                                        placeholder="Buscar por nombre..."
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-clean"
+                                        placeholder="Search by doctor name..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
                             </div>
-            
+
                             <div className="col-md-5">
                                 <div className="input-group modern-search-bar">
                                     <span className="input-group-text border-0 bg-transparent ps-2">
                                         <i className="fa-solid fa-stethoscope search-icon"></i>
                                     </span>
-                                    <select 
-                                        className="form-select form-select-clean" 
+                                    <select
+                                        className="form-select form-select-clean"
                                         value={selectedSpecialty}
                                         onChange={(e) => setSelectedSpecialty(e.target.value)}
                                     >
                                         {uniqueSpecialties.map((spec, index) => (
                                             <option key={index} value={spec}>
-                                                {spec === "Todas" ? "Todas las especialidades" : spec}
+                                                {spec === "Todas" ? "All Specialties" : spec}
                                             </option>
                                         ))}
                                     </select>
@@ -91,7 +89,7 @@ export const DoctorsList = () => {
             <div className="row g-0 doctors-content-area">
                 <div className="col-lg-7 col-xl-8 doctors-list-column p-4">
                     <div className="mx-auto" style={{ maxWidth: "900px" }}>
-                        
+
                         {store.doctors && store.doctors.length === 0 ? (
                             <div className="text-center py-5 mt-5">
                                 <div className="spinner-border loading-spinner" role="status"></div>
@@ -111,9 +109,9 @@ export const DoctorsList = () => {
                                 </div>
                                 <h4 className="fw-bold text-dark">No hay resultados</h4>
                                 <p className="text-muted">Intenta con otro nombre o especialidad.</p>
-                                <button 
+                                <button
                                     className="btn-pill-primary"
-                                    onClick={() => {setSearchTerm(""); setSelectedSpecialty("Todas")}}
+                                    onClick={() => { setSearchTerm(""); setSelectedSpecialty("Todas") }}
                                 >
                                     Ver todos
                                 </button>
