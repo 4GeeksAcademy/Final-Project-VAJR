@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , Link} from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const LoginDoctor = () => {
@@ -76,10 +76,12 @@ export const LoginDoctor = () => {
                     Sign in
                   </button>
               </div>
-              <div className="d-flex justify-content-center pb-2">
-                  <button type="button" className="btn btn-link">
-                    Forgot Password
-                  </button>
+               <div className="d-flex justify-content-center pb-2">
+                  <button type="button" className="btn btn-link ">
+                      <Link to="/api/doctor/forgotpassword">
+                                  Forgot Password
+                      </Link>
+                   </button>
               </div>
                  </form>
             </div>

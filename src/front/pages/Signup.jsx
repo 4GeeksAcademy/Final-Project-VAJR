@@ -29,7 +29,7 @@ export const Signup = () => {
       if (response.ok) {
         localStorage.setItem("token", data.token);
         console.log("login exitoso")
-        navigate("/appointments");
+        navigate("/api/pacient/login");
       } else {
         alert(data.msg || "Error al iniciar sesion");
       }
