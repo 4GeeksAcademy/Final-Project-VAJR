@@ -1,0 +1,129 @@
+:root {
+    --brand-dark: #092F64;
+    --brand-primary: #468BE6; 
+    --brand-accent: #93BFEF;  
+    --bg-soft: #F4F7FE;       
+    --text-muted: #6c757d;
+}
+
+.doctors-layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-soft);
+    overflow: hidden; 
+}
+
+.search-header {
+    background-color: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(9, 47, 100, 0.03); 
+}
+
+.search-title {
+    color: var(--brand-dark);
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.search-subtitle {
+    color: var(--brand-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.modern-search-bar {
+    background-color: var(--bg-soft);
+    border-radius: 50px;
+    padding: 5px 15px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.modern-search-bar:focus-within {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(70, 139, 230, 0.1);
+    background-color: white;
+}
+
+.search-icon {
+    color: var(--brand-primary);
+    font-size: 1rem;
+}
+
+.form-control-clean {
+    border: none;
+    background: transparent;
+    color: var(--brand-dark);
+    font-size: 0.95rem;
+    box-shadow: none !important; 
+}
+
+.form-control-clean::placeholder {
+    color: #a0aec0;
+}
+
+.form-select-clean {
+    border: none;
+    background-color: transparent;
+    color: var(--brand-dark);
+    cursor: pointer;
+    box-shadow: none !important;
+}
+
+.doctors-content-area {
+    flex-grow: 1; 
+    overflow: hidden; 
+}
+
+.doctors-list-column {
+    height: 100%;
+    overflow-y: auto; 
+    background-color: var(--bg-soft);
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand-accent) transparent;
+}
+
+.doctors-list-column::-webkit-scrollbar {
+    width: 6px;
+}
+.doctors-list-column::-webkit-scrollbar-thumb {
+    background-color: var(--brand-accent);
+    border-radius: 20px;
+}
+
+.map-column {
+    height: 100%;
+    position: relative;
+    border-left: 1px solid #e2e8f0;
+}
+
+.loading-spinner {
+    color: var(--brand-primary);
+}
+
+.empty-state-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(9, 47, 100, 0.05);
+}
+
+.btn-pill-primary {
+    background-color: var(--brand-primary);
+    color: white;
+    border-radius: 50px;
+    padding: 8px 24px;
+    font-weight: 600;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.btn-pill-primary:hover {
+    background-color: var(--brand-dark);
+    transform: translateY(-2px);
+    color: white;
+}
