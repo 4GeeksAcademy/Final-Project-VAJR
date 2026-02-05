@@ -23,6 +23,7 @@ flask-migrate = "*"
 flask-bcrypt = "*"
 flask-jwt-extended = "*"
 flask-cors = "*"
+flask-jwt-extended = "*"
 
 [requires]
 python_version = "3.13"

@@ -1,0 +1,24 @@
+.doctor-sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 999;
+    gap: 12px;
+    padding: 10px 35px;
+    border-bottom: 2px solid rgba(128, 128, 128, 0.655);
+}
+
+.doctor-sticky img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.doctor-sticky p {
+    margin: 0;
+    font-size: 14px;
+    color: #468BE6;
+}

@@ -6,20 +6,19 @@ export const Navbar = () => {
 	const token = localStorage.getItem("token")
 
 	const verifyToken = (token) => {
-
+		
 		if (!token) return false
 
 		try {
 			const decoded = jwtDecode(token)
 			const TimeNow = Date.now() / 1000
-			return decoded > TimeNow
+			return decoded.exp > TimeNow
 		}
 		catch (erorr) {
 			return (false)
 		}
 
 	}
-
 
 	return (
 		<nav className="navbar bg-none" data-bs-theme="light" style={{ backgroundColor: "#E9F5FF" }}>
@@ -35,12 +34,12 @@ export const Navbar = () => {
 								Log in
 							</a>
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-								<p className="ms-4 mb-0"><b>Doctors</b></p>
+								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
 									<Link to="/doctor/login" className="dropdown-item ms-2">Log in</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
-								<p className="ms-4 mb-0"><b>Pacients</b></p>
+								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
 									<Link to="/api/pacient/login" className="dropdown-item ms-2">Log in</Link>
 								</li>
@@ -51,12 +50,12 @@ export const Navbar = () => {
 								Sign up
 							</a>
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
-								<p className="ms-4 mb-0"><b>Doctors</b></p>
+								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
 									<Link to="/api/doctor/register" className="dropdown-item ms-2">Sign up</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
-								<p className="ms-4 mb-0"><b>Pacients</b></p>
+								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
 									<Link to="/api/pacient/signup" className="dropdown-item ms-2">Sign up</Link>
 								</li>
