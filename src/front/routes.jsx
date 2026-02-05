@@ -8,6 +8,7 @@ import {
 import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
+import { DoctorsList } from "./pages/DoctorsList.jsx";
 import { Demo } from "./pages/Demo";
 import { SymptomChecker } from "./pages/SymptomChecker";
 import { Login } from "./pages/Login";
@@ -34,6 +35,11 @@ export const router = createBrowserRouter(
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
+   
+     
+
+    </Route>
+  )
         {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
         <Route path= "/" element={<Home />} />
         <Route path="/single/:theId" element={ <Single />} />  {/* Dynamic route for single items */}
@@ -49,6 +55,7 @@ export const router = createBrowserRouter(
         <Route path="/api/pacient/resetpassword" element={<ResetPassword />} />
         <Route path="/api/doctor/forgotpassword" element={< ForgotPwDoctor />} />
         <Route path="/api/doctor/resetpassword" element={<ResetPwDoctor />} />
+        <Route path="/find-doctors" element={<DoctorsList />} />
         </Route>
     )
 );

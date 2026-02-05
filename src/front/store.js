@@ -18,6 +18,11 @@ export default function storeReducer(store, action = {}) {
         ...store,
         doctors: action.payload
       };
+    case 'set_doctors':
+      return {
+        ...store,
+        doctors: action.payload 
+      };
 
     case 'select_slot':
       return {
