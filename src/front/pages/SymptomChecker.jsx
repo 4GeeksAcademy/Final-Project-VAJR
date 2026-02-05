@@ -149,7 +149,7 @@ export const SymptomChecker = () => {
             const result = getDoctorSpecialty(selectedSymptom)
             setSuggestedDoctors(result)
             setIsLoading(false)
-        }, 500)
+        }, 1000)
     }
 
     return (
@@ -164,7 +164,7 @@ export const SymptomChecker = () => {
                 </div>
             )}
 
-            <div className="d-flex justify-content-center">
+            <div className="d-flex justify-content-center mb-5">
                 <div className="rounded-4 shadow-sm p-4" 
                     style={{ 
                         backgroundColor: "#E3F2FD", 
@@ -176,7 +176,7 @@ export const SymptomChecker = () => {
                     {symptomsList.map((s) => (
                         <div className="form-check mb-3" key={s.value}>
                             <input 
-                                className="form-check-input mt-2" 
+                                className="custom-radio" 
                                 type="radio" 
                                 name="symptomsCheck" 
                                 id={s.value}
@@ -190,9 +190,8 @@ export const SymptomChecker = () => {
                                 }}
                             />
                             <label 
-                                className="form-check-label ms-2 fs-5" 
+                                className="radio-label ms-2 fs-4" 
                                 htmlFor={s.value}
-                                style={{ cursor: "pointer", color: "#000000" }}
                             >
                                 {s.label}
                             </label>
