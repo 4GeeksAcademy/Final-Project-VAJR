@@ -1,28 +1,22 @@
 export const initialStore = () => {
   return {
     message: null,
-    doctors: [], 
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
+    doctors: [],
+    selectedAppointment: { doctor: null, hour: null, day: null },
+    pacient: null, 
+    doctor: null,
+    appointments: [],
+    token: null 
   }
+
 }
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    case 'set_hello':
+    case 'set_doctors':
       return {
         ...store,
-        message: action.payload
+        doctors: action.payload
       };
     case 'set_doctors':
       return {
@@ -30,11 +24,24 @@ export default function storeReducer(store, action = {}) {
         doctors: action.payload 
       };
 
-    case 'add_task':
-      const { id, color } = action.payload
+    case 'select_slot':
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        selectedAppointment: action.payload
+      };
+
+    case "login_pacient":
+      return {
+        ...store,
+        pacient: action.payload.pacient,
+        token: action.payload.token
+      };
+
+    case "login_doctor":
+      return {
+        ...store,
+        doctor: action.payload.doctor,
+        token: action.payload.token
       };
 
     default:
