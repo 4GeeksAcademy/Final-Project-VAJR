@@ -1,14 +1,14 @@
 
 import os
 from flask_cors import CORS
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from flask_bcrypt import Bcrypt
 from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType,StatusAppointment
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -22,22 +22,13 @@ static_file_dir = os.path.join(os.path.dirname(
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 bcrypt = Bcrypt(app)
-
-app.config['JWT_SECRET_KEY'] = os.getenv('SUPER_SECRET_TOKEN')
-jwt = JWTManager(app)
 
 app.url_map.strict_slashes = False
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
-CORS(app)
 
-
-CORS(app)
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["JWT_SECRET_KEY"] = os.getenv('SUPER_SECRET_TOKEN')
 jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
 
 app.json.sort_keys = False
 
@@ -401,7 +392,8 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
-    
+
+
 @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
@@ -410,7 +402,7 @@ def cal_webhook_receiver():
 
     trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
-    
+
     # Identificar emails en nuestra db paciente y doctor
     doctor_email = payload.get('organizer', {}).get('email')
     attendees = payload.get('attendees', [{}])
@@ -431,7 +423,7 @@ def cal_webhook_receiver():
             dt_object = datetime.fromisoformat(start_time_str)
 
             new_appointment = Appointments(
-                pacient_id=pacient.id, 
+                pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
                 reason=f"Cal.com: {payload.get('title')}",
@@ -445,7 +437,7 @@ def cal_webhook_receiver():
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
 
-    # Cancelacion de cita 
+    # Cancelacion de cita
     elif trigger_event == "BOOKING_CANCELLED":
         try:
             # Busco la cita existente por fecha, doctor y paciente
@@ -459,7 +451,7 @@ def cal_webhook_receiver():
             ).first()
 
             if appointment:
-                appointment.status = StatusAppointment.cancelled 
+                appointment.status = StatusAppointment.cancelled
                 db.session.commit()
                 print(f" Cita CANCELADA en base de datos")
                 return jsonify({"msg": "Cita cancelada correctamente"}), 200

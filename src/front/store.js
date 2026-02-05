@@ -25,21 +25,18 @@ export const initialStore = () => {
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
     case "set_appointments":
-    case "set_hello":
       return {
         ...store,
         appointments: action.payload,
       };
 
-    case "login_doctor":
     case "set_doctors":
       return {
         ...store,
         doctors: action.payload,
       };
 
-    case "add_task":
-      const { id, color } = action.payload;
+    case "login_doctor":
       return {
         ...store,
         doctor: action.payload.doctor,
