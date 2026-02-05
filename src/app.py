@@ -433,7 +433,7 @@ def get_doctor_appointments():
 #listar cita especifica doctor
 @app.route('/appointments/doctor/<int:id>', methods=['GET'])     
 @jwt_required()
-def get_doctor_appointment(id):
+def get_doctor_appointment_d(id):
     doctor_id=get_jwt_identity()
     appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
     
@@ -466,19 +466,6 @@ def update_appointments(id):
     db.session.commit()
     return jsonify(appointment.serialize()),200
     
-#cancelar cita paciente 
-@app.route('/api/appointments/<int:id>', methods=['DELETE'])
-@jwt_required()
-def cancel_appointment(id):
-    user_id=get_jwt_identity()  
-    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
-    if not appointments:
-        return jsonify({"msg":"Cita no encontrada"}),404
-    appointments.status="cancelled"
-    db.session.commit()
-    return jsonify({"msg":"Cita cancelada exitosamente"}),200
-
-
 @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     # Capturar los datos crudos
@@ -549,26 +536,6 @@ def get_appointment(id):
           return jsonify({"msg":"Cita no encontrada"}),404
     return jsonify([appointment.serialize() for appointment in appointments]),200
 
-# listar citas doctor
-@app.route('/appointments/doctors', methods=['GET'])
-@jwt_required()
-def get_doctor_appointments():
-        doctor_id=get_jwt_identity()
-        appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
-        if not appointments:
-            return jsonify({"msg":"No hay citas para este doctor"}),404
-        return jsonify([appointment.serialize() for appointment in appointments]),200
-
-#listar cita especifica doctor
-@app.route('/appointments/doctors/<int:id>', methods=['GET'])     
-@jwt_required()
-def get_doctor_appointment(id):
-    doctor_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
-    
-    if not appointments:
-          return jsonify({"msg":"Cita no encontrada"}),404
-    return jsonify([appointment.serialize() for appointment in appointments]),200
 
 #cancelar cita paciente 
 @app.route('/appointments/<int:id>', methods=['DELETE'])
