@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Login = () => {
@@ -15,19 +15,18 @@ export const Login = () => {
   const handleChangePassword = (e) => {
     setPassword(e.target.value);
   }
-
+ const DEFAULT_DOCTOR_ID =1;
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pacient/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          email: email,
-          password: password})});
+        body: JSON.stringify({ email, password }),
+      });
 
       const text = await response.text();
       console.log("Respuesta:", text);
@@ -41,9 +40,10 @@ export const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        dispatch({ type: "login_pacient", payload: data.token, pacient: data.pacient });
+        dispatch({  type: "login_pacient", payload: data.token  });
         console.log("login exitoso");
-        navigate("/appointments");
+        navigate(`/api/appointments/${DEFAULT_DOCTOR_ID}`);
+         //navigate("/api/listappointments");
       } else {
         alert(data.msg || "Error al iniciar sesión");
       }
@@ -82,8 +82,10 @@ export const Login = () => {
                   </button>
                 </div>
                 <div className="d-flex justify-content-center pb-2">
-                  <button type="button" className="btn btn-link">
+                  <button type="button" className="btn btn-link ">
+                    <Link to="/api/pacient/forgotpassword">
                     Forgot Password
+                    </Link>
                </button>
             </div>
             </form>
