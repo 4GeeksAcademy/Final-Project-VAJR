@@ -385,7 +385,7 @@ def get_appointments_p(id):
 #listar cita
 @app.route('/api/appointments', methods=['GET'])     
 @jwt_required()
-def get_appointments_p():            
+def get_appt_pacient():            
     pacient_email=get_jwt_identity()
    
     pacient=Pacient.query.filter_by(email=pacient_email).first()
