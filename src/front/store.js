@@ -5,6 +5,7 @@ export const initialStore = () => {
       if (doctorString !== undefined || doctorString !== null) {
         return JSON.parse(doctorString);
       }
+
       return null;
     } catch (error) {
       console.error("Error parsing  doctor from localStorage", error);
@@ -14,6 +15,7 @@ export const initialStore = () => {
 
   return {
     message: null,
+    doctors: [],
     appointments: [],
     doctor: getDoctor(),
     token: localStorage.getItem("token") || null,
@@ -23,12 +25,21 @@ export const initialStore = () => {
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
     case "set_appointments":
+    case "set_hello":
       return {
         ...store,
         appointments: action.payload,
       };
 
     case "login_doctor":
+    case "set_doctors":
+      return {
+        ...store,
+        doctors: action.payload,
+      };
+
+    case "add_task":
+      const { id, color } = action.payload;
       return {
         ...store,
         doctor: action.payload.doctor,
@@ -44,6 +55,6 @@ export default function storeReducer(store, action = {}) {
       };
 
     default:
-      throw Error("Unknown action.");
+      return store;
   }
 }

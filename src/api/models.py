@@ -63,6 +63,9 @@ class Doctors(db.Model):
                          ] = relationship(back_populates="doctor")
     availability: Mapped[List["Availability"]
                          ] = relationship(back_populates="doctor")
+    cal_link = db.Column(db.String(200), nullable=True)
+    appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
+    availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
     def serialize(self):
         return {
@@ -79,6 +82,8 @@ class Doctors(db.Model):
             },
             "phone": self.phone,
 
+            "cal_link": self.cal_link,
+            
         }
 
 
