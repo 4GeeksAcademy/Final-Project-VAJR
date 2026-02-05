@@ -6,7 +6,7 @@ export const FoundDoc = () => {
     const { store, dispatch } = useGlobalReducer();
     const [loading, setLoading] = useState(false);
 
-    const specialties = ["CARDIOLOGY", "PEDIATRICS", "DERMATOLOGY", "GENERAL_PRACTICE"];
+    const specialties = ["CARDIOLOGY", "PEDIATRICS", "DERMATOLOGY", "GENERAL PRACTICE"];
 
     const fetchDoctors = async (specialty = null) => {
         setLoading(true);
