@@ -1,0 +1,113 @@
+/* src/front/components/DoctorSearchCard.css */
+
+/* --- Tarjeta Principal --- */
+.doctor-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid rgba(230, 235, 245, 0.6);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.doctor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(9, 47, 100, 0.08);
+  border-color: rgba(70, 139, 230, 0.3);
+}
+
+/* --- Imagen del Doctor (TAMAÑO AUMENTADO) --- */
+.doctor-img-container {
+  position: relative;
+  /* Añadimos flex para centrar si es necesario */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctor-img {
+  /* CAMBIO AQUÍ: De 90px a 120px */
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid var(--bg-soft, #f4f7fe); /* Borde un poco más grueso */
+  padding: 2px;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra suave para resaltar */
+}
+
+/* --- Tipografía --- */
+.doc-name {
+  color: var(--brand-dark, #092f64);
+  font-weight: 800; /* Un poco más grueso para compensar la imagen grande */
+  font-size: 1.25rem; /* Texto ligeramente más grande */
+  margin-bottom: 0.35rem;
+}
+
+.doc-specialty {
+  color: var(--brand-primary, #468be6);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background-color: rgba(70, 139, 230, 0.08);
+  padding: 5px 12px;
+  border-radius: 50px;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+.doc-stats {
+  font-size: 0.9rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.doc-location {
+  font-size: 0.9rem;
+  color: #a0aec0;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Botones --- */
+.btn-book-appointment {
+  background-color: var(--brand-primary, #468be6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px; /* Un poco más alto */
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-book-appointment:hover {
+  background-color: var(--brand-dark, #092f64);
+  box-shadow: 0 4px 12px rgba(70, 139, 230, 0.3);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-view-profile {
+  background: transparent;
+  color: var(--text-muted, #6c757d);
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+
+.btn-view-profile:hover {
+  color: var(--brand-dark, #092f64);
+  text-decoration: underline;
+}

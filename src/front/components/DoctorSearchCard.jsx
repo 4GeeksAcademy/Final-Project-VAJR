@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCalApi } from "@calcom/embed-react";
+import "./DoctorSearchCard.css";
 
 export const DoctorSearchCard = ({ doctor }) => {
     const navigate = useNavigate();
@@ -17,46 +18,60 @@ export const DoctorSearchCard = ({ doctor }) => {
         })();
     }, []);
 
+    // Helper traducido al inglés
+    const getLocationString = (loc) => {
+        if (!loc) return "Location not available";
+        return typeof loc === 'object' ? "Caracas, Venezuela" : loc;
+    };
+
+    const specialty = doctor.specialties || "Specialist";
+
     return (
-        <div className="card mb-4 shadow-sm border-0" style={{ borderRadius: "16px" }}>
-            <div className="row g-0 align-items-center">
-                <div className="col-md-8 p-4 d-flex align-items-center bg-white">
-                    <img
-                        src={doctor.picture}
-                        className="rounded-circle me-4 shadow-sm"
-                        style={{ width: "100px", height: "100px", objectFit: "cover", border: "3px solid #f0f7ff" }}
-                        alt={doctor.name}
-                    />
-                    <div className="overflow-hidden">
-                        <h4 className="mb-1 fw-bold text-truncate" style={{ color: "#092F64" }}>
+        <div className="card doctor-card mb-4 shadow-sm border-0">
+            <div className="row g-0 align-items-center h-100">
+                <div className="col-md-8 p-4 d-flex align-items-center">
+                    <div className="doctor-img-container me-5">
+                        <img
+                            src={doctor.picture || "https://via.placeholder.com/150"}
+                            className="doctor-img"
+                            alt={`Dr. ${doctor.name}`}
+                        />
+                    </div>
+                    <div className="flex-grow-1 overflow-hidden">
+                        <h4 className="doc-name text-truncate">
                             Dr. {doctor.name}
                         </h4>
-                        <p className="mb-2 text-primary fw-bold text-uppercase small">
-                            {doctor.specialties}
-                        </p>
-                        <div className="small text-muted mb-2">
-                            <i className="fa-solid fa-star text-warning me-1"></i>
-                            <span className="fw-bold text-dark">4.9</span> (120 reviews)
+                        
+                        <div>
+                            <span className="doc-specialty">
+                                {specialty}
+                            </span>
                         </div>
-                        <p className="text-muted small mb-0">
-                            <i className="fa-solid fa-location-dot me-2 text-danger"></i>
-                            {typeof doctor.location === 'object' ? "Caracas, Venezuela" : doctor.location}
+                        
+                        <div className="doc-stats mb-2">
+                            <i className="fa-solid fa-star text-warning"></i>
+                            <span className="fw-bold text-dark">4.9</span> 
+                            <span className="text-muted small ms-1">(120 reviews)</span>
+                        </div>
+                        
+                        <p className="doc-location mb-0 text-truncate">
+                            <i className="fa-solid fa-location-dot me-2 text-danger opacity-75"></i>
+                            {getLocationString(doctor.location)}
                         </p>
                     </div>
                 </div>
 
-                <div className="col-md-4 p-4 text-center">
-                    <div className="d-grid gap-2">
+                <div className="col-md-4 border-start-md d-flex align-items-stretch bg-light bg-opacity-25">
+                    <div className="p-4 d-flex flex-column justify-content-center w-100">
                         <button
                             data-cal-link={doctor.cal_link}
-                            className="btn btn-primary fw-bold w-100"
-                            style={{ backgroundColor: "#092F64", borderRadius: "10px" }}
+                            className="btn-book-appointment mb-2"
                         >
+                            <i className="fa-regular fa-calendar-check"></i>
                             Book Appointment
                         </button>
-
                         <button
-                            className="btn btn-outline-secondary btn-sm fw-bold border-0"
+                            className="btn btn-sm btn-view-profile w-100"
                             onClick={() => navigate(`/doctor/${doctor.id}`)}
                         >
                             View Full Profile
