@@ -29,28 +29,33 @@ export const SignupDoctor = () => {
 
     const uploadImagen=async(e)=>{
         const files=e.target.files;
+        if (!files || files.length === 0) return;
+
         const data=new FormData();
         data.append("file", files[0]);
         data.append("upload_preset","hidoctor")
     
     setUploading(true);
     try{
-        const response=await fetch("https://api.cloudinary.com/v1_1/hidoctor/image/upload", {
+        const response=await fetch("https://api.cloudinary.com/v1_1/dvcvlvscy/image/upload", {
             method:"POST",
             body:data,
         });
         const file= await response.json();
-        setForm({...form, picture:file.secure_url});//Guardamos la URL en el estado
-        setUploading(false);
+        if (file.secure_url) {
+       setForm(prevForm => ({ ...prevForm, picture: file.secure_url }));
+            console.log("URL guardada en estado:", file.secure_url);
+        }
     }catch(error){
         console.error("Error subiendo la imagen", error );
-        setUploading(false)}
-    };
+    } finally {
+        setUploading(false);
+    }};
    
     const handleSignupDoctor = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/doctor/register`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),
@@ -58,7 +63,7 @@ export const SignupDoctor = () => {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem("token", data.token);
-                alert(data.msg || "Doctor creado correctamente");
+                alert(data.msg || "Doctor created successfully");
                 navigate("/doctor/login");
             } else {
                 alert(data.msg || "Error en el registro");
@@ -133,8 +138,8 @@ export const SignupDoctor = () => {
                                     <strong>Picture:</strong>
                                 </label><div className="mb-3">
                                     <input className="form-control" type="file" id="formFile" onChange={uploadImagen} />
-                                    {uploading &&<small className="text-primary">uploading image</small>}
-                                    {form.picture && <small className="text-primary">uploading image</small>}
+                                   {uploading && <small className="text-warning">Subiendo imagen...</small>}
+                                   {form.picture && <small className="text-success d-block">Imagen lista </small>}
                                 </div>
 
                             </div>
@@ -149,6 +154,12 @@ export const SignupDoctor = () => {
                                     <strong>Longitud:</strong>
                                 </label>
                                 <input type="text" className="form-control" id="longitud" name="longitud" onChange={hadleChange} required />
+                            </div>
+                             <div className="mb-3">
+                                <label htmlFor="name" className="form-label">
+                                    <strong>Phone:</strong>
+                                </label>
+                                <input type="text" className="form-control" id="phone" name="phone" onChange={hadleChange} required />
                             </div>
                             <div className="d-flex justify-content-center p-2">
                                 <button type="submit" className="btn text-light" id="btn-drop">Register</button>
