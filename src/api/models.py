@@ -103,7 +103,10 @@ class Appointments(db.Model):
             "doctor_id": self.doctor_id,
             "dateTime": self.dateTime.strftime("%Y-%m-%d %H:%M"),
             "reason": self.reason,
-            "status": self.status.value
+            "status": self.status.value,
+            "pacient_name": self.pacient.name,
+            "appointment_date": self.dateTime.strftime("%Y-%m-%d"),
+            "appointment_hour": self.dateTime.strftime("%H:%M")
         }
 
 

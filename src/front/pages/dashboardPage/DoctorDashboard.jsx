@@ -45,10 +45,11 @@ export const DoctorDashboard = () => {
         body: JSON.stringify({status})
       })
 
-      const updateAppointment = await res.json()
+      const data = await res.json()
+      const updateAppointment = data.appointment
 
       dispatch({
-        type:"set-appointments",
+        type:"set_appointments",
         payload: store.appointments.map(apt =>
           apt.id === updateAppointment.id ? updateAppointment : apt
         )
@@ -61,7 +62,7 @@ export const DoctorDashboard = () => {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Doctor Dashboard</h2>
+      <h2 className="mb-4">Performance overview</h2>
 
       <DashboardStats appointments={store.appointments} />
       <AppointmentsTable appointments={store.appointments}

@@ -23,9 +23,7 @@ export const AppointmentsTable= ({ appointments , onUpdateStatus}) => {
                             />
                         )) }
                     </tbody>
-
                 </table>
-
             </div>
         </div>
     )

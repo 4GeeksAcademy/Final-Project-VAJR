@@ -108,7 +108,7 @@ export const Navbar = () => {
 				) : (
 
 					<div className="ms-auto">
-						<span className="me-3">Hello Dr, {store.doctor?.name}</span>
+						<span className="me-3 p-2 rounded" style={{background:"#1A5799", color:"white"}} >Hello Dr, {store.doctor?.name}</span>
 						<button
 							className="btn btn-outline-danger"
 							onClick={handleLogout}
