@@ -391,62 +391,73 @@ def specialidad():
     
 @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
-    # 1. Capturar los datos crudos
     data = request.get_json(silent=True)
-    
-    print("\n--- NUEVA NOTIFICACIÓN DE CAL.COM ---")
     if not data:
-        print("❌ Error: Payload vacío")
         return jsonify({"msg": "Payload vacío"}), 400
 
+    trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
     
-    # Extraer emails para identificación
+    # Identificar emails en nuestra db paciente y doctor
     doctor_email = payload.get('organizer', {}).get('email')
     attendees = payload.get('attendees', [{}])
     pacient_email = attendees[0].get('email') if attendees else None
 
-    print(f" Evento: {data.get('triggerEvent')}")
-    print(f" Doctor (Cal.com email): {doctor_email}")
-    print(f"Paciente (Cal.com email): {pacient_email}")
+    print(f"\n--- WEBHOOK RECIBIDO: {trigger_event} ---")
 
-    # Buscar en tu base de datos
     doctor = Doctors.query.filter_by(email=doctor_email).first()
     pacient = Pacient.query.filter_by(email=pacient_email).first()
 
-    # Validaciones de existencia
-    if not doctor:
-        print(f" Alerta: El doctor {doctor_email} no existe en nuestra DB.")
-        return jsonify({"msg": "Doctor no encontrado"}), 404
+    if not doctor or not pacient:
+        print(" Doctor o Paciente no encontrados en DB. Ignorando evento.")
+        return jsonify({"msg": "Actor no encontrado"}), 404
 
-    if not pacient:
-        print(f"ℹInfo: El email {pacient_email} no pertenece a un paciente registrado. Saltando registro.")
-        return jsonify({"msg": "Paciente no registrado, cita ignorada"}), 200
+    if trigger_event == "BOOKING_CREATED":
+        try:
+            start_time_str = payload.get('startTime').replace('Z', '')
+            dt_object = datetime.fromisoformat(start_time_str)
 
-    # 4. Procesar la cita
-    try:
-        # Cal envía: "2026-02-04T18:00:00Z"
-        start_time_str = payload.get('startTime').replace('Z', '')
-        dt_object = datetime.fromisoformat(start_time_str)
+            new_appointment = Appointments(
+                pacient_id=pacient.id, 
+                doctor_id=doctor.id,
+                dateTime=dt_object,
+                reason=f"Cal.com: {payload.get('title')}",
+                status=StatusAppointment.confirmed
+            )
+            db.session.add(new_appointment)
+            db.session.commit()
+            print(f" Cita CREADA exitosamente")
+            return jsonify({"msg": "Cita creada"}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"msg": str(e)}), 500
 
-        new_appointment = Appointments(
-            pacient_id=pacient.id, 
-            doctor_id=doctor.id,
-            dateTime=dt_object,
-            reason=f"Cal.com: {payload.get('title')}",
-            status= StatusAppointment.confirmed
-        )
+    # Cancelacion de cita 
+    elif trigger_event == "BOOKING_CANCELLED":
+        try:
+            # Busco la cita existente por fecha, doctor y paciente
+            start_time_str = payload.get('startTime').replace('Z', '')
+            dt_object = datetime.fromisoformat(start_time_str)
 
-        db.session.add(new_appointment)
-        db.session.commit()
-        
-        print(f" ÉXITO: Cita registrada para el paciente {pacient.name} con el Dr. {doctor.name}")
-        return jsonify({"msg": "Cita sincronizada exitosamente"}), 201
+            appointment = Appointments.query.filter_by(
+                doctor_id=doctor.id,
+                pacient_id=pacient.id,
+                dateTime=dt_object
+            ).first()
 
-    except Exception as e:
-        db.session.rollback()
-        print(f"❌ ERROR al guardar en DB: {str(e)}")
-        return jsonify({"msg": "Error interno al procesar la cita"}), 500
+            if appointment:
+                appointment.status = StatusAppointment.cancelled 
+                db.session.commit()
+                print(f" Cita CANCELADA en base de datos")
+                return jsonify({"msg": "Cita cancelada correctamente"}), 200
+            else:
+                print(" No se encontró la cita para cancelar")
+                return jsonify({"msg": "Cita no encontrada"}), 404
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"msg": str(e)}), 500
+
+    return jsonify({"msg": "Evento no soportado"}), 400
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
