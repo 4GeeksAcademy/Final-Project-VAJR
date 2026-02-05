@@ -12,8 +12,15 @@ import { Demo } from "./pages/Demo";
 import { SymptomChecker } from "./pages/SymptomChecker";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { LoginDoctor } from "./pages/LoginDoctor";  
+import { LoginDoctor} from "./pages/LoginDoctor.jsx";  
 import { SignupDoctor } from "./pages/SigunpDoctor";
+import { PacientAppointments } from "./pages/PacientAppointments";
+import { ListAppointments } from "./pages/ListsAppointments"; 
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
+import { ForgotPwDoctor} from "./pages/ForgotPwDoctor";
+import { ResetPwDoctor} from "./pages/ResetPwDoctor";
+
 
 
 export const router = createBrowserRouter(
@@ -33,10 +40,15 @@ export const router = createBrowserRouter(
         <Route path="/demo" element={<Demo />} />
         <Route path="/symptom-checker" element={<SymptomChecker />} />
         <Route path="/api/pacient/signup" element={<Signup />} />
-        <Route path="/pacient/login" element={<Login />} />
-        <Route path="/doctor/register" element={<SignupDoctor />} />
+        <Route path="/api/pacient/login" element={<Login />} />
+        <Route path="/api/doctor/register" element={<SignupDoctor />} />
         <Route path="/doctor/login" element={<LoginDoctor />} />
-        
-      </Route>
+        <Route path="/api/appointments/:doctor_id" element={<PacientAppointments />} />
+        <Route path="/api/listappointments" element={<ListAppointments />} />
+        <Route path="/api/pacient/forgotpassword" element={<ForgotPassword />} />
+        <Route path="/api/pacient/resetpassword" element={<ResetPassword />} />
+        <Route path="/api/doctor/forgotpassword" element={< ForgotPwDoctor />} />
+        <Route path="/api/doctor/resetpassword" element={<ResetPwDoctor />} />
+        </Route>
     )
 );
