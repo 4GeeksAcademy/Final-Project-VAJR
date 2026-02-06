@@ -16,7 +16,7 @@ export const DoctorCard = ({ doctor }) => {
             if (!doctor.id) return;
             try {
                 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                const response = await fetch(`${backendUrl}/api/doctor/${doctor.id}/availability`);
+                const response = await fetch(`${backendUrl}api/doctor/${doctor.id}/availability`);
                 if (response.ok) {
                     const data = await response.json();
                     if (Array.isArray(data)) setSlots(data.slice(0, 3));
@@ -123,7 +123,7 @@ export const DoctorCard = ({ doctor }) => {
                     <button
                         className="btn w-100 fw-bold py-2 shadow-sm"
                         style={{ backgroundColor: "#93bfef", color: "#FFFFFF", borderRadius: "8px", border: "none" }}
-                        onClick={() => navigate(`/doctor/${doctor.id}`)}
+                        onClick={() => navigate(`/doctorpage/${doctor.id}`)}
                     >
                         Book online
                     </button>
