@@ -1,3 +1,5 @@
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 body {
@@ -434,4 +436,49 @@ h3 {
 .dropdown-item.active {
   background-color: #18aded !important;
   color: rgb(46, 99, 214);
+}
+
+/* 
+doctor profile  */
+
+.profile-doctor {
+  margin-top: 0 !important;
+}
+
+.doctor-section-profile {
+  width: 86%;
+  margin: auto;
+}
+
+.about-stection-customer {
+  width: 75%;
+}
+
+.modal-insurance {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid #1a5799;
+}
+.modal-insurance:hover {
+  color: #468be6;
+}
+
+.calendar-doctor {
+  background: white;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 4.5rem;
+  width: 45%;
+}
+
+.faqs-p span:hover {
+  border-bottom: 1px solid #468be6;
 }

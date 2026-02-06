@@ -27,6 +27,22 @@ export const Navbar = () => {
 					<i className="fa-solid fa-house-medical" style={{ color: "#1a5799", fontSize: "30px" }}></i>
 					<span className="navbar-brand mb-0 h1 fs-3 ms-2">HiDoc</span>
 				</Link>
+				<div className="mx-auto d-none d-md-block">
+					<Link
+						to="/find-doctors"
+						className="text-decoration-none fw-bold"
+						style={{
+							color: "#000",
+							fontSize: "1.3rem",
+							letterSpacing: "0.5px",
+							transition: "color 0.2s ease"
+						}}
+						onMouseEnter={(e) => e.target.style.color = "#092F64"}
+						onMouseLeave={(e) => e.target.style.color = "#1A5799"}
+					>
+						Medical Network
+					</Link>
+				</div>
 				{!verifyToken(token) ? (
 					<>
 						<button type="button" className="btn nav-item dropdown ms-auto me-2">
@@ -61,7 +77,7 @@ export const Navbar = () => {
 								</li>
 							</ul>
 						</button>
-					</> ) : (
+					</>) : (
 					<button type="button" className="btn nav-item dropdown" style={{ backgroundColor: "#1A5799", color: "#E9F5FF" }}>
 						<a className="nav-link dropdown-toggle fs-5" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							<i className="fa-solid fa-user"></i> Profile

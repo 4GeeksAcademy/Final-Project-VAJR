@@ -65,10 +65,8 @@ class Doctors(db.Model):
     cal_username: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     picture: Mapped[Optional[str]] = mapped_column(String(500))
     phone: Mapped[str] = mapped_column(String(50), unique=True)
-    appointments: Mapped[List["Appointments"]
-                         ] = relationship(back_populates="doctor")
-    availability: Mapped[List["Availability"]
-                         ] = relationship(back_populates="doctor")
+    appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
+    availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
     def serialize(self):
         return {
@@ -84,6 +82,7 @@ class Doctors(db.Model):
                 "lng": self.longitud
             },
             "phone": self.phone,
+            "cal_link": self.cal_link,
             "cal_username": self.cal_username
             
         }
