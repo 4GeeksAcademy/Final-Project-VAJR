@@ -1,17 +1,19 @@
 
-import os
-from flask_cors import CORS
-from datetime import datetime, time, timedelta
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-from flask_bcrypt import Bcrypt
-from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
-from flask_migrate import Migrate
-from flask_swagger import swagger
-from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
-from api.routes import api
-from api.admin import setup_admin
 from api.commands import setup_commands
+from api.admin import setup_admin
+from api.routes import api
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
+from api.utils import APIException, generate_sitemap
+from flask_swagger import swagger
+from flask_migrate import Migrate
+from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
+from datetime import datetime, time, timedelta
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # from models import Person
@@ -22,7 +24,8 @@ static_file_dir = os.path.join(os.path.dirname(
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 bcrypt = Bcrypt(app)
 
 app.url_map.strict_slashes = False
@@ -160,7 +163,7 @@ def register_doctor():
     return jsonify({'msg': 'User create succesfully.'}), 200
 
 
-@app.route('/doctor/login', methods=['POST'])
+@app.route('/api/doctor/login', methods=['POST'])
 def doctor_login():
     body = request.get_json(silent=True)
     if body is None:
