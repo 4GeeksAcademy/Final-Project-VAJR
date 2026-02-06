@@ -87,12 +87,12 @@ export const DoctorPage = () => {
                                 <p className="fw-lighter"> {doctor.address} </p>
 
                                 {localStorage.getItem("token") && (
-                                    <Link to="doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
+                                    <Link to="/doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
                                 )}
                             </div>
                         </div>
                         <div className="pt-4 fw-light">
-                           < Biography text={doctor.biography} /> 
+                            < Biography text={doctor.biography} />
                         </div>
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">

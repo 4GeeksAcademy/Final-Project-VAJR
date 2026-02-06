@@ -16,10 +16,10 @@ typing-extensions = "*"
 wtforms = "==3.1.2"
 sqlalchemy = "*"
 flask-swagger-ui = "*"
-python-dotenv = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-bcrypt = "*"
+python-dotenv = "*"
 flask-cors = "*"
 
 [requires]
