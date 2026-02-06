@@ -14,7 +14,7 @@ export const FoundDoc = () => {
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
             const url = specialty
                 ? `${backendUrl}/doctors?specialty=${specialty}`
-                : `${backendUrl}/doctor`;
+                : `${backendUrl}/api/doctor`;
 
             const response = await fetch(url);
 

@@ -181,7 +181,7 @@ def register_doctor():
     return jsonify({'msg': 'User create succesfully.'}), 200
 
 
-@app.route('/doctor/login', methods=['POST'])
+@app.route('/api/doctor/login', methods=['POST'])
 def doctor_login():
     body = request.get_json(silent=True)
     if body is None:
@@ -205,7 +205,7 @@ def doctor_login():
                     'token': access_token})
 
 
-@app.route('/doctor/private', methods=['GET'])
+@app.route('/api/doctor/private', methods=['GET'])
 @jwt_required()
 def private_doctor():
     user_doctor = get_jwt_identity()
@@ -237,7 +237,7 @@ def pacient_login():
     }), 200
 
 
-@app.route('/pacient', methods=['GET'])
+@app.route('/api/pacient', methods=['GET'])
 @jwt_required()
 def get_pacient():
     email = get_jwt_identity()
@@ -249,7 +249,7 @@ def get_pacient():
     return jsonify(pacient.serialize()), 200
 
 
-@app.route('/pacient', methods=['PUT'])
+@app.route('/api/pacient', methods=['PUT'])
 @jwt_required()
 def update_pacient_info():
     request_body = request.get_json(silent=True)
@@ -294,7 +294,7 @@ def update_pacient_info():
 # DOCTOR
 
 
-@app.route('/doctor', methods=['GET'])
+@app.route('/api/doctor', methods=['GET'])
 def get_all_doctors():
     doctores = Doctors.query.all()
     new_serialise_doctors = []
@@ -311,7 +311,7 @@ def get_single_doctor(doctor_id):
     return jsonify({'data': doctor.serialize()}), 200
 
 
-@app.route('/doctor/<int:doctor_id>', methods=['PUT'])
+@app.route('/api/doctor/<int:doctor_id>', methods=['PUT'])
 def edit_doctor(doctor_id):
     body = request.get_json(silent=True)
     if body is None:
@@ -347,7 +347,7 @@ def edit_doctor(doctor_id):
                     'data': doctor.serialize()}), 200
 
 
-@app.route('/doctors', methods=['GET'])
+@app.route('/api/doctors', methods=['GET'])
 def specialidad():
     speciality = request.args.get("specialty")
 
@@ -361,7 +361,7 @@ def specialidad():
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
     
-@app.route('/hooks/cal-booking', methods=['POST'])
+@app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
     if not data:
@@ -437,7 +437,7 @@ def cal_webhook_receiver():
 
 
 #listar citas pacientes 
-@app.route('/appointments/<int:id>', methods=['GET'])
+@app.route('/api/appointments/<int:id>', methods=['GET'])
 @jwt_required()
 def get_appointments_p(id):
     pacient_email=get_jwt_identity()
@@ -475,7 +475,7 @@ def get_appt_pacient():
 
 
 # listar citas doctor
-@app.route('/appointments/doctor', methods=['GET'])
+@app.route('/api/appointments/doctor', methods=['GET'])
 @jwt_required()
 def get_doctor_appointments ():
         doctor_id=get_jwt_identity()
@@ -486,7 +486,7 @@ def get_doctor_appointments ():
         return jsonify([appointment.serialize() for appointment in appointments]),200
 
 #listar cita especifica doctor
-@app.route('/appointments/doctor/<int:id>', methods=['GET'])     
+@app.route('/api/appointments/doctor/<int:id>', methods=['GET'])     
 @jwt_required()
 def get_doctor_appointment_d(id):
     doctor_id=get_jwt_identity()
@@ -497,7 +497,7 @@ def get_doctor_appointment_d(id):
     return jsonify([appointment.serialize() for appointment in appointments]),200
 
 #listar citas pacientes 
-@app.route('/appointments', methods=['GET'])
+@app.route('/api/appointments', methods=['GET'])
 @jwt_required()
 def get_appointments():
     user_id=get_jwt_identity()
@@ -528,7 +528,7 @@ def update_appointments(id):
     db.session.commit()
     return jsonify(appointment.serialize()),200
     
-@app.route('/hooks/cal-booking', methods=['POST'])
+""" @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     # Capturar los datos crudos
     data = request.get_json(silent=True)
@@ -585,7 +585,7 @@ def cal_webhook_receiver():
     except Exception as e:
         db.session.rollback()
         print(f"ERROR al guardar en DB: {str(e)}")
-        return jsonify({"msg": "Error interno al procesar la cita"}), 500
+        return jsonify({"msg": "Error interno al procesar la cita"}), 500 """
     
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
