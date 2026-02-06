@@ -158,7 +158,7 @@ def forgot_pw_pacient():
     pacient=Pacient.query.filter_by(email=email).first()
 
     if not pacient:
-            return jsonify({"msg":"se enviara un enlace"})
+            return jsonify({"msg": "The email address is not registered"}), 404
 
     token = secrets.token_urlsafe(32)
     #guardar
@@ -233,7 +233,7 @@ def forgot_pw_doctor():
     doctor=Doctors.query.filter_by(email=email).first()
 
     if not doctor:
-            return jsonify({"msg":"se enviara un enlace"})
+        return jsonify({"msg": "The email address is not registered"}), 404
 
     token = secrets.token_urlsafe(32)
     #guardar

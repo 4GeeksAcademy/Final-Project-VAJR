@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Await, useNavigate } from "react-router-dom";
 import { Link, useParams } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import Swal from "sweetalert2";
 
 export const SignupDoctor = () => {
     const { store, dispatch } = useGlobalReducer()
@@ -16,8 +17,10 @@ export const SignupDoctor = () => {
         picture: "",
         phone: "",
         address:" ",
-        latitud: "0",
-        longitud: "0"
+        latitud: " ",
+        longitud: " ",
+        longitud: " ",
+
 
     })
 
@@ -63,12 +66,26 @@ export const SignupDoctor = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                localStorage.setItem("token", data.token);
-                alert(data.msg || "Doctor created successfully");
-                navigate("/doctor/login");
-            } else {
-                alert(data.msg || "Error en el registro");
-            }
+            Swal.fire({
+                title: "Doctor registered successfully!",
+                text: "Your account has been created. Please log in to access your dashboard.",
+                icon: "success",
+                confirmButtonText: "Go to Login",
+                confirmButtonColor: "#035aa6"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate("/doctor/login");
+                }
+            });
+            
+        } else {
+            Swal.fire({
+                title: "Error",
+                text: data.msg || "There was an issue with your registration.",
+                icon: "error",
+                confirmButtonColor: "#d33"
+            });
+        }
         } catch (error) {
             console.error("Error de conexión:", error);
         }
@@ -150,12 +167,30 @@ export const SignupDoctor = () => {
                                 </label>
                                 <input type="text" className="form-control" id="address" name="address" onChange={hadleChange} required />
                             </div>
+                              <div>
+                                <label htmlFor="name" className="form-label">
+                                    <strong>Latitud:</strong>
+                                </label>
+                                <input type="text" className="form-control" id="latitud" name="latitud" onChange={hadleChange} required />
+                            </div>
+                              <div>
+                                <label htmlFor="longitud" className="form-label">
+                                    <strong>Longitud:</strong>
+                                </label>
+                                <input type="text" className="form-control" id="longitud" name="longitud" onChange={hadleChange} required />
+                            </div>
                             
                                <div>
-                                <label htmlFor="name" className="form-label">
+                                <label htmlFor="phone" className="form-label">
                                     <strong>Phone:</strong>
                                 </label>
                                 <input type="text" className="form-control" id="phone" name="phone" onChange={hadleChange} required />
+                            </div>
+                              <div>
+                                <label htmlFor="cal_link" className="form-label">
+                                    <strong>Calendario link:</strong>
+                                </label>
+                                <input type="text" className="form-control" id="cal_link" name="cal_link" onChange={hadleChange} required />
                             </div>
                             <div className="d-flex justify-content-center p-2">
                                 <button type="submit" className="btn text-light" id="btn-drop">Register</button>
