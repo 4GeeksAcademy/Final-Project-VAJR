@@ -25,7 +25,9 @@ static_file_dir = os.path.join(os.path.dirname(
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, origins="*")
+
+
 bcrypt = Bcrypt(app)
 
 app.url_map.strict_slashes = False
