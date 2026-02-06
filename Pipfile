@@ -24,6 +24,7 @@ flask-bcrypt = "*"
 flask-cors = "*"
 flask-jwt-extended = "*"
 sendgrid = "*"
+flask-mail = "*"
 
 [requires]
 python_version = "3.13"
