@@ -123,7 +123,7 @@ export const DoctorCard = ({ doctor }) => {
                     <button
                         className="btn w-100 fw-bold py-2 shadow-sm"
                         style={{ backgroundColor: "#93bfef", color: "#FFFFFF", borderRadius: "8px", border: "none" }}
-                        onClick={() => navigate(`/doctor/${doctor.id}`)}
+                        onClick={() => navigate(`/doctorpage/${doctor.id}`)}
                     >
                         Book online
                     </button>
@@ -132,3 +132,4 @@ export const DoctorCard = ({ doctor }) => {
         </div>
     );
 };
+
