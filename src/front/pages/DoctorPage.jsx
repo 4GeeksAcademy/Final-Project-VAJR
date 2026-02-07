@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import useGlobalReducer from "../hooks/useGlobalReducer"
 import { Biography } from "./Biography"
 import { DocttoCalendar } from "./DoctorCalendar"
@@ -14,7 +14,6 @@ export const DoctorPage = () => {
     const { store } = useGlobalReducer()
 
     const [doctor, setDoctor] = useState({})
-    const [filtraDoctorRelate, setFiltraDoctorRelate] = useState([])
 
     const aboutRef = useRef(null)
     const locationRef = useRef(null)
@@ -28,7 +27,7 @@ export const DoctorPage = () => {
     const [showSticky, setShowSticky] = useState(false)
 
     const getDoctor = async () => {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/${doctorId}`)
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/doctor/${doctorId}`)
         const data = await response.json()
         setDoctor(data.data)
     }
@@ -56,10 +55,6 @@ export const DoctorPage = () => {
         window.addEventListener("scroll", handleScroll)
         return () => window.removeEventListener("scroll", handleScroll)
     }, [])
-
-    if (!doctor) {
-        return <p className="text-center mt-5 fs-2"> Don't have this Doctor id... </p>
-    }
 
 
     return (
@@ -90,10 +85,14 @@ export const DoctorPage = () => {
                                 <h4 className="fs-3"> Dr. {doctor.name} </h4>
                                 <p className=" mt-1" style={{ color: "#468BE6" }}>{doctor.specialties}</p>
                                 <p className="fw-lighter"> {doctor.address} </p>
+
+                                {localStorage.getItem("token") && (
+                                    <Link to="/doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
+                                )}
                             </div>
                         </div>
                         <div className="pt-4 fw-light">
-                            <p >< Biography text={doctor.biography} /> </p>
+                            < Biography text={doctor.biography} />
                         </div>
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">

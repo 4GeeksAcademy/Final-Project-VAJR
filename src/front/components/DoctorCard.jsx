@@ -16,7 +16,7 @@ export const DoctorCard = ({ doctor }) => {
             if (!doctor.id) return;
             try {
                 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                const response = await fetch(`${backendUrl}/api/doctor/${doctor.id}/availability`);
+                const response = await fetch(`${backendUrl}api/doctor/${doctor.id}/availability`);
                 if (response.ok) {
                     const data = await response.json();
                     if (Array.isArray(data)) setSlots(data.slice(0, 3));
