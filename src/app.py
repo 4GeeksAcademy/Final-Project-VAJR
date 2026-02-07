@@ -1,21 +1,23 @@
-import os
-from flask_cors import CORS
-from flask_cors import cross_origin
-from datetime import time, timedelta, timezone
-import datetime
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-from flask_bcrypt import Bcrypt
-from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
-from flask_migrate import Migrate
-from flask_swagger import swagger
-from api.utils import APIException, generate_sitemap
 from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
-from api.routes import api
-from api.admin import setup_admin
-from api.commands import setup_commands
-from flask_mail import Mail, Message
-from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail as SendGridMail
+from sendgrid import SendGridAPIClient
+from flask_mail import Mail, Message
+from api.commands import setup_commands
+from api.admin import setup_admin
+from api.routes import api
+from api.utils import APIException, generate_sitemap
+from flask_swagger import swagger
+from flask_migrate import Migrate
+from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
+import datetime
+from datetime import time, timedelta, timezone
+from flask_cors import cross_origin
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # from models import Person
@@ -52,6 +54,8 @@ setup_admin(app)
 setup_commands(app)
 # mail
 
+# mail
+
 
 def send_sendgrid_email(to, subject, html_content):
     message = Mail(
@@ -69,8 +73,10 @@ def send_sendgrid_email(to, subject, html_content):
         return False
 
 
+
 bcrypt = Bcrypt(app)
 app.register_blueprint(api, url_prefix="/api")
+
 
 
 @app.route('/api/doctor/<int:doctor_id>/availability', methods=['GET'])
@@ -217,6 +223,7 @@ def private_doctor():
 # PACIENT
 
 
+
 @app.route('/api/pacient/login', methods=['POST'])
 def pacient_login():
     request_body = request.get_json(silent=True)
@@ -229,6 +236,8 @@ def pacient_login():
     if pacient is None:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
+    pw_check = bcrypt.check_password_hash(
+        pacient.password, request_body['password'])
     pw_check = bcrypt.check_password_hash(
         pacient.password, request_body['password'])
     if pw_check == False:
@@ -308,6 +317,7 @@ def get_all_doctors():
     return jsonify({'msg': new_serialise_doctors}), 200
 
 
+
 @app.route('/api/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
     doctor = Doctors.query.get(doctor_id)
@@ -335,6 +345,7 @@ def edit_doctor(doctor_id):
         doctor.specialties = SpecialtyType[body['specialties']]
     if 'biography' in body:
         doctor.biography = body['biography']
+    if "address" in body:
     if "address" in body:
         doctor.address = body['address']
     if "latitud" in body:
@@ -368,6 +379,9 @@ def specialidad():
 
 
 @app.route('/hooks/cal-booking', methods=['POST'])
+
+
+@app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
     if not data:
