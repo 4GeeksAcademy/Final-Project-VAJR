@@ -346,7 +346,6 @@ def edit_doctor(doctor_id):
     if 'biography' in body:
         doctor.biography = body['biography']
     if "address" in body:
-    if "address" in body:
         doctor.address = body['address']
     if "latitud" in body:
         doctor.latitud = body['latitud']
