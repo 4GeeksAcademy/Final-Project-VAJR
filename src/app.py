@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory, Bluepri
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType,StatusAppointment
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -31,8 +31,8 @@ app.url_map.strict_slashes = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-#CORS(app)
-CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
+CORS(app)
+# CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
 app.json.sort_keys = False
 
 # database condiguration
@@ -50,11 +50,12 @@ db.init_app(app)
 setup_admin(app)
 # add the admin
 setup_commands(app)
-#mail
+# mail
+
 
 def send_sendgrid_email(to, subject, html_content):
     message = Mail(
-        from_email=os.getenv('FROM_EMAIL'), 
+        from_email=os.getenv('FROM_EMAIL'),
         to_emails=to,
         subject=subject,
         html_content=html_content)
@@ -67,9 +68,10 @@ def send_sendgrid_email(to, subject, html_content):
         print(f"Error SendGrid: {e}")
         return False
 
+
 bcrypt = Bcrypt(app)
 app.register_blueprint(api, url_prefix="/api")
- 
+
 
 @app.route('/api/doctor/<int:doctor_id>/availability', methods=['GET'])
 def get_doctor_availability(doctor_id):
@@ -140,6 +142,7 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 # any other endpoint will try to serve it like a static file
 
+
 @app.route('/api/doctor/register', methods=['POST'])
 def register_doctor():
     body = request.get_json(silent=True)
@@ -175,7 +178,7 @@ def register_doctor():
     new_doctor.address = body['address']
     new_doctor.latitud = 0.0
     new_doctor.longitud = 0.0
-    new_doctor.picture =body.get('picture', '') 
+    new_doctor.picture = body.get('picture', '')
     db.session.add(new_doctor)
     db.session.commit()
     return jsonify({'msg': 'User create succesfully.'}), 200
@@ -212,7 +215,7 @@ def private_doctor():
     return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
 # PACIENT
- 
+
 
 @app.route('/api/pacient/login', methods=['POST'])
 def pacient_login():
@@ -226,7 +229,8 @@ def pacient_login():
     if pacient is None:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
-    pw_check = bcrypt.check_password_hash(pacient.password, request_body['password'])
+    pw_check = bcrypt.check_password_hash(
+        pacient.password, request_body['password'])
     if pw_check == False:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
@@ -303,6 +307,7 @@ def get_all_doctors():
         new_serialise_doctors.append(doctor.serialize())
     return jsonify({'msg': new_serialise_doctors}), 200
 
+
 @app.route('/api/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
     doctor = Doctors.query.get(doctor_id)
@@ -330,7 +335,7 @@ def edit_doctor(doctor_id):
         doctor.specialties = SpecialtyType[body['specialties']]
     if 'biography' in body:
         doctor.biography = body['biography']
-    if "address" in body: 
+    if "address" in body:
         doctor.address = body['address']
     if "latitud" in body:
         doctor.latitud = body['latitud']
@@ -360,8 +365,9 @@ def specialidad():
 
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
-    
-@app.route('/api/hooks/cal-booking', methods=['POST'])
+
+
+@app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
     if not data:
@@ -369,7 +375,7 @@ def cal_webhook_receiver():
 
     trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
-    
+
     # Identificar emails en nuestra db paciente y doctor
     doctor_email = payload.get('organizer', {}).get('email')
     attendees = payload.get('attendees', [{}])
@@ -390,7 +396,7 @@ def cal_webhook_receiver():
             dt_object = datetime.fromisoformat(start_time_str)
 
             new_appointment = Appointments(
-                pacient_id=pacient.id, 
+                pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
                 reason=f"Cal.com: {payload.get('title')}",
@@ -404,7 +410,7 @@ def cal_webhook_receiver():
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
 
-    # Cancelacion de cita 
+    # Cancelacion de cita
     elif trigger_event == "BOOKING_CANCELLED":
         try:
             # Busco la cita existente por fecha, doctor y paciente
@@ -418,7 +424,7 @@ def cal_webhook_receiver():
             ).first()
 
             if appointment:
-                appointment.status = StatusAppointment.cancelled 
+                appointment.status = StatusAppointment.cancelled
                 db.session.commit()
                 print(f" Cita CANCELADA en base de datos")
                 return jsonify({"msg": "Cita cancelada correctamente"}), 200
@@ -431,103 +437,115 @@ def cal_webhook_receiver():
 
     return jsonify({"msg": "Evento no soportado"}), 400
 
-#Appointments
+# Appointments
 
 # crear cita
 
 
-#listar citas pacientes 
+# listar citas pacientes
 @app.route('/api/appointments/<int:id>', methods=['GET'])
 @jwt_required()
 def get_appointments_p(id):
-    pacient_email=get_jwt_identity()
-    
-    pacient=Pacient.query.filter_by(email=pacient_email).first()
-    
+    pacient_email = get_jwt_identity()
+
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
+
     if not pacient:
         return jsonify({"msg": "Usuario no encontrado"}), 404
-     
-    appointments = Appointments.query.filter_by(id=id, pacient_id=pacient.id).first()
-    
+
+    appointments = Appointments.query.filter_by(
+        id=id, pacient_id=pacient.id).first()
+
     if not appointments:
-          return jsonify({"msg":"Cita no encontrada"}),404
-    
+        return jsonify({"msg": "Cita no encontrada"}), 404
+
     return jsonify([appointment.serialize() for appointment in appointments]), 200
 
-#listar cita
-@app.route('/api/appointments', methods=['GET'])     
+# listar cita
+
+
+@app.route('/api/appointments', methods=['GET'])
 @jwt_required()
-def get_appt_pacient():            
-    pacient_email=get_jwt_identity()
-   
-    pacient=Pacient.query.filter_by(email=pacient_email).first()
-    
+def get_appt_pacient():
+    pacient_email = get_jwt_identity()
+
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
+
     if not pacient:
         return jsonify({"msg": "Usuario no encontrado"}), 404
-       
-    appointments=Appointments.query.filter_by(pacient_id=pacient.id).all()
-   
+
+    appointments = Appointments.query.filter_by(pacient_id=pacient.id).all()
+
     if not appointments:
-          return jsonify([]), 200 
-    
-          #return jsonify({"msg":"Cita no encontrada"}),404
+        return jsonify([]), 200
+
+        # return jsonify({"msg":"Cita no encontrada"}),404
     return jsonify([a.serialize() for a in appointments]), 200
 
 
 # listar citas doctor
 @app.route('/api/appointments/doctor', methods=['GET'])
 @jwt_required()
-def get_doctor_appointments ():
-        doctor_id=get_jwt_identity()
-        appointments=Appointments.query.filter_by(doctor_id=doctor_id).all()
-        if not appointments:
-            return jsonify([]), 200 
-            return jsonify({"msg":"No hay citas para este doctor"}),404
-        return jsonify([appointment.serialize() for appointment in appointments]),200
+def get_doctor_appointments():
+    doctor_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+    if not appointments:
+        return jsonify([]), 200
+        return jsonify({"msg": "No hay citas para este doctor"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
-#listar cita especifica doctor
-@app.route('/api/appointments/doctor/<int:id>', methods=['GET'])     
+# listar cita especifica doctor
+
+
+@app.route('/api/appointments/doctor/<int:id>', methods=['GET'])
 @jwt_required()
 def get_doctor_appointment_d(id):
-    doctor_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(id=id,doctor_id=doctor_id).first()
-    
-    if not appointments:
-          return jsonify({"msg":"Cita no encontrada"}),404
-    return jsonify([appointment.serialize() for appointment in appointments]),200
+    doctor_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(
+        id=id, doctor_id=doctor_id).first()
 
-#listar citas pacientes 
+    if not appointments:
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
+
+# listar citas pacientes
+
+
 @app.route('/api/appointments', methods=['GET'])
 @jwt_required()
 def get_appointments():
-    user_id=get_jwt_identity()
-    appointments=Appointments.query.filter_by(pacient_id=user_id).all()
-    return jsonify([appointment.serialize() for appointment in appointments]),200
+    user_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(pacient_id=user_id).all()
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
-#modificar appointments
-@app.route('/api/appointments/<int:id>',methods=['PUT'])
+# modificar appointments
+
+
+@app.route('/api/appointments/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_appointments(id):
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"msg": "Datos inválidos"}), 400
-    
-    pacient_email=get_jwt_identity()
-    pacient=Pacient.query.filter_by(email=pacient_email).first()
+
+    pacient_email = get_jwt_identity()
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
     if not pacient:
-        return jsonify({"mgs":"User not found"})
-    
-    appointment=Appointments.query.filter_by(id=id,pacient_id=pacient.id).first()
+        return jsonify({"mgs": "User not found"})
+
+    appointment = Appointments.query.filter_by(
+        id=id, pacient_id=pacient.id).first()
     if not appointment:
-        return jsonify({"msg":"Appointments not found "})
+        return jsonify({"msg": "Appointments not found "})
     if "dateTime" in data:
-       appointment.dateTime = data["dateTime"]
+        appointment.dateTime = data["dateTime"]
     if "reason" in data:
-       appointment.reason = data["reason"]  
-    
+        appointment.reason = data["reason"]
+
     db.session.commit()
-    return jsonify(appointment.serialize()),200
-    
+    return jsonify(appointment.serialize()), 200
+
+
 """ @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     # Capturar los datos crudos
@@ -586,23 +604,22 @@ def cal_webhook_receiver():
         db.session.rollback()
         print(f"ERROR al guardar en DB: {str(e)}")
         return jsonify({"msg": "Error interno al procesar la cita"}), 500 """
-    
+
+
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
-    user_id=get_jwt_identity()  
-    appointments=Appointments.query.filter_by(id=id,pacient_id=user_id).first()
+    user_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(
+        id=id, pacient_id=user_id).first()
     if not appointments:
-        return jsonify({"msg":"Cita no encontrada"}),404
-    appointments.status="cancelled"
+        return jsonify({"msg": "Cita no encontrada"}), 404
+    appointments.status = "cancelled"
     db.session.commit()
-    return jsonify({"msg":"Cita cancelada exitosamente"}),200
+    return jsonify({"msg": "Cita cancelada exitosamente"}), 200
+
 
 # this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-
-    
-
-

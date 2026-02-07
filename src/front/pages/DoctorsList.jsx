@@ -14,7 +14,7 @@ export const DoctorsList = () => {
         const fetchDoctors = async () => {
             try {
                 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                const response = await fetch(`${backendUrl}/doctor`);
+                const response = await fetch(`${backendUrl}/api/doctor`);
                 if (response.ok) {
                     const data = await response.json();
                     dispatch({
