@@ -27,7 +27,7 @@ export const DoctorPage = () => {
     const [showSticky, setShowSticky] = useState(false)
 
     const getDoctor = async () => {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/doctor/${doctorId}`)
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/${doctorId}`)
         const data = await response.json()
         setDoctor(data.data)
     }

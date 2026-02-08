@@ -6,21 +6,21 @@ export const FoundDoc = () => {
     const { store, dispatch } = useGlobalReducer();
     const [loading, setLoading] = useState(false);
 
-    const specialties = ["CARDIOLOGY", "DERMATOLOGY", "GENERAL PRACTICE", "PSYCHOLOGY", "ORTHOPEDICS", "NEUROLOGY", "GASTROENTEROLOGY"];
+    const specialties = ["Cardiology", "Dermatology", "General Practice", "Psychology", "Orthopedics", "Neurology", "Gastroenterology"];
 
     const fetchDoctors = async (specialty = null) => {
         setLoading(true);
         try {
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
             const url = specialty
-                ? `${backendUrl}/doctors?specialty=${specialty}`
+                ? `${backendUrl}/api/doctors?specialty=${encodeURIComponent(specialty)}`
                 : `${backendUrl}/api/doctor`;
 
             const response = await fetch(url);
 
             if (response.ok) {
                 const data = await response.json();
-                const payload = specialty ? data : data.msg;
+                const payload = data.msg || data; 
 
                 dispatch({ type: "set_doctors", payload: payload || [] });
             } else {

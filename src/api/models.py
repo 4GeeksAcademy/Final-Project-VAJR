@@ -71,11 +71,16 @@ class Doctors(db.Model):
     availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
     def serialize(self):
+
+        specialty = self.specialties
+        if hasattr(specialty, 'value'):
+            specialty = specialty.value
+
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "specialties": self.specialties.value,
+            "specialties": specialty,
             "biography": self.biography,
             "picture": self.picture,
             "address": self.address,

@@ -96,7 +96,7 @@ export const DoctorCard = ({ doctor }) => {
                 <div className="mb-3" style={{ fontSize: "0.85rem", color: "#313131" }}>
                     <div className="mb-1 text-truncate">
                         <i className="fa-solid fa-location-dot me-2 text-primary"></i>
-                        {typeof doctor.location === 'object' ? "Tampa, FL" : doctor.location || "Tampa, FL"}
+                        {doctor.address || "Location not available"}
                     </div>
                 </div>
 
@@ -123,9 +123,9 @@ export const DoctorCard = ({ doctor }) => {
                     <button
                         className="btn w-100 fw-bold py-2 shadow-sm"
                         style={{ backgroundColor: "#468BE6", color: "#FFFFFF", borderRadius: "8px", border: "none" }}
-                        onClick={() => navigate(`/doctor/${doctor.id}`)}
+                        onClick={() => navigate(`/doctorpage/${doctor.id}`)}
                     >
-                        Book online
+                        View full profile
                     </button>
                 </div>
             </div>

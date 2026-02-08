@@ -16,6 +16,7 @@ from flask_cors import cross_origin
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
+from sqlalchemy import text
 load_dotenv()
 
 
@@ -360,16 +361,16 @@ def edit_doctor(doctor_id):
 @app.route('/api/doctors', methods=['GET'])
 def specialidad():
     speciality = request.args.get("specialty")
-
-    query = Doctors.query
-
+    
     if speciality:
-        if speciality not in SpecialtyType.__members__:
-            return jsonify({'msg': 'Invalid speciality'}), 400
-        query = query.filter(Doctors.specialties == SpecialtyType[speciality])
-
-        doctors = query.all()
-        return jsonify([doct.serialize() for doct in doctors]), 200
+        db_speciality = speciality.replace(" ", "_")
+        doctors = Doctors.query.filter(
+            text("specialties = :val")
+        ).params(val=db_speciality).all()
+    else:
+        doctors = Doctors.query.all()
+    
+    return jsonify({'msg': [doct.serialize() for doct in doctors]}), 200
 
 
 @app.route('/hooks/cal-booking', methods=['POST'])

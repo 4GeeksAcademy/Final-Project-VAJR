@@ -27,22 +27,6 @@ export const Navbar = () => {
 					<i className="fa-solid fa-house-medical" style={{ color: "#1a5799", fontSize: "30px" }}></i>
 					<span className="navbar-brand mb-0 h1 fs-3 ms-2">HiDoc</span>
 				</Link>
-				{/* <div className="mx-auto d-none d-md-block">
-					<Link
-						to="/find-doctors"
-						className="text-decoration-none fw-bold"
-						style={{
-							color: "#000",
-							fontSize: "1.3rem",
-							letterSpacing: "0.5px",
-							transition: "color 0.2s ease"
-						}}
-						onMouseEnter={(e) => e.target.style.color = "#092F64"}
-						onMouseLeave={(e) => e.target.style.color = "#1A5799"}
-					>
-						Medical Network
-					</Link>
-				</div> */}
 				{!verifyToken(token) ? (
 					<>
 						<button type="button" className="btn nav-item dropdown ms-auto me-2">
@@ -52,12 +36,12 @@ export const Navbar = () => {
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
 								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
-									<Link to="/doctor/login" className="dropdown-item ms-2">Log in</Link>
+									<Link to="/doctor/login" className="dropdown-button dropdown-item">Log in</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
 								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
-									<Link to="/api/pacient/login" className="dropdown-item ms-2">Log in</Link>
+									<Link to="/api/pacient/login" className="dropdown-button dropdown-item">Log in</Link>
 								</li>
 							</ul>
 						</button>
@@ -68,12 +52,12 @@ export const Navbar = () => {
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
 								<p className="ms-3 mb-0"><b>Doctors</b></p>
 								<li>
-									<Link to="/api/doctor/register" className="dropdown-item ms-2">Sign up</Link>
+									<Link to="/api/doctor/register" className="dropdown-button dropdown-item">Sign up</Link>
 								</li>
 								<li><hr className="dropdown-divider" /></li>
 								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li>
-									<Link to="/api/pacient/signup" className="dropdown-item ms-2">Sign up</Link>
+									<Link to="/api/pacient/signup" className="dropdown-button dropdown-item">Sign up</Link>
 								</li>
 							</ul>
 						</button>
