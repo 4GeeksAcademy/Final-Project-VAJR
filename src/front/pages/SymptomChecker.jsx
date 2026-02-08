@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export const SymptomChecker = () => {
-    
+
     const token = localStorage.getItem("token")
     const navigate = useNavigate()
     const resultsRef = useRef(null)
@@ -23,7 +23,7 @@ export const SymptomChecker = () => {
         },
         "ChestPain": {
             specialists: ["Cardiologist", "Emergency Medicine"],
-            urgency: "high" 
+            urgency: "high"
         },
         "Rash": {
             specialists: ["Dermatologist", "Allergist"],
@@ -66,7 +66,7 @@ export const SymptomChecker = () => {
             urgency: "low"
         },
         "Otalgia": {
-            specialists: ["Otolaryngologist", "General Practitioner"], 
+            specialists: ["Otolaryngologist", "General Practitioner"],
             urgency: "low"
         },
         "Pruritus": {
@@ -110,13 +110,13 @@ export const SymptomChecker = () => {
             }
         };
         if (!verifyToken(token)) {
-            navigate("/login")
+            navigate("/api/pacient/signup")
         }
     }, [token, navigate])
 
     const getDoctorSpecialty = (mainSymptom) => {
         const data = symptomDatabase[mainSymptom]
-        
+
         if (!data) {
             alert("Please select a symptom first.")
         }
@@ -130,9 +130,9 @@ export const SymptomChecker = () => {
 
     useEffect(() => {
         if (suggestedDoctors && resultsRef.current) {
-            resultsRef.current.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
+            resultsRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
             })
         }
     }, [suggestedDoctors])
@@ -144,7 +144,7 @@ export const SymptomChecker = () => {
         }
 
         setIsLoading(true)
-        
+
         setTimeout(() => {
             const result = getDoctorSpecialty(selectedSymptom)
             setSuggestedDoctors(result)
@@ -156,7 +156,7 @@ export const SymptomChecker = () => {
         <div className="container mt-5">
             <h1 className="text-center fw-bold mb-2">What is the main issue you want to address?</h1>
             <p className="text-center text-muted fs-5 mb-4">Choose your main symptom below to begin your consultation.</p>
-        
+
             {selectedSymptom === "ChestPain" && (
                 <div className="alert alert-danger text-center mb-4 shadow-sm">
                     <i className="fa-solid fa-triangle-exclamation me-2"></i>
@@ -165,32 +165,32 @@ export const SymptomChecker = () => {
             )}
 
             <div className="d-flex justify-content-center mb-5">
-                <div className="rounded-4 shadow-sm p-4" 
-                    style={{ 
-                        backgroundColor: "#E3F2FD", 
-                        width: "100%", 
+                <div className="rounded-4 shadow-sm p-4"
+                    style={{
+                        backgroundColor: "#E3F2FD",
+                        width: "100%",
                         maxWidth: "450px",
                         minHeight: "550px"
                     }}>
-                    
+
                     {symptomsList.map((s) => (
                         <div className="form-check mb-3" key={s.value}>
-                            <input 
-                                className="custom-radio" 
-                                type="radio" 
-                                name="symptomsCheck" 
+                            <input
+                                className="custom-radio"
+                                type="radio"
+                                name="symptomsCheck"
                                 id={s.value}
                                 value={s.value}
                                 checked={selectedSymptom === s.value}
                                 onChange={(e) => setSelectedSymptom(e.target.value)}
-                                style={{ 
+                                style={{
                                     cursor: "pointer",
                                     width: "20px",
                                     height: "20px"
                                 }}
                             />
-                            <label 
-                                className="radio-label ms-2 fs-4" 
+                            <label
+                                className="radio-label ms-2 fs-4"
                                 htmlFor={s.value}
                             >
                                 {s.label}
@@ -199,15 +199,15 @@ export const SymptomChecker = () => {
                     ))}
 
                     <div className="d-flex justify-content-center mt-4">
-                        <button 
+                        <button
                             id="FindYourSpecialist-button"
-                            type="button" 
+                            type="button"
                             className="btn btn-primary btn-lg px-4 py-2 rounded-3 shadow-sm"
-                            style={{ 
+                            style={{
                                 backgroundColor: "#1A5799",
                                 border: "none"
                             }}
-                            onClick={handleSearch} 
+                            onClick={handleSearch}
                             disabled={isLoading}
                         >
                             {isLoading ? (
@@ -228,10 +228,10 @@ export const SymptomChecker = () => {
 
             {suggestedDoctors && (
                 <div ref={resultsRef} className="d-flex justify-content-center mt-4 mb-5">
-                    <div className={`alert ${suggestedDoctors.urgency === 'high' ? 'alert-danger' : 'alert-primary'} fs-5 shadow-sm`} 
-                        role="alert" 
+                    <div className={`alert ${suggestedDoctors.urgency === 'high' ? 'alert-danger' : 'alert-primary'} fs-5 shadow-sm`}
+                        role="alert"
                         style={{ maxWidth: "450px", width: "100%" }}>
-                        
+
                         <div className="d-flex align-items-center">
                             <i className={`fa-solid ${suggestedDoctors.urgency === 'high' ? 'fa-triangle-exclamation' : 'fa-user-doctor'} me-3 fs-2`}></i>
                             <div>

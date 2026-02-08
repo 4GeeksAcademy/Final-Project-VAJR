@@ -27,7 +27,7 @@ export const Navbar = () => {
 					<i className="fa-solid fa-house-medical" style={{ color: "#1a5799", fontSize: "30px" }}></i>
 					<span className="navbar-brand mb-0 h1 fs-3 ms-2">HiDoc</span>
 				</Link>
-				<div className="mx-auto d-none d-md-block">
+				{/* <div className="mx-auto d-none d-md-block">
 					<Link
 						to="/find-doctors"
 						className="text-decoration-none fw-bold"
@@ -42,7 +42,7 @@ export const Navbar = () => {
 					>
 						Medical Network
 					</Link>
-				</div>
+				</div> */}
 				{!verifyToken(token) ? (
 					<>
 						<button type="button" className="btn nav-item dropdown ms-auto me-2">

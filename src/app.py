@@ -11,8 +11,7 @@ from flask_migrate import Migrate
 from flask import Flask, request, jsonify, url_for, send_from_directory, Blueprint
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-import datetime
-from datetime import time, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from flask_cors import cross_origin
 from flask_cors import CORS
 import os
@@ -73,10 +72,8 @@ def send_sendgrid_email(to, subject, html_content):
         return False
 
 
-
 bcrypt = Bcrypt(app)
 app.register_blueprint(api, url_prefix="/api")
-
 
 
 @app.route('/api/doctor/<int:doctor_id>/availability', methods=['GET'])
@@ -177,7 +174,7 @@ def register_doctor():
     new_doctor.name = body['name']
     new_doctor.phone = body['phone']
     new_doctor.email = body['email']
-    new_doctor.specialties = SpecialtyType[body['specialties']]
+    new_doctor.specialties = SpecialtyType[body['specialties']].value
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_doctor.password = pw_hash
     new_doctor.biography = ''
@@ -221,7 +218,6 @@ def private_doctor():
     return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
 # PACIENT
-
 
 
 @app.route('/api/pacient/login', methods=['POST'])
@@ -317,7 +313,6 @@ def get_all_doctors():
     return jsonify({'msg': new_serialise_doctors}), 200
 
 
-
 @app.route('/api/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
     doctor = Doctors.query.get(doctor_id)
@@ -378,8 +373,6 @@ def specialidad():
 
 
 @app.route('/hooks/cal-booking', methods=['POST'])
-
-
 @app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)

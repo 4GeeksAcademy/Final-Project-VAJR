@@ -10,11 +10,13 @@ db = SQLAlchemy()
 
 
 class SpecialtyType(enum.Enum):
-    CARDIOLOGY = "Cardiology"
-    DERMATOLOGY = "Dermatology"
-    PEDIATRICS = "Pediatrics"
-    GENERAL_PRACTICE = "General Practice"
-    NEUROLOGY = "Neurology"
+    Cardiology = "Cardiology"
+    Dermatology = "Dermatology"
+    General_Practice = "General Practice"
+    Psychology = "Psychology"
+    Orthopedics = "Orthopedics"
+    Neurology = "Neurology"
+    Gastroenterology = "Gastroenterology"
 
 
 class StatusAppointment(enum.Enum):
