@@ -11,7 +11,7 @@ export const DocttoCalendar = ( {doctorId} ) => {
     const [event, setEvents] = useState([])
     const [cita, setcita] = useState([])
   
-
+    
     const getAvailabitity = async () => {
 
         try {
