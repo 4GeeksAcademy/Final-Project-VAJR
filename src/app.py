@@ -34,8 +34,8 @@ app.url_map.strict_slashes = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-# CORS(app)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app)
+# CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
 app.json.sort_keys = False
 
 # database condiguration
@@ -55,6 +55,8 @@ setup_admin(app)
 setup_commands(app)
 # mail
 
+# mail
+
 
 def send_sendgrid_email(to, subject, html_content):
     message = Mail(
@@ -72,8 +74,10 @@ def send_sendgrid_email(to, subject, html_content):
         return False
 
 
+
 bcrypt = Bcrypt(app)
 app.register_blueprint(api, url_prefix="/api")
+
 
 
 @app.route('/api/doctor/<int:doctor_id>/availability', methods=['GET'])
@@ -220,6 +224,7 @@ def private_doctor():
 # PACIENT
 
 
+
 @app.route('/api/pacient/login', methods=['POST'])
 def pacient_login():
     request_body = request.get_json(silent=True)
@@ -232,6 +237,8 @@ def pacient_login():
     if pacient is None:
         return jsonify({'msg': 'Invalid email or password'}), 400
 
+    pw_check = bcrypt.check_password_hash(
+        pacient.password, request_body['password'])
     pw_check = bcrypt.check_password_hash(
         pacient.password, request_body['password'])
     if pw_check == False:
@@ -309,6 +316,7 @@ def get_all_doctors():
     for doctor in doctores:
         new_serialise_doctors.append(doctor.serialize())
     return jsonify({'msg': new_serialise_doctors}), 200
+
 
 
 @app.route('/api/doctor/<int:doctor_id>', methods=['GET'])
