@@ -169,6 +169,9 @@ export const DoctorPage = () => {
                             <DocttoCalendar doctorId={doctor.id}/>
                         </div>
                     </div>
+                    <p className="text-muted text-center my-4"
+                    style={{fontSize: "15px"}}
+                    >This is only referencial, to book an appointment look for the doctor on the booking page.</p>
                 </div>
             </div>
 

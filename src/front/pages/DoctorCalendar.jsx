@@ -59,7 +59,7 @@ export const DocttoCalendar = ({ doctorId }) => {
     );
 
     return (
-        <div className="calendar-wrapper w-100 border rounded bg-white p-3">
+        <div className="calendar-wrapper w-100 border rounded bg-white p-2">
             <div
                 className="d-flex overflow-auto pb-2 gap-3"
                 style={{ scrollbarWidth: "thin" }}
