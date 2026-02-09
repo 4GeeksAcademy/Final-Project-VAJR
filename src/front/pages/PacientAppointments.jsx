@@ -1,196 +1,258 @@
-
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useCallback, useEffect, useState } from "react";
-import { use } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Cal, { getCalApi } from "@calcom/embed-react";
-
-
+import "../index.css";
 
 export const PacientAppointments = () => {
-    const { doctor_id } = useParams();
     const navigate = useNavigate();
-    const { store, dispatch } = useGlobalReducer();
-    const [appointments, setAppointments] = useState([]);
-
-    const [selectedSlot, setSelectedSlot] = useState("");
-    const [doctorAvailability, setDoctorAvailability] = useState([]);
+    const { store } = useGlobalReducer();
+    const [specialties, setSpecialties] = useState([]);
+    const [doctorsList, setDoctorsList] = useState([]);
+    const [selectedSpecialty, setSelectedSpecialty] = useState("");
+    const [selectedDoctorId, setSelectedDoctorId] = useState("");
     const [doctor, setDoctor] = useState(null);
-    const [form, setForm] = useState({
-        pacient: "",
-        doctor: "",
-        dateTime: "",
-        reason: "",
-        status: ""
-    });
-    const [slots, setSlots] = useState([]);
+    const [form, setForm] = useState({ reason: "" });
     const [loading, setLoading] = useState(true);
 
-
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-
-    useEffect(() => {
-
-        const doctorData = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/${doctor_id}`, {
-                    method: "GET",
-                    headers: {"Content-Type": "application/json"
-                    //  "Authorization": `Bearer ${localStorage.getItem("token")}`
-                     },
-                    
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    setDoctor(data.data || data);
-                } else {
-                    console.error("Error al obtener doctor");
-                }
-            } catch (error) {
-                console.error("Error de conexión:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-       if (doctor_id) doctorData();
-    }, [doctor_id]);
-
+    // Inicializar Cal.com globalmente
     useEffect(() => {
         (async function () {
             const cal = await getCalApi();
             cal("ui", {
                 theme: "light",
-                cssVarsPerTheme: { light: { "cal-brand": "#092F64" }, dark: { "cal-brand": "#092F64" } },
+                styles: { branding: { brandColor: "#092F64" } },
                 hideEventTypeDetails: true,
                 layout: "month_view"
             });
-         cal("on", {
+        })();
+    }, []);
+
+
+    useEffect(() => {
+        (async function () {
+            const cal = await getCalApi();
+            cal("on", {
                 action: "bookingSuccessful",
-                callback: (e) => {
-                    console.log("Booking on Cal.com successful:", e.detail);
-                    handleBookingSuccess(e.detail.booking);
-                }
+                callback: async (event) => {
+                   
+                    Swal.fire({
+                        title: "¡Cita Agendada!",
+                        text: "Tu cita se ha registrado correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Ver mis citas",
+                        confirmButtonColor: "#035aa6",
+                        showCancelButton: false,
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            navigate("/pacient/listappointments");
+                        }
+                    });
+                },
             });
         })();
-    }, [doctor]);//para reiniciar al cambiar doctor
+    }, [navigate]);
 
-
-
-   
-
-
-    const handleBookingSuccess = async (bookingDetails) => {
-
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            Swal.fire("Log in", "You must be logged in to book", "warning");
-            return navigate("/api/pacient/login");
-        
-        }
-
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    doctor_id: doctor_id,
-                    dateTime: bookingDetails.startTime,
-                    reason: form.reason || "General consultation",
-                    cal_booking_id: bookingDetails.uid
-                })
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    title: "Appointment registered!",
-                    text: "The appointment has been successfully saved to your history.",
-                    icon: "success",
-                    confirmButtonText: "See my appointments",
-                    confirmButtonColor: "#035aa6"
-                }).then((result) => {
-                    if (result.isConfirmed) navigate("/listappointments");
+    // Fetch doctors
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor`, {
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
                 });
-            } else {
-                const errorData = await response.json();
-                Swal.fire("Error", errorData.msg || "Error al guardar en BD", "error");
+                if (!response.ok) throw new Error("Error fetching doctors");
+                const data = await response.json();
+                const doctors = Array.isArray(data.msg) ? data.msg : data.data || [];
+                setDoctorsList(doctors);
+                setSpecialties([...new Set(doctors.map((d) => d.specialties))]);
+            } catch (error) {
+                console.error("Fetch doctors error:", error);
+                Swal.fire("Error", "Cannot load doctors. Please check your connection.", "error");
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Error guardando cita:", error);
+        };
+        fetchDoctors();
+    }, []);
+
+ 
+    useEffect(() => {
+        if (!selectedDoctorId) {
+            setDoctor(null);
+            return;
+        }
+        const doctorData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/${selectedDoctorId}`, {
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setDoctor(data.data || data);
+                }
+            } catch (error) {
+                console.error("Error fetching doctor:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        doctorData();
+    }, [selectedDoctorId]);
+
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+    const handleBookClick = (e) => {
+        if (!doctor?.cal_link) {
+            e.preventDefault();
+            Swal.fire({ 
+                icon: "info", 
+                title: "Not Available", 
+                text: "This doctor hasn't linked their calendar yet", 
+                confirmButtonColor: "#035aa6" 
+            });
+            return;
+        }
+        if (!form.reason.trim()) {
+            e.preventDefault();
+            Swal.fire({ 
+                icon: "warning", 
+                title: "Missing Information", 
+                text: "Please enter a reason for the appointment", 
+                confirmButtonColor: "#035aa6" 
+            });
+            return;
         }
     };
 
+    const filteredDoctors = selectedSpecialty
+        ? doctorsList.filter((d) => d.specialties === selectedSpecialty)
+        : [];
 
     return (
-       <div className="container py-4">
-            <div className="card shadow-sm mx-auto" style={{ maxWidth: "500px" }}>
-                <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0 fw-bold" style={{ color: "#035aa6" }}>Book an appointment</h5>
-                    <button type="button" className="btn-close" onClick={() => navigate(-1)}></button>
-                </div>
-
-                <div className="card-body">
-                 
-                    {doctor && (
-                        <div className="d-flex align-items-center mb-4 p-2 border-bottom">
-                            <img
-                                src={doctor.picture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                alt={doctor.name}
-                                className="rounded-circle me-3"
-                                style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                            />
-                            <div>
-                                <h6 className="mb-0 fw-bold">Doctor</h6>
-                                <h6 className="mb-0 fw-bold">{doctor.name}</h6>
-                                <p><small className="text-muted">{doctor.specialties || "Especialista"}</small></p>
-                                
+        <div className="appt-root">
+            <div className="appt-container">
+                <div className="appt-wrapper">
+                    
+                    {/* Header */}
+                    <div className="appt-header">
+                        <div className="appt-header-body">
+                            <div className="appt-header-content">
+                                <div className="appt-header-info">
+                                    <div className="appt-header-icon">
+                                        <i className="fa-solid fa-calendar-plus"></i>
+                                    </div>
+                                    <div className="appt-header-text">
+                                        <h5>Book Appointment</h5>
+                                        <small>Select specialty and doctor</small>
+                                    </div>
+                                </div>
+                                <button type="button" className="appt-btn-close" onClick={() => navigate(-1)}>
+                                    <i className="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
                         </div>
-                    )}
-                            <div className="mb-4">
-                            <label className="form-label fw-semibold">Reason for the consultation:</label>
-                            <textarea
-                                className="form-control" rows="3" name="reason"
-                                value={form.reason} onChange={handleChange} placeholder="Please briefly describe the reason for your inquiry..." required/>
-                        </div >
-                
-                        {loading ? (
-                        <div className="text-center py-5">
-                            <div className="spinner-border text-primary" role="status"></div>
-                            <p className="mt-2">Loading calendar...</p>
+                    </div>
+
+           
+                    <div className="appt-card">
+                        <div className="appt-card-body">
+                            
+                            {/* Specialty */}
+                            <div className="appt-form-group">
+                                <label className="appt-label">
+                                    <i className="fa-solid fa-stethoscope"></i>
+                                    Specialty
+                                </label>
+                                <select
+                                    className="appt-select"
+                                    value={selectedSpecialty}
+                                    onChange={(e) => {
+                                        setSelectedSpecialty(e.target.value);
+                                        setSelectedDoctorId("");
+                                        setDoctor(null);
+                                    }}
+                                >
+                                    <option value="">Select specialty</option>
+                                    {specialties.map((s) => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                    
+                            {selectedSpecialty && (
+                                <div className="appt-form-group">
+                                    <label className="appt-label">
+                                        <i className="fa-solid fa-user-doctor"></i>
+                                        Doctor
+                                    </label>
+                                    <select
+                                        className="appt-select"
+                                        value={selectedDoctorId}
+                                        onChange={(e) => setSelectedDoctorId(e.target.value)}
+                                    >
+                                        <option value="">Select a doctor</option>
+                                        {filteredDoctors.map((doc) => (
+                                            <option key={doc.id} value={doc.id}>{doc.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                     
+                            {doctor && (
+                                <div className="appt-doctor-info appt-slide-up">
+                                    <img
+                                        src={doctor.picture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png "}
+                                        alt={doctor.name}
+                                        className="appt-doctor-avatar"
+                                    />
+                                    <div>
+                                        <h6 className="appt-doctor-name">{doctor.name}</h6>
+                                        <p className="appt-doctor-specialty">{doctor.specialties}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                  
+                            <div className="appt-form-group">
+                                <label className="appt-label">
+                                    <i className="fa-solid fa-clipboard-list"></i>
+                                    Reason for appointment
+                                </label>
+                                <input
+                                    type="text"
+                                    name="reason"
+                                    className="appt-input"
+                                    placeholder="e.g., Check-up, follow-up"
+                                    value={form.reason}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                       
+                            {doctor && (
+                                <div className="appt-d-grid">
+                                    <button
+                                        data-cal-link={doctor.cal_link}
+                                        data-cal-config={`{"layout":"month_view","theme":"light","name":"${store.pacient?.name || ''}","email":"${store.pacient?.email || ''}"}`}
+                                        className="appt-btn-primary"
+                                        onClick={handleBookClick}
+                                    >
+                                        <i className="fa-solid fa-calendar-check appt-me-2"></i>
+                                        Select Date & Time
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    ) : doctor?.cal_username ? (
-                        <div style={{ height: "450px", overflowY: "auto", border: "1px solid #eee", borderRadius: "8px" }}>
-                            <Cal 
-                                
-                                namespace="30min"
-                                calLink={doctor.cal_username}
-                                style={{ width: "100%", height: "100%" }}
-                                config={{ theme: "light", layout: "month_view", useSlotsViewOnSmallScreen: "true",
-                               bookingData: {
-                                    name: store.pacient?.name,  
-                                    email: store.pacient?.email
-        }
-    }}
-                            />
-                        </div>
-                    ) : (
-                        <div className="alert alert-warning text-center">
-                            <i className="fas fa-calendar-times mb-2 d-block fs-2"></i>
-                           This doctor does not have a schedule set up yet.
-                        </div>
-                    )}
-</div>
+                    </div>
                 </div>
             </div>
-       
+        </div>
     );
 };

@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 
 export const ForgotPwDoctor = () => {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
 
   const handleChangeEmail = (e) => {
@@ -30,9 +31,8 @@ if(response.ok){
             iconColor: "#18aded",
             confirmButtonText: "Close"
          }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate("/"); 
-                }
+          if (result.isConfirmed) {
+            navigate("/");}
             });
         } else {
             Swal.fire({

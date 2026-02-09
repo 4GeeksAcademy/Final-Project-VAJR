@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 
 export const ForgotPassword= ()=>{
     const [email, setEmail]=useState("");
+    const navigate=useNavigate()
     const[message,setMessage]=useState("");
 
      const handleChangeEmail = (e) => {
@@ -31,7 +32,7 @@ export const ForgotPassword= ()=>{
             confirmButtonText: "Close"
          }).then((result) => {
                 if (result.isConfirmed) {
-                    navigate("/pacient/login"); 
+                    navigate("/api/pacient/login"); 
                 }
             });
         } else {
