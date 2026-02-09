@@ -14,7 +14,6 @@ import os
 import datetime
 from datetime import time, timedelta, timezone
 from sendgrid import SendGridAPIClient
-from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 api = Blueprint("api", __name__)
@@ -84,52 +83,60 @@ def pacient_signup():
 
 #appointments
 
-@api.route('/api/appointments/', methods=['POST'])
-@jwt_required()
+@api.route('/api/appointments', methods=['POST', 'OPTIONS'])
+@cross_origin()
+@jwt_required() 
 def create_appointment():
+ 
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+    
     email_pacient = get_jwt_identity()
-
-
-    if not email_pacient:
-        return jsonify({"msg": "Missing or invalid token"}), 401
+    pacient = Pacient.query.filter_by(email=email_pacient).first()
+    if not pacient:
+        return jsonify({"msg": "el usuario no existe"}), 404
     
     body = request.get_json(silent=True)
     if not body:
             return jsonify({"msg": "el campo esta vacio"}), 400
     
-    doctor_id = body.get('doctor_id')
+    
+    doctor_id = body.get('doctor') or body.get('doctor_id')
     dateTime_raw = body.get('dateTime')
     reason = body.get('reason')
-    cal_booking_id = body.get('cal_booking_id')
+    cal_booking_uid = body.get('cal_link') or body.get('cal_booking_uid') 
 
-    if not doctor_id or not dateTime or not reason:
-        return jsonify({"msg": "Faltan campos requeridos"}), 400
+    if not doctor_id or not dateTime_raw or not reason:
+        return jsonify({"msg": "Required fields are missing."}), 400
     
-    pacient = Pacient.query.filter_by(email=email_pacient).first()
-    if not pacient:
-        return jsonify({"msg": "el usuario no existe"}), 404
-
     try:
-        # Convertir la fecha ISO de Cal.com a objeto datetime de Python
-        clean_date = dateTime_raw.replace('Z', '')
-        dt_object = datetime.fromisoformat(clean_date)
-    
+       
+        try:
+            dt_object = datetime.datetime.fromisoformat(dateTime_raw.replace('Z', '+00:00'))
+        except ValueError:
+          
+            dt_object = datetime.datetime.strptime(dateTime_raw, "%Y-%m-%dT%H:%M:%S.%fZ")
+            
         new_appointment = Appointments(
             pacient_id=pacient.id,
             doctor_id=doctor_id,
             dateTime=dt_object,
             reason=reason,
-            status=StatusAppointment.confirmed,
-            cal_booking_id = cal_booking_id
+            cal_booking_uid=cal_booking_uid,
+            status=StatusAppointment.confirmed
         )
         db.session.add(new_appointment)
         db.session.commit()
 
-        return jsonify({"msg": "Appointment created successfully.", "Appointment":new_appointment.serialize()}), 201
+        return jsonify({
+            "msg": "Appointment created successfully",
+            "appointment": new_appointment.serialize()
+        }), 201
+
     except Exception as e:
         db.session.rollback()
-        print(f"Error al crear cita: {str(e)}")
-        return jsonify({'msg': 'Error interno al procesar la cita'}), 500
+        print("ERROR CREATING APPOINTMENT:", e)
+        return jsonify({"msg": "Internal server error", "error": str(e)}), 500
 
 @api.route('/appointments/<int:id>', methods=['PUT'])
 @jwt_required()
@@ -291,3 +298,61 @@ def resetpassword_doct():
     
     db.session.commit()
     return jsonify({"msg": "Password updated successfully."}), 200
+
+@api.route('/api/appointments/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_appointment_reschedule(id):
+    appointment = Appointments.query.get(id)
+    if not appointment:
+        return jsonify({"msg": "No se encontró la cita original"}), 404
+
+    data = request.get_json()
+    
+    try:
+        # --- PASO 1: Lógica de Cal.com (Si aplica) ---
+        # Si tienes el booking_id anterior, lo cancelamos en la plataforma externa
+        if appointment.cal_booking_id:
+            # Aquí podrías pasarle un flag desde el front si realmente quieres 
+            # disparar la cancelación en la API de Cal.com
+            cancel_cal_booking(appointment.cal_booking_id)
+
+        # --- PASO 2: "Cancelar" la información vieja y actualizar con la nueva ---
+        # En lugar de borrar la fila, la reutilizamos (o podrías crear una nueva)
+        
+        if 'dateTime' in data:
+            # Manejo de zona horaria
+            new_date_str = data['dateTime'].replace('Z', '+00:00')
+            appointment.dateTime = datetime.fromisoformat(new_date_str)
+        
+        if 'reason' in data:
+            appointment.reason = data['reason']
+            
+        # Actualizamos el ID del nuevo booking que generó el widget de Cal.com
+        if 'calBookingId' in data:
+            appointment.cal_booking_id = data['calBookingId']
+            
+        # IMPORTANTE: Aseguramos que el estado sea confirmado para la nueva fecha
+        appointment.status = StatusAppointment.confirmed
+        
+        db.session.commit()
+        return jsonify(appointment.serialize()), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": "Error al reagendar", "error": str(e)}), 500
+
+def cancel_cal_booking(booking_id):
+    """Cancela booking en Cal.com usando su API REST"""
+    import requests, os
+    api_key = os.getenv('CAL_API_KEY')
+    if not api_key: return False # Si no hay API Key, saltamos este paso
+
+    try:
+        url = f"https://api.cal.com/v1/bookings/{booking_id}/cancel"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        # El motivo es útil para que el doctor sepa por qué se canceló la original
+        response = requests.post(url, headers=headers, json={"reason": "Reagendado por el paciente en hiDOC"})
+        return response.status_code < 400
+    except Exception as e:
+        print(f"Error cancelando en Cal.com: {e}")
+        return False

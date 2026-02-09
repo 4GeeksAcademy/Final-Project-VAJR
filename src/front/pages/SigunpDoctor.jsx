@@ -19,7 +19,7 @@ export const SignupDoctor = () => {
         address:" ",
         latitud: " ",
         longitud: " ",
-        longitud: " ",
+        cal_link: " ",
 
 
     })
