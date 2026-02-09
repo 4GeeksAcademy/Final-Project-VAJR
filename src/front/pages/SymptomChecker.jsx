@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
+import Swal from 'sweetalert2'
 
 export const SymptomChecker = () => {
 
@@ -137,9 +138,17 @@ export const SymptomChecker = () => {
         }
     }, [suggestedDoctors])
 
+    const ShowAlert = () => {
+        Swal.fire({
+            icon: "error",
+            title: "Please select a symptom first",
+            confirmButtonColor: "#1A5799",
+        })
+    }
+
     const handleSearch = () => {
         if (!selectedSymptom) {
-            alert("Please select a symptom first.")
+            ShowAlert()
             return
         }
 
@@ -151,6 +160,8 @@ export const SymptomChecker = () => {
             setIsLoading(false)
         }, 1000)
     }
+
+    
 
     return (
         <div className="container mt-5">
