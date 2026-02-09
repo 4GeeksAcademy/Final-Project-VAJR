@@ -1,16 +1,16 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer"; 
-import {useEffect,useState} from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useEffect, useState } from "react";
 import { use } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 
 
-export const ListAppointments=()=>{
+export const ListAppointments = () => {
     const { doctor_id } = useParams();
     const navigate = useNavigate();
-    const {store, dispatch}=useGlobalReducer();
-    const [appointments,setAppointments]=useState([]);
-    const [DoctorAvailability, setDoctorAvailability]=useState([]);
+    const { store, dispatch } = useGlobalReducer();
+    const [appointments, setAppointments] = useState([]);
+    const [DoctorAvailability, setDoctorAvailability] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ dateTime: "", reason: "" })
     const [doctorToReschedule, setDoctorToReschedule] = useState(null);
@@ -21,68 +21,70 @@ export const ListAppointments=()=>{
         pacient: "",
         doctor: "",
         dateTime: "",
-        reason:"",
-        status:""
+        reason: "",
+        status: ""
     });
 
-   
-   
-const handleEditChange =(e)=>{
-        setEditForm({...editForm,[e.target.name]:e.target.value});
+
+
+    const handleEditChange = (e) => {
+        setEditForm({ ...editForm, [e.target.name]: e.target.value });
     };
 
 
-        //lista general de paciente 
-const getAppointments=async()=>{
+    //lista general de paciente 
+    const getAppointments = async () => {
 
-             const token = localStorage.getItem("token");
-              console.log("Token enviado:", token); 
+        const token = localStorage.getItem("token");
+        console.log("Token enviado:", token);
 
-            if (!token) {
-                alert("Debes iniciar sesión");
-                navigate("/api/pacient/login");
-                return;
-            }
-         try{
-             const response=await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
-                method:"GET",
-                headers:{"Content-Type": "application/json",
-                  "Authorization": `Bearer ${token}`
-             }}); 
-            const data =await response.json();
-           if(response.ok){
+        if (!token) {
+            alert("Debes iniciar sesión");
+            navigate("/api/pacient/login");
+            return;
+        }
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
                 setAppointments(data);
-                 //setAppointments([]);
-            }else{
+                //setAppointments([]);
+            } else {
                 alert(data.msg || "Error en al obtener cita") //cambiar a alertSwe
             }
 
-        }catch(error){
-            console.error("Error de conexion:",error);
-         }
-  };
+        } catch (error) {
+            console.error("Error de conexion:", error);
+        }
+    };
 
-   const startEditing=(appt)=>{
-     setEditingId(appt.id);
-     setEditForm({dateTime:appt.dateTime, reason:appt.reason});
-   };
+    const startEditing = (appt) => {
+        setEditingId(appt.id);
+        setEditForm({ dateTime: appt.dateTime, reason: appt.reason });
+    };
 
 
-        
-const handleReschedule = (appt) => {
+
+    const handleReschedule = (appt) => {
         if (appt.doctor_cal_username) {
             setSelectedDoctorSlug(appt.doctor_cal_username);
             setAppointmentIdToUpdate(appt.id);
-            setEditForm({ reason: appt.reason }); 
+            setEditForm({ reason: appt.reason });
             setShowCal(true);
         } else {
-            Swal.fire("Error", "This doctor does not have Cal.com configured.","warning");
+            Swal.fire("Error", "This doctor does not have Cal.com configured.", "warning");
         }
     };
-   
-   const deleteAppointments =async(id)=>{
-       const confirm = await Swal.fire({
-            title:'You are sure?',
+
+    const deleteAppointments = async (id) => {
+        const confirm = await Swal.fire({
+            title: 'You are sure?',
             text: "The appointment will be permanently cancelled.",
             icon: 'warning',
             showCancelButton: true,
@@ -92,52 +94,54 @@ const handleReschedule = (appt) => {
         });
 
         if (confirm.isConfirmed) {
-        try{
-            const response=await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments/${id}`, {
-                method:"DELETE",
-                headers:{"Content-Type": "application/json",
-                  "Authorization":`Bearer ${localStorage.getItem("token")}`}
-            });
-            const data=await response.json();
-            
-        if (response.ok) {
-            
-             setAppointments(appointments.filter(a => a.id !== id));
-             Swal.fire("Cancelled", "Your appointment has been deleted.", "success");
-    } else {
-        alert(data.msg || "Error en al eliminar ") //cambiar a alertSwe
-    }
-        } catch (error) {
-            console.error("Error de conexión:", error);
-        
-         }
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+
+                    setAppointments(appointments.filter(a => a.id !== id));
+                    Swal.fire("Cancelled", "Your appointment has been deleted.", "success");
+                } else {
+                    alert(data.msg || "Error en al eliminar ") //cambiar a alertSwe
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+
+            }
         }
     };
-     
 
- const handleAutoUpdate = async (newDate) => {
-    try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments/${appointmentIdToUpdate}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({
-                dateTime: newDate,
-                reason: editForm.reason
-            })
-        });
 
-        if (response.ok) {
-            setShowCal(false);
-            getAppointments(); 
-            Swal.fire("Updated!", "Your appointment has been moved successfully.", "success");
+    const handleAutoUpdate = async (newDate) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments/${appointmentIdToUpdate}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({
+                    dateTime: newDate,
+                    reason: editForm.reason
+                })
+            });
+
+            if (response.ok) {
+                setShowCal(false);
+                getAppointments();
+                Swal.fire("Updated!", "Your appointment has been moved successfully.", "success");
+            }
+        } catch (error) {
+            console.error("Error actualizando:", error);
         }
-    } catch (error) {
-        console.error("Error actualizando:", error);
-    }
-};
+    };
 
     useEffect(() => {
         (async function () {
@@ -147,7 +151,7 @@ const handleReschedule = (appt) => {
                 hideEventTypeDetails: true, // Ayuda a evitar el error de markdownToSafeHTML
                 layout: "month_view"
             });
-                cal("on", {
+            cal("on", {
                 action: "bookingSuccessful",
                 callback: (e) => {
                     console.log("Successful reservation detected:", e.detail);
@@ -157,16 +161,16 @@ const handleReschedule = (appt) => {
             });
         })();
     }, [appointmentIdToUpdate, editForm.reason]);
-  
-useEffect(() => {
-    getAppointments();
-  
-}, []);
+
+    useEffect(() => {
+        getAppointments();
+
+    }, []);
 
 
- return (
+    return (
         <div className="container mt-5" style={{ maxWidth: "800px" }}>
-       
+
             {appointments.length > 0 && (
                 <div className="card mb-4 border-0 shadow-sm" style={{ backgroundColor: "#c7e5f2", color: "#035aa6", borderRadius: "15px" }}>
                     <div className="card-body p-4">
@@ -196,7 +200,7 @@ useEffect(() => {
                             <button className="btn btn-outline-primary btn-sm px-3" onClick={() => handleReschedule(appt)}>
                                 <i className="fa-solid fa-clock-rotate-left"></i> Reschedule
                             </button>
-                            <button className="btn btn-outline-danger btn-sm px-3" onClick={() => deleteAppointment(appt.id)}>
+                            <button className="btn btn-outline-danger btn-sm px-3" onClick={() => deleteAppointments(appt.id)}>
                                 <i className="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -204,7 +208,7 @@ useEffect(() => {
                 ))
             )}
 
-          
+
             {showCal && (
                 <div className="modal d-block shadow" style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1050 }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -216,17 +220,17 @@ useEffect(() => {
                             <div className="modal-body p-0">
                                 <div className="p-4 border-bottom bg-light">
                                     <label className="form-label fw-bold">¿Por qué motivo deseas modificar la cita?</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
+                                    <input
+                                        type="text"
+                                        className="form-control"
                                         placeholder="Ej: Seguimiento de tratamiento"
-                                        value={editForm.reason} 
+                                        value={editForm.reason}
                                         onChange={(e) => setEditForm({ reason: e.target.value })}
                                     />
                                     <small className="text-primary">Después de escribir el motivo, elige la nueva fecha abajo:</small>
                                 </div>
                                 <div style={{ height: "500px", overflowY: "auto" }}>
-                                    <Cal 
+                                    <Cal
                                         namespace="30min"
                                         calLink={selectedDoctorSlug}
                                         style={{ width: "100%", height: "100%" }}

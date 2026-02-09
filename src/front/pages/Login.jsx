@@ -15,7 +15,7 @@ export const Login = () => {
   const handleChangePassword = (e) => {
     setPassword(e.target.value);
   }
- const DEFAULT_DOCTOR_ID =1;
+  const DEFAULT_DOCTOR_ID = 1;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,7 +23,8 @@ export const Login = () => {
 
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json"
+        headers: {
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ email, password }),
       });
@@ -40,10 +41,17 @@ export const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        dispatch({  type: "login_pacient", payload: data.token  });
+        dispatch({
+          type: "login_pacient",
+          payload: {
+            token: data.token,
+            pacient: data.pacient
+          }
+        });
+
         console.log("login exitoso");
-        navigate(`/api/appointments/${DEFAULT_DOCTOR_ID}`);
-         //navigate("/api/listappointments");
+        navigate('/');
+        //navigate("/api/listappointments");
       } else {
         alert(data.msg || "Error al iniciar sesión");
       }
@@ -53,6 +61,7 @@ export const Login = () => {
       alert("Error de conexión: ", error.message);
     }
   };
+
 
   return (
     <div className="vip-background">
@@ -84,15 +93,15 @@ export const Login = () => {
                 <div className="d-flex justify-content-center pb-2">
                   <button type="button" className="btn btn-link ">
                     <Link to="/api/pacient/forgotpassword">
-                    Forgot Password
+                      Forgot Password
                     </Link>
-               </button>
+                  </button>
+                </div>
+              </form>
             </div>
-            </form>
           </div>
-       </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };

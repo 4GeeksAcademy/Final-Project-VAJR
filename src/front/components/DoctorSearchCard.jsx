@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCalApi } from "@calcom/embed-react";
 import "./DoctorSearchCard.css";
+import Swal from "sweetalert2";
 
 export const DoctorSearchCard = ({ doctor }) => {
     const navigate = useNavigate();
@@ -17,13 +18,32 @@ export const DoctorSearchCard = ({ doctor }) => {
             });
         })();
     }, []);
-    
+
     const getLocationString = (loc) => {
         if (!loc) return "Location not available";
         return typeof loc === 'object' ? "Caracas, Venezuela" : loc;
     };
 
     const specialty = doctor.specialties || "Specialist";
+
+    const verifyToken = () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            Swal.fire({
+                title: "Login required",
+                text: "You must be logged in to book an appointment",
+                icon: "warning",
+                confirmButtonText: "Log in"
+            }).then(() => {
+                navigate("/api/pacient/login");
+            });
+            return;
+        }
+
+        navigate(`/api/appointments/${doctor.id}`);
+
+    }
 
     return (
         <div className="card doctor-card mb-4 shadow-sm border-0">
@@ -40,19 +60,19 @@ export const DoctorSearchCard = ({ doctor }) => {
                         <h4 className="doc-name text-truncate">
                             Dr. {doctor.name}
                         </h4>
-                        
+
                         <div>
                             <span className="doc-specialty">
                                 {specialty}
                             </span>
                         </div>
-                        
+
                         <div className="doc-stats mb-2">
                             <i className="fa-solid fa-star text-warning"></i>
-                            <span className="fw-bold text-dark">4.9</span> 
+                            <span className="fw-bold text-dark">4.9</span>
                             <span className="text-muted small ms-1">(120 reviews)</span>
                         </div>
-                        
+
                         <p className="doc-location mb-0 text-truncate">
                             <i className="fa-solid fa-location-dot me-2 text-danger opacity-75"></i>
                             {getLocationString(doctor.location)}
@@ -62,13 +82,22 @@ export const DoctorSearchCard = ({ doctor }) => {
 
                 <div className="col-md-4 border-start-md d-flex align-items-stretch bg-light bg-opacity-25">
                     <div className="p-4 d-flex flex-column justify-content-center w-100">
-                        <button
+                        {/* <button
                             data-cal-link={doctor.cal_link}
                             className="btn-book-appointment mb-2"
                         >
                             <i className="fa-regular fa-calendar-check"></i>
                             Book Appointment
+                        </button> */}
+
+                        <button className="btn-book-appointment mb-2"
+                            onClick={verifyToken}>
+                            <i className="fa-regular fa-calendar-check"></i>
+                            Book Appointment
                         </button>
+
+
+
                         <button
                             className="btn btn-sm btn-view-profile w-100"
                             onClick={() => navigate(`/doctor/${doctor.id}`)}

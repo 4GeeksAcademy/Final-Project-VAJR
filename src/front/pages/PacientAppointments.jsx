@@ -39,14 +39,15 @@ export const PacientAppointments = () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/${doctor_id}`, {
                     method: "GET",
-                    headers: {"Content-Type": "application/json"
-                    //  "Authorization": `Bearer ${localStorage.getItem("token")}`
-                     },
-                    
+                    headers: {
+                        "Content-Type": "application/json"
+                        //  "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
+
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    
+
                     setDoctor(data.data || data);
                 } else {
                     console.error("Error al obtener doctor");
@@ -57,7 +58,7 @@ export const PacientAppointments = () => {
                 setLoading(false);
             }
         };
-       if (doctor_id) doctorData();
+        if (doctor_id) doctorData();
     }, [doctor_id]);
 
     useEffect(() => {
@@ -69,7 +70,7 @@ export const PacientAppointments = () => {
                 hideEventTypeDetails: true,
                 layout: "month_view"
             });
-         cal("on", {
+            cal("on", {
                 action: "bookingSuccessful",
                 callback: (e) => {
                     console.log("Booking on Cal.com successful:", e.detail);
@@ -81,7 +82,7 @@ export const PacientAppointments = () => {
 
 
 
-   
+
 
 
     const handleBookingSuccess = async (bookingDetails) => {
@@ -91,7 +92,7 @@ export const PacientAppointments = () => {
         if (!token) {
             Swal.fire("Log in", "You must be logged in to book", "warning");
             return navigate("/api/pacient/login");
-        
+
         }
 
         try {
@@ -130,7 +131,7 @@ export const PacientAppointments = () => {
 
 
     return (
-       <div className="container py-4">
+        <div className="container py-4">
             <div className="card shadow-sm mx-auto" style={{ maxWidth: "500px" }}>
                 <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                     <h5 className="mb-0 fw-bold" style={{ color: "#035aa6" }}>Book an appointment</h5>
@@ -138,7 +139,7 @@ export const PacientAppointments = () => {
                 </div>
 
                 <div className="card-body">
-                 
+
                     {doctor && (
                         <div className="d-flex align-items-center mb-4 p-2 border-bottom">
                             <img
@@ -151,46 +152,69 @@ export const PacientAppointments = () => {
                                 <h6 className="mb-0 fw-bold">Doctor</h6>
                                 <h6 className="mb-0 fw-bold">{doctor.name}</h6>
                                 <p><small className="text-muted">{doctor.specialties || "Especialista"}</small></p>
-                                
+
                             </div>
                         </div>
                     )}
-                            <div className="mb-4">
-                            <label className="form-label fw-semibold">Reason for the consultation:</label>
-                            <textarea
-                                className="form-control" rows="3" name="reason"
-                                value={form.reason} onChange={handleChange} placeholder="Please briefly describe the reason for your inquiry..." required/>
-                        </div >
-                
-                        {loading ? (
+                    {store.pacient && (
+                        <div className="mb-3 p-2 border rounded bg-light">
+                            <p className="mb-1">
+                                <strong>Patient:</strong> {store.pacient.name}
+                            </p>
+                            <p className="mb-0">
+                                <strong>Email:</strong> {store.pacient.email}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="mb-4">
+                        <label className="form-label fw-semibold">Reason for the consultation:</label>
+                        <textarea
+                            className="form-control" rows="3" name="reason"
+                            value={form.reason} onChange={handleChange} placeholder="Please briefly describe the reason for your inquiry..." required />
+                    </div >
+
+                    {!localStorage.getItem("token") ? (
+                        <div className="alert alert-warning text-center">
+                            <i className="fa-solid fa-lock fs-3 mb-2"></i>
+                            <p className="mb-2">You must be logged in to book an appointment</p>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => navigate("/api/pacient/login")}
+                            >
+                                Log in
+                            </button>
+                        </div>
+                    ) : loading ? (
                         <div className="text-center py-5">
-                            <div className="spinner-border text-primary" role="status"></div>
-                            <p className="mt-2">Loading calendar...</p>
+                            <div className="spinner-border text-primary"></div>
+                            <p>Loading calendar...</p>
                         </div>
                     ) : doctor?.cal_username ? (
-                        <div style={{ height: "450px", overflowY: "auto", border: "1px solid #eee", borderRadius: "8px" }}>
-                            <Cal 
-                                
+                        <div style={{ height: "450px" }}>
+                            <Cal
                                 namespace="30min"
-                                calLink={doctor.cal_username}
+                                calLink={`${doctor.cal_username}/30min`}
                                 style={{ width: "100%", height: "100%" }}
-                                config={{ theme: "light", layout: "month_view", useSlotsViewOnSmallScreen: "true",
-                               bookingData: {
-                                    name: store.pacient?.name,  
-                                    email: store.pacient?.email
-        }
-    }}
+                                config={{
+                                    theme: "light",
+                                    layout: "month_view",
+                                    bookingData: {
+                                        name: store.pacient?.name,
+                                        email: store.pacient?.email
+                                    }
+                                }}
                             />
                         </div>
                     ) : (
                         <div className="alert alert-warning text-center">
-                            <i className="fas fa-calendar-times mb-2 d-block fs-2"></i>
-                           This doctor does not have a schedule set up yet.
+                            This doctor does not have a schedule yet.
                         </div>
                     )}
-</div>
+
                 </div>
             </div>
-       
+        </div>
+
     );
 };

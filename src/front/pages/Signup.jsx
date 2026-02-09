@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import React, { useEffect, useState } from "react";
- 
+
 
 export const Signup = () => {
     const navigate = useNavigate();
@@ -16,31 +16,39 @@ export const Signup = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
 
- const handleSignupPacients = async (e) => {
-    e.preventDefault();
-    try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(form) 
-        });
+    const handleSignupPacients = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(form)
+            });
 
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        console.log("login exitoso")
-        navigate("/api/pacient/login");
-      } else {
-        alert(data.msg || "Error al iniciar sesion");
-      }
-    } catch (error) {
-      console.error("Error en login:", error);
-      alert("Error de conexion con el servidor");
-    }
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem("token", data.token);
 
-  };
+                dispatch({
+                    type: "login_pacient",
+                    payload: {
+                        token: data.token,
+                        pacient: data.pacient
+                    }
+                });
 
-return (
+                navigate("/");
+            } else {
+                alert(data.msg || "Error al iniciar sesion");
+            }
+        } catch (error) {
+            console.error("Error en login:", error);
+            alert("Error de conexion con el servidor");
+        }
+
+    };
+
+    return (
         <div className="vip-background">
             <div className="fondo-form">
 
