@@ -12,7 +12,7 @@ export const Biography = ({ text }) => {
             {expandTexto ? text : text.slice(0, 58) + ("....")}
 
             <span style={{ color: "#468BE6", cursor: "pointer", fontWeight: "500" }}
-                onClick={() =>  setExpandTexto(!expandTexto)} >
+                onClick={() =>  setExpandTexto(!expandTexto)} > <br />
                 {expandTexto ? "read less" : "read more "}
             </span>
 

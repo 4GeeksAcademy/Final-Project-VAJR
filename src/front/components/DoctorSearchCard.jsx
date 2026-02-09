@@ -71,7 +71,7 @@ export const DoctorSearchCard = ({ doctor }) => {
                         </button>
                         <button
                             className="btn btn-sm btn-view-profile w-100"
-                            onClick={() => navigate(`/doctor/${doctor.id}`)}
+                            onClick={() => navigate(`/doctorpage/${doctor.id}`)}
                         >
                             View Full Profile
                         </button>

@@ -361,7 +361,7 @@ def edit_doctor(doctor_id):
 @app.route('/api/doctors', methods=['GET'])
 def specialidad():
     speciality = request.args.get("specialty")
-    
+
     if speciality:
         db_speciality = speciality.replace(" ", "_")
         doctors = Doctors.query.filter(
@@ -369,7 +369,7 @@ def specialidad():
         ).params(val=db_speciality).all()
     else:
         doctors = Doctors.query.all()
-    
+
     return jsonify({'msg': [doct.serialize() for doct in doctors]}), 200
 
 
@@ -624,6 +624,48 @@ def cancel_appointment(id):
     appointments.status = "cancelled"
     db.session.commit()
     return jsonify({"msg": "Cita cancelada exitosamente"}), 200
+
+# Available appointments for doctor profile page
+
+@app.route('/api/doctor/<int:doctor_id>/calendar', methods=['GET'])
+def get_doctor_calendar(doctor_id):
+    availabilities = Availability.query.filter_by(id_doctor=doctor_id).all()
+    booked_appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+    booked_slots = {appt.dateTime.strftime("%Y-%m-%d %H:%M") for appt in booked_appointments}
+
+    calendar_data = []
+    today = datetime.now()
+
+    for i in range(14):
+        current_date = today + timedelta(days=i)
+        current_day_name = current_date.strftime("%A")
+        
+        day_slots = set()
+
+        for rule in availabilities:
+            rule_days = [day.strip().lower() for day in rule.days.split(',')]
+            
+            if current_day_name.lower() in rule_days:
+                slot_time = datetime.combine(current_date.date(), rule.start_time)
+                end_time = datetime.combine(current_date.date(), rule.end_time)
+
+                while slot_time + timedelta(minutes=30) <= end_time:
+                    slot_iso = slot_time.strftime("%Y-%m-%d %H:%M")
+                    
+                    if slot_time > today and slot_iso not in booked_slots:
+                        day_slots.add(slot_time.strftime("%H:%M"))
+                    
+                    slot_time += timedelta(minutes=30)
+
+        if day_slots:
+            calendar_data.append({
+                "date": current_date.strftime("%Y-%m-%d"),
+                "day_name": current_date.strftime("%a"), 
+                "day_number": current_date.day,
+                "slots": sorted(day_slots)
+            })
+
+    return jsonify(calendar_data), 200
 
 
 # this only runs if `$ python src/main.py` is execute
