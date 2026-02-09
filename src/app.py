@@ -5,6 +5,11 @@ from flask_mail import Mail, Message
 from api.commands import setup_commands
 from api.admin import setup_admin
 from api.routes import api
+
+from api.commands import setup_commands
+from api.admin import setup_admin
+from api.routes import api
+from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from api.utils import APIException, generate_sitemap
 from flask_swagger import swagger
 from flask_migrate import Migrate
@@ -14,6 +19,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 import datetime
 from datetime import time, timedelta, timezone
 from flask_cors import cross_origin
+from datetime import datetime, time, timedelta
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
@@ -29,12 +35,19 @@ static_file_dir = os.path.join(os.path.dirname(
 
 app = Flask(__name__)
 
+CORS(app, origins="*")
+
+
+bcrypt = Bcrypt(app)
+
 app.url_map.strict_slashes = False
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+
+app.config["JWT_SECRET_KEY"] = os.getenv('SUPER_SECRET_TOKEN')
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 CORS(app)
 # CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
+
 app.json.sort_keys = False
 
 # database condiguration
@@ -211,7 +224,8 @@ def doctor_login():
 
     access_token = create_access_token(identity=user.email)
     return jsonify({'msg': 'login successfully',
-                    'token': access_token})
+                    'token': access_token,
+                    'doctor': user.serialize()}), 200
 
 
 @app.route('/api/doctor/private', methods=['GET'])
@@ -220,11 +234,54 @@ def private_doctor():
     user_doctor = get_jwt_identity()
     return jsonify({'msg': f'You are login in {user_doctor}'}), 200
 
+
+@app.route('/<path:path>', methods=['GET'])
+def serve_any_other_file(path):
+    if not os.path.isfile(os.path.join(static_file_dir, path)):
+        path = 'index.html'
+    response = send_from_directory(static_file_dir, path)
+    response.cache_control.max_age = 0  # avoid cache memory
+    return response
+
 # PACIENT
 
 
 
 @app.route('/api/pacient/login', methods=['POST'])
+def loginPacient():
+    request_body = request.get_json(silent=True)
+    existing_email = Pacient.query.filter_by(
+        email=request_body['email']).first()
+    if existing_email:
+        return jsonify({'msg': 'Email already registered'}), 400
+
+    if 'password' not in request_body:
+        return jsonify({'msg': 'Please provide a password'}), 400
+
+    pw_hash = bcrypt.generate_password_hash(
+        request_body['password']).decode('utf-8')
+    new_pacient = Pacient(email=request_body['email'],
+                          password=pw_hash, name=request_body['name'], is_active=True)
+
+    pacients_phone = None
+    if 'phone' in request_body and request_body['phone']:
+        existing_phone = Pacient.query.filter_by(
+            phone=request_body['phone']).first()
+        if existing_phone:
+            return jsonify({'msg': 'Phone already in use'}), 400
+        pacients_phone = request_body['phone']
+        new_pacient.phone = pacients_phone
+
+    db.session.add(new_pacient)
+    db.session.commit()
+
+    token = create_access_token(identity=new_pacient.email)
+
+    return jsonify({'msg': 'New user created successfully',
+                    'token': token}), 201
+
+
+@app.route('/pacient/login', methods=['POST'])
 def pacient_login():
     request_body = request.get_json(silent=True)
     if request_body is None:
@@ -633,6 +690,44 @@ def cancel_appointment(id):
 
 
 # this only runs if `$ python src/main.py` is execute
+
+# Doctor-only endpoint
+# Returns appointments for the authenticated doctor
+
+@app.route('/doctor/appointments', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+    doctor_email = get_jwt_identity()
+
+    doctor = Doctors.query.filter_by(email=doctor_email).first()
+    if not doctor:
+        return jsonify({'msg': 'doctor not found'}), 404
+
+    appointments = Appointments.query.filter_by(doctors_id=doctor.id).all()
+    return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
+
+
+@app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
+@jwt_required()
+def update_appointment_status(apt_id):
+    doctor_id = apt_id
+    body = request.get_json()
+
+    appointment = Appointments.query.filter_by(
+        id=apt_id,
+        doctor_id=doctor_id
+    ).first()
+
+    if not appointment:
+        return jsonify({'msg': 'Appoinment not found'}), 400
+
+    appointment.status = body.get('status')
+    db.session.commit()
+
+    return jsonify({'msg': appointment.serialize()}), 200
+
+
+# this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)

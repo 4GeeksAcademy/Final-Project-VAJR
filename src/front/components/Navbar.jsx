@@ -135,7 +135,11 @@ export const Navbar = () => {
 	};
 
 	return (
-		<nav className="navbar bg-none" data-bs-theme="light" style={{ backgroundColor: "#E9F5FF" }}>
+		<nav
+			className="navbar bg-none"
+			data-bs-theme="light"
+			style={{ backgroundColor: "#E9F5FF" }}
+		>
 			<div className="container">
 				<Link to="/" className="text-decoration-none">
 					<i className="fa-solid fa-house-medical" style={{ color: "#1a5799", fontSize: "30px" }}></i>

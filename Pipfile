@@ -16,10 +16,14 @@ typing-extensions = "*"
 wtforms = "==3.1.2"
 sqlalchemy = "*"
 flask-swagger-ui = "*"
+<<<<<<< HEAD
 cors = "*"
+=======
+>>>>>>> doctor-dashboard-jude
 flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-bcrypt = "*"
+python-dotenv = "*"
 flask-cors = "*"
 flask-jwt-extended = "*"
 sendgrid = "*"

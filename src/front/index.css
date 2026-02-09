@@ -436,6 +436,13 @@ h3 {
 .dropdown-item.active {
   background-color: #18aded !important;
   color: rgb(46, 99, 214);
+p {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+h4 {
+  margin-block-start: 0;
+  margin-block-end: 0;
 }
 
 /* 
@@ -482,3 +489,14 @@ doctor profile  */
 .faqs-p span:hover {
   border-bottom: 1px solid #468be6;
 }
+
+@media (min-width: 300px) and (max-width: 800px) {
+  .doctor-card {
+    width: 98%;
+  }
+
+  .doctor-card-ul::-webkit-scrollbar {
+    height: 8px;
+  }
+}
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
