@@ -17,7 +17,7 @@ export const initialStore = () => {
     message: null,
     doctors: [],
     appointments: [],
-    token: null 
+    token: null ,
     doctor: getDoctor(),
     token: localStorage.getItem("token") || null,
   }

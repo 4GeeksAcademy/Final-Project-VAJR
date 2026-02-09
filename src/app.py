@@ -18,7 +18,6 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 import datetime
 from datetime import time, timedelta, timezone
-from flask_cors import cross_origin
 from datetime import datetime, time, timedelta
 from flask_cors import CORS
 import os
@@ -45,8 +44,6 @@ app.url_map.strict_slashes = False
 app.config["JWT_SECRET_KEY"] = os.getenv('SUPER_SECRET_TOKEN')
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-CORS(app)
-# CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
 
 app.json.sort_keys = False
 
@@ -86,10 +83,8 @@ def send_sendgrid_email(to, subject, html_content):
         return False
 
 
-
 bcrypt = Bcrypt(app)
 app.register_blueprint(api, url_prefix="/api")
-
 
 
 @app.route('/api/doctor/<int:doctor_id>/availability', methods=['GET'])
@@ -246,7 +241,6 @@ def serve_any_other_file(path):
 # PACIENT
 
 
-
 @app.route('/api/pacient/login', methods=['POST'])
 def loginPacient():
     request_body = request.get_json(silent=True)
@@ -374,7 +368,6 @@ def get_all_doctors():
     return jsonify({'msg': new_serialise_doctors}), 200
 
 
-
 @app.route('/api/doctor/<int:doctor_id>', methods=['GET'])
 def get_single_doctor(doctor_id):
     doctor = Doctors.query.get(doctor_id)
@@ -435,8 +428,6 @@ def specialidad():
 
 
 @app.route('/hooks/cal-booking', methods=['POST'])
-
-
 @app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
@@ -553,16 +544,16 @@ def get_appt_pacient():
     return jsonify([a.serialize() for a in appointments]), 200
 
 
-# listar citas doctor
-@app.route('/api/appointments/doctor', methods=['GET'])
-@jwt_required()
-def get_doctor_appointments():
-    doctor_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
-    if not appointments:
-        return jsonify([]), 200
-        return jsonify({"msg": "No hay citas para este doctor"}), 404
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
+# # listar citas doctor
+# @app.route('/api/appointments/doctor', methods=['GET'])
+# @jwt_required()
+# def get_doctor_appointment():
+#     doctor_id = get_jwt_identity()
+#     appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+#     if not appointments:
+#         return jsonify([]), 200
+#         return jsonify({"msg": "No hay citas para este doctor"}), 404
+#     return jsonify([appointment.serialize() for appointment in appointments]), 200
 
 # listar cita especifica doctor
 

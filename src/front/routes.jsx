@@ -21,13 +21,10 @@ import { ResetPassword } from "./pages/ResetPassword";
 import { ForgotPwDoctor } from "./pages/ForgotPwDoctor";
 import { ResetPwDoctor } from "./pages/ResetPwDoctor";
 import { DoctorCard } from "./components/DoctorCard.jsx";
-import { DoctorPage } from "./pages/DoctorPage.jsx";
 // import { Demo } from "./pages/Demo";
 import { DoctorPage } from "./pages/DoctorPage";
 import { DoctorDashboard } from "./pages/dashboardPage/DoctorDashboard";
 import { PrivateDoctorRoute } from "./pages/dashboardPage/PrivateDoctorRoute"
-import { LoginDoctor } from "./pages/LoginDoctor";
-import { DoctorsList } from "./pages/DoctorsList.jsx";
 
 
 export const router = createBrowserRouter(
