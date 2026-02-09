@@ -241,7 +241,7 @@ def serve_any_other_file(path):
 # PACIENT
 
 
-@app.route('/api/pacient/login', methods=['POST'])
+@app.route('/api/pacient/register', methods=['POST'])
 def loginPacient():
     request_body = request.get_json(silent=True)
     existing_email = Pacient.query.filter_by(

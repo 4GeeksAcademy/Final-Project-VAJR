@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate , Link} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const LoginDoctor = () => {
@@ -56,6 +56,12 @@ export const LoginDoctor = () => {
     }
   };
 
+  useEffect(() => {
+    if (store.doctor && store.token) {
+      navigate("/doctor/dashboard", { replace: true });
+    }
+  }, [store.doctor, store.token]);
+
   return (
     <div className="vip-background">
       <div className="fondo-form">
@@ -86,15 +92,15 @@ export const LoginDoctor = () => {
                   <button type="submit" className="btn text-light" id="btn-drop">
                     Sign in
                   </button>
-              </div>
-               <div className="d-flex justify-content-center pb-2">
+                </div>
+                <div className="d-flex justify-content-center pb-2">
                   <button type="button" className="btn btn-link ">
-                      <Link to="/api/doctor/forgotpassword">
-                                  Forgot Password
-                      </Link>
-                   </button>
-              </div>
-                 </form>
+                    <Link to="/api/doctor/forgotpassword">
+                      Forgot Password
+                    </Link>
+                  </button>
+                </div>
+              </form>
             </div>
 
           </div>

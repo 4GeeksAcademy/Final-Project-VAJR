@@ -45,7 +45,7 @@ export const router = createBrowserRouter(
       <Route path="/api/pacient/signup" element={<Signup />} />
       <Route path="/api/pacient/login" element={<Login />} />
       <Route path="/api/doctor/register" element={<SignupDoctor />} />
-      <Route path="/doctor/login" element={<LoginDoctor />} />
+      
       <Route path="/api/appointments/:doctor_id" element={<PacientAppointments />} />
       <Route path="/api/listappointments" element={<ListAppointments />} />
       <Route path="/api/pacient/forgotpassword" element={<ForgotPassword />} />

@@ -12,7 +12,9 @@ export const DoctorDashboard = () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments`, {
           headers: {
+            // Authorization: `Bearer ${localStorage.getItem("doctorToken")}`
             Authorization: `Bearer ${localStorage.getItem("doctorToken")}`
+
           }
         })
 

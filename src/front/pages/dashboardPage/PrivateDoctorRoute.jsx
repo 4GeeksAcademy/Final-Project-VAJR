@@ -1,11 +1,12 @@
-import { Navigate } from "react-router-dom"
+import { Navigate } from "react-router-dom";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 
 export const PrivateDoctorRoute = ({ children }) => {
+  const { store } = useGlobalReducer();
 
-    const token = localStorage.getItem("doctorToken")
+  if (!store.token || !store.doctor) {
+    return <Navigate to="/doctor/login" replace />;
+  }
 
-    if(!token){
-        return <Navigate to="/doctor/login" />
-    }
-    return children
-}
+  return children;
+};

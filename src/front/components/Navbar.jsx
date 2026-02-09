@@ -185,7 +185,7 @@ export const Navbar = () => {
 							</a>
 							<ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
 								<p className="ms-3 mb-0"><b>Doctors</b></p>
-								<li><Link to="/doctor/register" className="dropdown-item ms-2">Sign up</Link></li>
+								<li><Link to="/api/doctor/register" className="dropdown-item ms-2">Sign up</Link></li>
 								<li><hr className="dropdown-divider" /></li>
 								<p className="ms-3 mb-0"><b>Pacients</b></p>
 								<li><Link to="/api/pacient/signup" className="dropdown-item ms-2">Sign up</Link></li>
@@ -220,7 +220,7 @@ export const Navbar = () => {
 										</li>
 									)}
 									<li>
-										<Link className="dropdown-item ms-2" to="/profile">
+										<Link className="dropdown-item ms-2" to="/doctor/dashboard">
 											<i className="fa-solid fa-address-card"></i> My Account
 										</Link>
 									</li>
