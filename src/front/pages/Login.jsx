@@ -1,7 +1,7 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import Swal from "sweetalert2";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -29,10 +29,8 @@ export const Login = () => {
       });
 
       const text = await response.text();
-      console.log("Respuesta:", text);
-
       if (!text) {
-        alert("El servidor no respondió");
+        Swal.fire({icon: "error", title: "Server Error", text: "The server did not return a valid response.", confirmButtonColor: "#d33" });
         return;
       }
 
@@ -41,11 +39,12 @@ export const Login = () => {
       if (response.ok) {
         localStorage.setItem("token", data.token);
         dispatch({  type: "login_pacient", payload: data.token  });
-        console.log("login exitoso");
-        navigate(`/api/appointments/${DEFAULT_DOCTOR_ID}`);
-         //navigate("/api/listappointments");
+        Swal.fire({ icon: "success", title: "Welcome back!", text: "Login successful.", timer: 1000, showConfirmButton: false,
+        });
+        //navigate("/api/pacient/appointments");
+        navigate("/api/listappointments");
       } else {
-        alert(data.msg || "Error al iniciar sesión");
+        Swal.fire({  title: "Error", text: data.msg || "Incorrect email or password", icon: "error", confirmButtonColor: "#d33"  });
       }
 
     } catch (error) {
@@ -82,11 +81,11 @@ export const Login = () => {
                   </button>
                 </div>
                 <div className="d-flex justify-content-center pb-2">
-                  <button type="button" className="btn btn-link ">
+                 
                     <Link to="/api/pacient/forgotpassword">
                     Forgot Password
                     </Link>
-               </button>
+              
             </div>
             </form>
           </div>

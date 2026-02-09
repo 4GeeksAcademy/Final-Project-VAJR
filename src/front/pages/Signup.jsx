@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
  
 
 export const Signup = () => {
@@ -27,12 +28,26 @@ export const Signup = () => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem("token", data.token);
-        console.log("login exitoso")
-        navigate("/api/pacient/login");
-      } else {
-        alert(data.msg || "Error al iniciar sesion");
-      }
+        Swal.fire({
+                       title: "You have registered successfully.!",
+                       text: "Your account has been created. Please log in to access your dashboard.",
+                       icon: "success",
+                       confirmButtonText: "Go to Login",
+                       confirmButtonColor: "#035aa6"
+                   }).then((result) => {
+                       if (result.isConfirmed) {
+                           navigate("/api/pacient/login");
+                       }
+                   });
+                   
+               } else {
+                   Swal.fire({
+                       title: "Error",
+                       text: data.msg || "There was an issue with your registration.",
+                       icon: "error",
+                       confirmButtonColor: "#d33"
+                   });
+               }
     } catch (error) {
       console.error("Error en login:", error);
       alert("Error de conexion con el servidor");

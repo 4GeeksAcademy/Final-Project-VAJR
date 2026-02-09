@@ -12,6 +12,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory, Bluepri
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 import datetime
+from datetime import datetime
 from datetime import time, timedelta, timezone
 from flask_cors import cross_origin
 from flask_cors import CORS
@@ -376,11 +377,7 @@ def specialidad():
         doctors = query.all()
         return jsonify([doct.serialize() for doct in doctors]), 200
 
-
 @app.route('/hooks/cal-booking', methods=['POST'])
-
-
-@app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     data = request.get_json(silent=True)
     if not data:
@@ -388,7 +385,7 @@ def cal_webhook_receiver():
 
     trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
-
+    
     # Identificar emails en nuestra db paciente y doctor
     doctor_email = payload.get('organizer', {}).get('email')
     attendees = payload.get('attendees', [{}])
@@ -409,7 +406,7 @@ def cal_webhook_receiver():
             dt_object = datetime.fromisoformat(start_time_str)
 
             new_appointment = Appointments(
-                pacient_id=pacient.id,
+                pacient_id=pacient.id, 
                 doctor_id=doctor.id,
                 dateTime=dt_object,
                 reason=f"Cal.com: {payload.get('title')}",
@@ -423,7 +420,7 @@ def cal_webhook_receiver():
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
 
-    # Cancelacion de cita
+    # Cancelacion de cita 
     elif trigger_event == "BOOKING_CANCELLED":
         try:
             # Busco la cita existente por fecha, doctor y paciente
@@ -437,7 +434,7 @@ def cal_webhook_receiver():
             ).first()
 
             if appointment:
-                appointment.status = StatusAppointment.cancelled
+                appointment.status = StatusAppointment.cancelled 
                 db.session.commit()
                 print(f" Cita CANCELADA en base de datos")
                 return jsonify({"msg": "Cita cancelada correctamente"}), 200
@@ -447,12 +444,46 @@ def cal_webhook_receiver():
         except Exception as e:
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
+        
+    elif trigger_event == "BOOKING_RESCHEDULED":
+        try:
+            
+            old_start_time_str = payload.get('rescheduleStartTime').replace('Z', '')
+            old_dt_object = datetime.fromisoformat(old_start_time_str)
+
+          
+            appointment = Appointments.query.filter_by(
+                doctor_id=doctor.id,
+                pacient_id=pacient.id,
+                dateTime=old_dt_object
+            ).first()
+
+            if appointment:
+               
+                new_start_time_str = payload.get('startTime').replace('Z', '')
+                new_dt_object = datetime.fromisoformat(new_start_time_str)
+
+                
+                appointment.dateTime = new_dt_object
+                appointment.status = StatusAppointment.confirmed # Nos aseguramos de que esté confirmada
+                
+                db.session.commit()
+                print(f" Cita REAGENDADA: De {old_start_time_str} a {new_start_time_str}")
+                return jsonify({"msg": "Cita reagendada correctamente"}), 200
+            else:
+                
+                print(" No se encontró la cita vieja para reagendar. Creando una nueva...")
+           
+                return jsonify({"msg": "Cita antigua no encontrada, creada nueva"}), 201
+                
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"msg": str(e)}), 500
 
     return jsonify({"msg": "Evento no soportado"}), 400
 
 # Appointments
 
-# crear cita
 
 
 # listar citas pacientes
@@ -466,13 +497,13 @@ def get_appointments_p(id):
     if not pacient:
         return jsonify({"msg": "Usuario no encontrado"}), 404
 
-    appointments = Appointments.query.filter_by(
+    appointment = Appointments.query.filter_by(
         id=id, pacient_id=pacient.id).first()
 
-    if not appointments:
+    if not appointment:
         return jsonify({"msg": "Cita no encontrada"}), 404
 
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
+    return jsonify(appointment.serialize()), 200
 
 # listar cita
 
@@ -559,75 +590,22 @@ def update_appointments(id):
     return jsonify(appointment.serialize()), 200
 
 
-""" @app.route('/hooks/cal-booking', methods=['POST'])
-def cal_webhook_receiver():
-    # Capturar los datos crudos
-    data = request.get_json(silent=True)
-    
-    print("\n--- NUEVA NOTIFICACIÓN DE CAL.COM ---")
-    if not data:
-        print(" Error: Payload vacío")
-        return jsonify({"msg": "Payload vacío"}), 400
-
-    payload = data.get('payload', {})
-    
-    # Extraer emails para identificación
-    doctor_email = payload.get('organizer', {}).get('email')
-    attendees = payload.get('attendees', [{}])
-    pacient_email = attendees[0].get('email') if attendees else None
-
-    print(f" Evento: {data.get('triggerEvent')}")
-    print(f" Doctor (Cal.com email): {doctor_email}")
-    print(f"Paciente (Cal.com email): {pacient_email}")
-
-    # Buscar en tu base de datos
-    doctor = Doctors.query.filter_by(email=doctor_email).first()
-    pacient = Pacient.query.filter_by(email=pacient_email).first()
-
-    # Validaciones de existencia
-    if not doctor:
-        print(f" Alerta: El doctor {doctor_email} no existe en nuestra DB.")
-        return jsonify({"msg": "Doctor no encontrado"}), 404
-
-    if not pacient:
-        print(f"ℹInfo: El email {pacient_email} no pertenece a un paciente registrado. Saltando registro.")
-        return jsonify({"msg": "Paciente no registrado, cita ignorada"}), 200
-
-    # Procesar la cita
-    try:
-        # Cal envía: "2026-02-04T18:00:00Z"
-        start_time_str = payload.get('startTime').replace('Z', '')
-        dt_object = datetime.fromisoformat(start_time_str)
-
-        new_appointment = Appointments(
-            pacient_id=pacient.id, 
-            doctor_id=doctor.id,
-            dateTime=dt_object,
-            reason=f"Cal.com: {payload.get('title')}",
-            status= StatusAppointment.confirmed
-        )
-
-        db.session.add(new_appointment)
-        db.session.commit()
-        
-        print(f" ÉXITO: Cita registrada para el paciente {pacient.name} con el Dr. {doctor.name}")
-        return jsonify({"msg": "Cita sincronizada exitosamente"}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"ERROR al guardar en DB: {str(e)}")
-        return jsonify({"msg": "Error interno al procesar la cita"}), 500 """
-
-
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
-    user_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(
-        id=id, pacient_id=user_id).first()
-    if not appointments:
-        return jsonify({"msg": "Cita no encontrada"}), 404
-    appointments.status = "cancelled"
+    email = get_jwt_identity()
+
+    pacient = Pacient.query.filter_by( email=email).first()
+
+    if not pacient:
+        return jsonify({"msg": "Paciente no encontrado"}), 404
+    
+    appointment = Appointments.query.filter_by(id=id,pacient_id=pacient.id).first()
+
+    if not appointment:
+        return jsonify({"msg": "Cita no encontrada"});
+    
+    appointment.status = "cancelled"
     db.session.commit()
     return jsonify({"msg": "Cita cancelada exitosamente"}), 200
 
