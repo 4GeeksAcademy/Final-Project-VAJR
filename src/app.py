@@ -448,12 +448,10 @@ def cal_webhook_receiver():
 
     print(f"\n--- WEBHOOK RECIBIDO: {trigger_event} ---")
 
- 
     doctor = Doctors.query.filter_by(email=doctor_email).first()
     if not doctor:
         return jsonify({"msg": "Doctor no encontrado"}), 404
 
-   
     pacient = Pacient.query.filter_by(email=pacient_email).first()
     if not pacient:
         pacient = Pacient(
@@ -636,27 +634,37 @@ def update_appointments(id):
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
-    user_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(
-        id=id, pacient_id=user_id).first()
-    if not appointments:
+    pacient_email = get_jwt_identity()
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
+
+    if not pacient:
+        return jsonify({"msg": "Paciente no encontrado"}), 404
+
+    appointment = Appointments.query.filter_by(
+        id=id,
+        pacient_id=pacient.id
+    ).first()
+
+    if not appointment:
         return jsonify({"msg": "Cita no encontrada"}), 404
-    appointments.status = "cancelled"
+
+    appointment.status = StatusAppointment.cancelled
     db.session.commit()
-    return jsonify({"msg": "Cita cancelada exitosamente"}), 200
+
+    return jsonify({"msg": "Cita cancelada correctamente"}), 200
 
 
-@app.route('/doctor/appointments', methods=['GET'])
-@jwt_required()
-def get_doctor_appointments():
-    doctor_email = get_jwt_identity()
+# @app.route('/doctor/appointments', methods=['GET'])
+# @jwt_required()
+# def get_doctor_appointments():
+#     doctor_email = get_jwt_identity()
 
-    doctor = Doctors.query.filter_by(email=doctor_email).first()
-    if not doctor:
-        return jsonify({'msg': 'doctor not found'}), 404
+#     doctor = Doctors.query.filter_by(email=doctor_email).first()
+#     if not doctor:
+#         return jsonify({'msg': 'doctor not found'}), 404
 
-    appointments = Appointments.query.filter_by(doctor_id=doctor.id).all()
-    return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
+#     appointments = Appointments.query.filter_by(doctor_id=doctor.id).all()
+#     return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
 @app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
@@ -725,108 +733,16 @@ def create_appointment():
     return jsonify(new_appointment.serialize()), 201
 
 
-
-
-# ruben endpoint
-
-def local_time_to_cal_format(local_start, local_end):
-    """
-    Recibe horas en formato 'HH:MM'
-    Devuelve formato ISO que Cal.com acepta (sin conversión UTC)
-    """
-
-    start = f"1970-01-01T{local_start}:00.000Z"
-    end = f"1970-01-01T{local_end}:00.000Z"
-
-    return start, end
-
-@app.route('/api/doctor/<int:doctor_id>/sync-cal', methods=['POST'])
-def sync_doctor_schedule_to_cal(doctor_id):
-    print(f"\n🚀 SINCRONIZACIÓN QUIRÚRGICA - Doc ID: {doctor_id}")
-
-    CAL_API_KEY = os.getenv("CAL_API_KEY")
-    params = {"apiKey": CAL_API_KEY}
-
-    # 1. Obtener disponibilidad de tu DB local (PostgreSQL)
-    local_availability = Availability.query.filter_by(
-        id_doctor=doctor_id).all()
-    print(f"🔎 Reglas locales encontradas: {len(local_availability)}")
-
-    try:
-        # 2. Obtener el ID del horario 'ruben'
-        get_resp = requests.get(
-            "https://api.cal.com/v1/schedules", params=params)
-        schedules = get_resp.json().get('schedules', [])
-        print(schedules)
-        target_schedule = next(
-            (s for s in schedules if s.get('name') == "ruben"), None)
-        print(target_schedule)
-
-        if not target_schedule:
-            return jsonify({"msg": "No se encontró el horario 'ruben'"}), 404
-
-        schedule_id = target_schedule['id']
-        existing_rules = target_schedule.get('availability', [])
-
-        if existing_rules:
-            print(
-                f"🧹 Borrando {len(existing_rules)} reglas antiguas para evitar conflictos...")
-            for old_rule in existing_rules:
-                requests.delete(
-                    f"https://api.cal.com/v1/availabilities/{old_rule['id']}", params=params)
-
-            print("⏳ Esperando propagación de borrado...")
-            time.sleep(2)
-
-        # 4. INSERCIÓN LIMPIA: Solo los campos estrictamente necesarios
-        day_mapping = {
-            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
-            "Thursday": 4, "Friday": 5, "Saturday": 6
-        }
-
-        success_count = 0
-        for rule in local_availability:
-            # Mapear días
-            active_days = [day_mapping[d.capitalize()]
-                           for d in day_mapping if d.lower() in rule.days.lower()]
-
-            if active_days:
-                # PAYLOAD MÍNIMO: Sin 'date', sin 'eventTypeId', sin nada extra.
-                # Usamos formato HH:MM (algunos DBs de Cal preferen esto en el POST)
-                start, end = local_time_to_cal_format(
-                    rule.start_time.strftime("%H:%M"),
-                    rule.end_time.strftime("%H:%M")
-                )
-                payload = {
-                    "scheduleId": schedule_id,
-                    "days": active_days,
-                    "startTime": start,
-                    "endTime": end,
-                }
-
-                print(f"📤 Enviando: {json.dumps(payload)}")
-                post_resp = requests.post(
-                    "https://api.cal.com/v1/availabilities", json=payload, params=params)
-
-                if post_resp.status_code in [200, 201]:
-                    print(f"   ✅ Éxito: Días {active_days}")
-                    success_count += 1
-                else:
-                    print(f"   ❌ Error: {post_resp.text}")
-
-        return jsonify({"msg": f"Sincronización terminada. {success_count} reglas creadas."}), 200
-
-    except Exception as e:
-        print(f"❌ Error crítico: {str(e)}")
-        return jsonify({"msg": f"Error: {str(e)}"}), 500
-
 # Available appointments for doctor profile page
+
 
 @app.route('/api/doctor/<int:doctor_id>/calendar', methods=['GET'])
 def get_doctor_calendar(doctor_id):
     availabilities = Availability.query.filter_by(id_doctor=doctor_id).all()
-    booked_appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
-    booked_slots = {appt.dateTime.strftime("%Y-%m-%d %H:%M") for appt in booked_appointments}
+    booked_appointments = Appointments.query.filter_by(
+        doctor_id=doctor_id).all()
+    booked_slots = {appt.dateTime.strftime(
+        "%Y-%m-%d %H:%M") for appt in booked_appointments}
 
     calendar_data = []
     today = datetime.now()
@@ -834,28 +750,29 @@ def get_doctor_calendar(doctor_id):
     for i in range(14):
         current_date = today + timedelta(days=i)
         current_day_name = current_date.strftime("%A")
-        
+
         day_slots = set()
 
         for rule in availabilities:
             rule_days = [day.strip().lower() for day in rule.days.split(',')]
-            
+
             if current_day_name.lower() in rule_days:
-                slot_time = datetime.combine(current_date.date(), rule.start_time)
+                slot_time = datetime.combine(
+                    current_date.date(), rule.start_time)
                 end_time = datetime.combine(current_date.date(), rule.end_time)
 
                 while slot_time + timedelta(minutes=30) <= end_time:
                     slot_iso = slot_time.strftime("%Y-%m-%d %H:%M")
-                    
+
                     if slot_time > today and slot_iso not in booked_slots:
                         day_slots.add(slot_time.strftime("%H:%M"))
-                    
+
                     slot_time += timedelta(minutes=30)
 
         if day_slots:
             calendar_data.append({
                 "date": current_date.strftime("%Y-%m-%d"),
-                "day_name": current_date.strftime("%a"), 
+                "day_name": current_date.strftime("%a"),
                 "day_number": current_date.day,
                 "slots": sorted(day_slots)
             })
