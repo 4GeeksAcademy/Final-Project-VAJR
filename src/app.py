@@ -439,7 +439,7 @@ def cal_webhook_receiver():
     if not data:
         return jsonify({"msg": "No data received"}), 400
 
-    # --- PING ---
+    
     if data.get("triggerEvent") == "PING":
         print("✅ PING RECIBIDO DESDE CAL.COM")
         return jsonify({"msg": "pong"}), 200
@@ -449,7 +449,7 @@ def cal_webhook_receiver():
 
     print(f"\n--- EVENTO: {trigger_event} ---")
 
-    # --- DATOS IMPORTANTES ---
+  
     doctor_email = payload.get("organizer", {}).get("email")
     attendees = payload.get("attendees", [])
     pacient_email = attendees[0].get("email") if attendees else None
@@ -457,12 +457,12 @@ def cal_webhook_receiver():
     print("Doctor email:", doctor_email)
     print("Paciente email:", pacient_email)
 
-    # --- DOCTOR ---
+    
     doctor = Doctors.query.filter_by(email=doctor_email).first()
     if not doctor:
         return jsonify({"msg": "Doctor no encontrado"}), 404
 
-    # --- PACIENT ---
+    
     pacient = Pacient.query.filter_by(email=pacient_email).first()
     if not pacient:
         hashed_pw = bcrypt.generate_password_hash("calcom").decode("utf-8")
@@ -476,9 +476,7 @@ def cal_webhook_receiver():
         db.session.commit()
         print("🆕 Paciente creado desde Cal.com")
 
-    # ======================================================
-    # =============== BOOKING CREATED ======================
-    # ======================================================
+    
     if trigger_event == "BOOKING_CREATED":
         try:
             cal_uid = payload.get("uid")
@@ -520,9 +518,7 @@ def cal_webhook_receiver():
             print("❌ ERROR BOOKING_CREATED:", str(e))
             return jsonify({"msg": str(e)}), 500
 
-    # ======================================================
-    # =============== BOOKING CANCELLED ====================
-    # ======================================================
+    
     elif trigger_event == "BOOKING_CANCELLED":
         appointment = Appointments.query.filter_by(
             cal_event_id=payload.get("uid")
@@ -536,9 +532,7 @@ def cal_webhook_receiver():
 
         return jsonify({"msg": "Appointment not found"}), 404
 
-    # ======================================================
-    # =============== BOOKING RESCHEDULED ==================
-    # ======================================================
+   
     elif trigger_event == "BOOKING_RESCHEDULED":
         appointment = Appointments.query.filter_by(
             cal_event_id=payload.get("uid")
@@ -554,7 +548,7 @@ def cal_webhook_receiver():
 
         return jsonify({"msg": "Appointment not found"}), 404
 
-    # --- EVENTO NO SOPORTADO ---
+    
     return jsonify({"msg": "Event ignored"}), 200
 
 
