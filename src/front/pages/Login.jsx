@@ -39,6 +39,8 @@ export const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("userType", "pacient" )
+
         dispatch({
           type: "login_pacient",
           payload: { pacient: data.pacient, token: data.token }

@@ -4,7 +4,9 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();
-  const { token, userType, pacient, doctor } = store;
+  
+  const token = store.token || localStorage.getItem("token");
+  const userType = store.userType || localStorage.getItem("userType");
 
   const isTokenValid = (token) => {
     if (!token) return false;
@@ -25,8 +27,8 @@ export const Navbar = () => {
   };
 
   const getUserName = () => {
-    if (userType === 'doctor' && doctor) return "Doctor";
-    if (userType === 'pacient' && pacient) return "Pacient";
+    if (userType === 'doctor') return "Doctor";
+    if (userType === 'pacient') return "Pacient";
     return 'Profile';
   };
 
@@ -40,13 +42,13 @@ export const Navbar = () => {
         </a>
         <ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
           <li>
-            <Link className="dropdown-item" to="/doctor/profile">
+            <Link className="dropdown-item dropdown-button" to="/doctor/profile">
               <i className="fa-solid fa-id-card"></i> Professional Profile
             </Link>
           </li>
           <li><hr className="dropdown-divider" /></li>
           <li>
-            <button className="dropdown-item text-danger" onClick={handleLogout}>
+            <button className="dropdown-item text-danger dropdown-logOut" onClick={handleLogout}>
               <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
             </button>
           </li>
@@ -65,13 +67,13 @@ export const Navbar = () => {
         </a>
         <ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
           <li>
-            <Link className="dropdown-item" to="/api/listappointments">
+            <Link className="dropdown-item dropdown-button" to="/api/listappointments">
               <i className="fa-solid fa-address-card"></i> My Account
             </Link>
           </li>
           <li><hr className="dropdown-divider" /></li>
           <li>
-            <button className="dropdown-item text-danger" onClick={handleLogout}>
+            <button className="dropdown-item text-danger dropdown-logOut" onClick={handleLogout}>
               <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
             </button>
           </li>
@@ -90,10 +92,10 @@ export const Navbar = () => {
         </a>
         <ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
           <p className="ms-3 mb-0"><b>Doctors</b></p>
-          <li><Link to="/doctor/login" className="dropdown-item">Log in</Link></li>
+          <li><Link to="/doctor/login" className="dropdown-item dropdown-button">Log in</Link></li>
           <li><hr className="dropdown-divider" /></li>
           <p className="ms-3 mb-0"><b>Patients</b></p>
-          <li><Link to="/api/pacient/login" className="dropdown-item">Log in</Link></li>
+          <li><Link to="/api/pacient/login" className="dropdown-item dropdown-button">Log in</Link></li>
         </ul>
       </button>
 
@@ -104,10 +106,10 @@ export const Navbar = () => {
         </a>
         <ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
           <p className="ms-3 mb-0"><b>Doctors</b></p>
-          <li><Link to="/api/doctor/register" className="dropdown-item">Sign up</Link></li>
+          <li><Link to="/api/doctor/register" className="dropdown-item dropdown-button">Sign up</Link></li>
           <li><hr className="dropdown-divider" /></li>
           <p className="ms-3 mb-0"><b>Patients</b></p>
-          <li><Link to="/api/pacient/signup" className="dropdown-item">Sign up</Link></li>
+          <li><Link to="/api/pacient/signup" className="dropdown-item dropdown-button">Sign up</Link></li>
         </ul>
       </button>
     </>

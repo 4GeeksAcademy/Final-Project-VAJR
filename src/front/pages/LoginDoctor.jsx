@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { jwtDecode } from "jwt-decode";
+import SweetAlert from "sweetalert2";
 
 export const LoginDoctor = () => {
   const navigate = useNavigate();
@@ -31,28 +32,39 @@ export const LoginDoctor = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("userType", "doctor");
 
         const decoded = jwtDecode(data.token);
         console.log("Decoded token:", decoded);
 
         const doctorFromToken = {
           email: decoded.sub,
-          // Add other fields if they exist in your JWT payload
           id: decoded.user_id || decoded.id || null,
-          name: decoded.name || decoded.sub // fallback to email
+          name: decoded.name || decoded.sub || "Doctor"
         };
 
         dispatch({
           type: "login_doctor",
           payload: {
-            doctor: data.doctor || doctorFromToken, 
+            doctor: data.doctor || doctorFromToken,
             token: data.token
           }
         });
 
+        SweetAlert.fire({
+          icon: "success",
+          title: "Welcome back!",
+          timer: 1000,
+          showConfirmButton: false
+        });
+
         navigate("/");
       } else {
-        alert(data.msg || "Error al iniciar sesion");
+        SweetAlert.fire({
+          title: data.msg,
+          icon: "error",
+          confirmButtonText: "Try Again"
+        })
       }
     } catch (error) {
       console.error("Error en login:", error);
