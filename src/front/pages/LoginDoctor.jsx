@@ -57,10 +57,10 @@ export const LoginDoctor = () => {
   };
 
   useEffect(() => {
-    if (store.doctor && store.token) {
+    if (store.token && store.doctor) {
       navigate("/doctor/dashboard", { replace: true });
     }
-  }, [store.doctor, store.token]);
+  }, [store.token, store.doctor]);
 
   return (
     <div className="vip-background">

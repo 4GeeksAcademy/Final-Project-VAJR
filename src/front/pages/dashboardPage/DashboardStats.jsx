@@ -3,8 +3,8 @@ import { StatCards } from "./StatCards"
 export const DashboardStats = ( {appointments} ) => {
 
     const pending = appointments.filter(a => a.status === "Pending" ).length
-    const confirmed = appointments.filter(a => a.status === "Confirmed" ).length
-    const cancelled = appointments.filter(a  => a.status === "Cancelled").length
+    const confirmed = appointments.filter(a => a.status === "confirmed" ).length
+    const cancelled = appointments.filter(a  => a.status === "cancelled").length
 
     return(
         <div className="row mb-4">

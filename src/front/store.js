@@ -1,52 +1,39 @@
 export const initialStore = () => {
-  const getDoctor = () => {
-    try {
-      const doctorString = localStorage.getItem("doctor");
-      if (doctorString !== undefined || doctorString !== null) {
-        return JSON.parse(doctorString);
-      }
-
-      return null;
-    } catch (error) {
-      console.error("Error parsing  doctor from localStorage", error);
-      return null;
-    }
-  };
+  const token = localStorage.getItem("token");
 
   return {
     message: null,
     doctors: [],
     appointments: [],
-    token: null ,
-    doctor: getDoctor(),
-    token: localStorage.getItem("token") || null,
-  }
+    doctor: token ? JSON.parse(localStorage.getItem("doctor")) : null,
+    token: token || null,
+  };
+};
 
-}
+
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-
-    case 'set_doctors':
+    case "set_doctors":
       return {
         ...store,
-        doctors: action.payload
+        doctors: action.payload,
       };
 
-    case 'select_slot':
+    case "select_slot":
       return {
         ...store,
-        selectedAppointment: action.payload
+        selectedAppointment: action.payload,
       };
 
     case "login_pacient":
       return {
         ...store,
         pacient: action.payload.pacient,
-        token: action.payload.token
-  };
+        token: action.payload.token,
+      };
 
-  case "set_appointments":
+    case "set_appointments":
       return {
         ...store,
         appointments: action.payload,
@@ -59,7 +46,7 @@ export default function storeReducer(store, action = {}) {
         token: action.payload.token,
       };
 
-      case "logout":
+    case "logout":
       return {
         ...store,
         doctor: null,

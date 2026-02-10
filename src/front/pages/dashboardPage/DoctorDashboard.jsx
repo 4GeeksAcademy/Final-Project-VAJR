@@ -13,8 +13,7 @@ export const DoctorDashboard = () => {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments`, {
           headers: {
             // Authorization: `Bearer ${localStorage.getItem("doctorToken")}`
-            Authorization: `Bearer ${localStorage.getItem("doctorToken")}`
-
+            Authorization: `Bearer ${localStorage.getItem("token")}`
           }
         })
 
@@ -36,29 +35,39 @@ export const DoctorDashboard = () => {
     fetchAppointments()
   }, [])
 
-  const updateAppointmentStatus= async (id, status) => {
-    try{
+  const updateAppointmentStatus = async (id, status) => {
+    try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments/${id}`, {
         method: 'PUT',
-        headers:{
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({status})
+        body: JSON.stringify({ status })
       })
+
+      if (!res.ok) {
+        console.error("Failed update", res.status)
+        return
+      }
 
       const data = await res.json()
       const updateAppointment = data.appointment
 
+      if (!updateAppointment) {
+        console.error("No appointment returned from backend", data)
+        return
+      }
+
       dispatch({
-        type:"set_appointments",
+        type: "set_appointments",
         payload: store.appointments.map(apt =>
           apt.id === updateAppointment.id ? updateAppointment : apt
         )
       })
 
-    } catch(error){
-        console.error('Error updating appointment ', error)
+    } catch (error) {
+      console.error('Error updating appointment ', error)
     }
   }
 
@@ -68,7 +77,7 @@ export const DoctorDashboard = () => {
 
       <DashboardStats appointments={store.appointments} />
       <AppointmentsTable appointments={store.appointments}
-      onUpdateStatus = {updateAppointmentStatus}
+        onUpdateStatus={updateAppointmentStatus}
       />
     </div>
   )

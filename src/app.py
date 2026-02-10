@@ -1,3 +1,4 @@
+from api.models import StatusAppointment
 from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from sendgrid.helpers.mail import Mail as SendGridMail
 from sendgrid import SendGridAPIClient
@@ -21,6 +22,7 @@ from datetime import time, timedelta, timezone
 from datetime import datetime, time, timedelta
 from flask_cors import CORS
 import os
+from api.models import StatusAppointment
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -607,66 +609,6 @@ def update_appointments(id):
     return jsonify(appointment.serialize()), 200
 
 
-""" @app.route('/hooks/cal-booking', methods=['POST'])
-def cal_webhook_receiver():
-    # Capturar los datos crudos
-    data = request.get_json(silent=True)
-    
-    print("\n--- NUEVA NOTIFICACIÓN DE CAL.COM ---")
-    if not data:
-        print(" Error: Payload vacío")
-        return jsonify({"msg": "Payload vacío"}), 400
-
-    payload = data.get('payload', {})
-    
-    # Extraer emails para identificación
-    doctor_email = payload.get('organizer', {}).get('email')
-    attendees = payload.get('attendees', [{}])
-    pacient_email = attendees[0].get('email') if attendees else None
-
-    print(f" Evento: {data.get('triggerEvent')}")
-    print(f" Doctor (Cal.com email): {doctor_email}")
-    print(f"Paciente (Cal.com email): {pacient_email}")
-
-    # Buscar en tu base de datos
-    doctor = Doctors.query.filter_by(email=doctor_email).first()
-    pacient = Pacient.query.filter_by(email=pacient_email).first()
-
-    # Validaciones de existencia
-    if not doctor:
-        print(f" Alerta: El doctor {doctor_email} no existe en nuestra DB.")
-        return jsonify({"msg": "Doctor no encontrado"}), 404
-
-    if not pacient:
-        print(f"ℹInfo: El email {pacient_email} no pertenece a un paciente registrado. Saltando registro.")
-        return jsonify({"msg": "Paciente no registrado, cita ignorada"}), 200
-
-    # Procesar la cita
-    try:
-        # Cal envía: "2026-02-04T18:00:00Z"
-        start_time_str = payload.get('startTime').replace('Z', '')
-        dt_object = datetime.fromisoformat(start_time_str)
-
-        new_appointment = Appointments(
-            pacient_id=pacient.id, 
-            doctor_id=doctor.id,
-            dateTime=dt_object,
-            reason=f"Cal.com: {payload.get('title')}",
-            status= StatusAppointment.confirmed
-        )
-
-        db.session.add(new_appointment)
-        db.session.commit()
-        
-        print(f" ÉXITO: Cita registrada para el paciente {pacient.name} con el Dr. {doctor.name}")
-        return jsonify({"msg": "Cita sincronizada exitosamente"}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"ERROR al guardar en DB: {str(e)}")
-        return jsonify({"msg": "Error interno al procesar la cita"}), 500 """
-
-
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @jwt_required()
 def cancel_appointment(id):
@@ -694,28 +636,44 @@ def get_doctor_appointments():
     if not doctor:
         return jsonify({'msg': 'doctor not found'}), 404
 
-    appointments = Appointments.query.filter_by(doctors_id=doctor.id).all()
+    appointments = Appointments.query.filter_by(doctor_id=doctor.id).all()
     return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
 @app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
 @jwt_required()
 def update_appointment_status(apt_id):
-    doctor_id = apt_id
-    body = request.get_json()
+    doctor_email = get_jwt_identity()
+
+    doctor = Doctors.query.filter_by(email=doctor_email).first()
+    if not doctor:
+        return jsonify({'msg': 'Doctor not found'}), 404
+
+    body = request.get_json(silent=True)
+    if not body or 'status' not in body:
+        return jsonify({'msg': 'Status is required'}), 400
 
     appointment = Appointments.query.filter_by(
         id=apt_id,
-        doctor_id=doctor_id
+        doctor_id=doctor.id
     ).first()
 
     if not appointment:
-        return jsonify({'msg': 'Appoinment not found'}), 400
+        return jsonify({'msg': 'Appointment not found'}), 404
 
-    appointment.status = body.get('status')
+    try:
+        appointment.status = StatusAppointment(body['status'].lower())
+    except ValueError:
+        return jsonify({
+            "msg": "Invalid status",
+            "allowed": [s.value for s in StatusAppointment]
+        }), 400
+
     db.session.commit()
 
-    return jsonify({'msg': appointment.serialize()}), 200
+    return jsonify({
+        'appointment': appointment.serialize()
+    }), 200
 
 
 # this only runs if `$ python src/main.py` is executed

@@ -82,9 +82,6 @@ export const PacientAppointments = () => {
 
 
 
-
-
-
     const handleBookingSuccess = async (bookingDetails) => {
 
         const token = localStorage.getItem("token");
