@@ -124,6 +124,7 @@ class Appointments(db.Model):
             "doctor_name": self.doctor.name if self.doctor else None,
             "dateTime": self.dateTime.strftime("%Y-%m-%d %H:%M"),
             "reason": self.reason,
+            "pacient_name": self.pacient.name if self.pacient else "Unknown",
             "pacient_email": self.pacient.email if self.pacient else "",
             "pacient_phone": self.pacient.phone if self.pacient else "",
             "doctor_cal_username": self.doctor.cal_username if self.doctor else None,

@@ -2,10 +2,13 @@ import { useEffect } from "react"
 import useGlobalReducer from "../../hooks/useGlobalReducer"
 import { DashboardStats } from "./DashboardStats"
 import { AppointmentsTable } from "./AppointmentsTable"
+import './doctorDashboard.css'
+import { DoctorProfileCard } from "./DoctorProfileCard"
 
 export const DoctorDashboard = () => {
 
   const { store, dispatch } = useGlobalReducer()
+  const doctor = store.doctor
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -23,6 +26,7 @@ export const DoctorDashboard = () => {
         }
 
         const data = await res.json()
+        console.log(data)
         dispatch({
           type: "set_appointments",
           payload: data.appointments
@@ -72,39 +76,50 @@ export const DoctorDashboard = () => {
   }
 
   useEffect(() => {
-  const fetchAppointments = async () => {
-    const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}doctor/appointments`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+    const fetchAppointments = async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}doctor/appointments`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        dispatch({
+          type: "set_appointments",
+          payload: data.appointments,
+        });
       }
-    );
+    };
 
-    if (res.ok) {
-      const data = await res.json();
-      dispatch({
-        type: "set_appointments",
-        payload: data.appointments,
-      });
-    }
-  };
+    fetchAppointments();
+    const interval = setInterval(fetchAppointments, 10000);
 
-  fetchAppointments(); // inicial
-  const interval = setInterval(fetchAppointments, 10000); // cada 10s
+    return () => clearInterval(interval);
+  }, []);
 
-  return () => clearInterval(interval);
-}, []);
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4">Performance overview</h2>
+    <div className="container-dashboard">
 
-      <DashboardStats appointments={store.appointments} />
-      <AppointmentsTable appointments={store.appointments}
-        onUpdateStatus={updateAppointmentStatus}
-      />
+      <div className="profile-doc">
+        <DoctorProfileCard
+          doctor={doctor}
+        />
+      </div>
+
+      <div className="container-stat mt-5">
+        <h2 className="mb-4">Performance overview</h2>
+
+        <DashboardStats appointments={store.appointments} />
+        <AppointmentsTable appointments={store.appointments}
+          onUpdateStatus={updateAppointmentStatus}
+        />
+      </div>
     </div>
+
   )
 }

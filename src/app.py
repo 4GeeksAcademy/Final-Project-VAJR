@@ -429,13 +429,14 @@ def specialidad():
         return jsonify([doct.serialize() for doct in doctors]), 200
 
 
-
-@app.route('/hooks/cal-booking', methods=['POST'])
+@app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     print("🔥 WEBHOOK CAL.COM DISPARADO 🔥")
     data = request.get_json(silent=True)
-    if not data:
-        return jsonify({"msg": "Payload vacío"}), 400
+
+    if data and data.get("triggerEvent") == "PING":
+        print("✅ PING RECIBIDO DESDE CAL.COM")
+        return jsonify({"msg": "pong"}), 200
 
     trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
@@ -446,12 +447,12 @@ def cal_webhook_receiver():
 
     print(f"\n--- WEBHOOK RECIBIDO: {trigger_event} ---")
 
-    # 🔹 Doctor
+ 
     doctor = Doctors.query.filter_by(email=doctor_email).first()
     if not doctor:
         return jsonify({"msg": "Doctor no encontrado"}), 404
 
-    # 🔹 Paciente (crear si no existe)
+   
     pacient = Pacient.query.filter_by(email=pacient_email).first()
     if not pacient:
         pacient = Pacient(
@@ -462,15 +463,11 @@ def cal_webhook_receiver():
         db.session.add(pacient)
         db.session.commit()
 
-    # ===============================
-    # 📅 BOOKING CREATED
-    # ===============================
     if trigger_event == "BOOKING_CREATED":
         try:
-            # 1️⃣ UID único de Cal.com
+
             cal_uid = payload.get("uid")
 
-            # 2️⃣ Evitar duplicados
             existing = Appointments.query.filter_by(
                 cal_booking_uid=cal_uid
             ).first()
@@ -478,18 +475,16 @@ def cal_webhook_receiver():
             if existing:
                 return jsonify({"msg": "Appointment already exists"}), 200
 
-            # 3️⃣ Fecha
             start_time_str = payload.get("startTime").replace("Z", "")
             dt_object = datetime.fromisoformat(start_time_str)
 
-            # 4️⃣ Crear cita
             new_appointment = Appointments(
                 pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
                 reason=f"Cal.com: {payload.get('title', 'Consulta')}",
                 cal_booking_uid=cal_uid,
-                status=StatusAppointment.confirmed
+                status=StatusAppointment.pending
             )
 
             db.session.add(new_appointment)
@@ -502,9 +497,6 @@ def cal_webhook_receiver():
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
 
-    # ===============================
-    # ❌ BOOKING CANCELLED
-    # ===============================
     elif trigger_event == "BOOKING_CANCELLED":
         appointment = Appointments.query.filter_by(
             cal_booking_uid=payload.get("uid")
@@ -517,9 +509,6 @@ def cal_webhook_receiver():
 
         return jsonify({"msg": "Cita no encontrada"}), 404
 
-    # ===============================
-    # 🔁 BOOKING RESCHEDULED
-    # ===============================
     elif trigger_event == "BOOKING_RESCHEDULED":
         appointment = Appointments.query.filter_by(
             cal_booking_uid=payload.get("uid")
