@@ -528,8 +528,6 @@ def cal_webhook_receiver():
 
 # Appointments
 
-# crear cita
-
 
 # listar citas pacientes
 @app.route('/api/appointments/<int:id>', methods=['GET'])
