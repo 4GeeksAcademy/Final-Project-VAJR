@@ -22,7 +22,6 @@ import { ForgotPwDoctor } from "./pages/ForgotPwDoctor";
 import { ResetPwDoctor } from "./pages/ResetPwDoctor";
 import { DoctorCard } from "./components/DoctorCard.jsx";
 // import { Demo } from "./pages/Demo";
-import { DoctorPage } from "./pages/DoctorPage";
 import { DoctorDashboard } from "./pages/dashboardPage/DoctorDashboard";
 import { PrivateDoctorRoute } from "./pages/dashboardPage/PrivateDoctorRoute"
 import { DoctorPage } from "./pages/DoctorPage.jsx";
