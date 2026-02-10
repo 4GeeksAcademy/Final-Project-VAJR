@@ -71,6 +71,32 @@ export const DoctorDashboard = () => {
     }
   }
 
+  useEffect(() => {
+  const fetchAppointments = async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}doctor/appointments`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      dispatch({
+        type: "set_appointments",
+        payload: data.appointments,
+      });
+    }
+  };
+
+  fetchAppointments(); // inicial
+  const interval = setInterval(fetchAppointments, 10000); // cada 10s
+
+  return () => clearInterval(interval);
+}, []);
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Performance overview</h2>

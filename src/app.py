@@ -277,7 +277,7 @@ def loginPacient():
                     'token': token}), 201
 
 
-@app.route('/pacient/login', methods=['POST'])
+@app.route('/api/pacient/login', methods=['POST'])
 def pacient_login():
     request_body = request.get_json(silent=True)
     if request_body is None:
@@ -429,9 +429,10 @@ def specialidad():
         return jsonify([doct.serialize() for doct in doctors]), 200
 
 
+
 @app.route('/hooks/cal-booking', methods=['POST'])
-@app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
+    print("🔥 WEBHOOK CAL.COM DISPARADO 🔥")
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"msg": "Payload vacío"}), 400
@@ -439,66 +440,102 @@ def cal_webhook_receiver():
     trigger_event = data.get('triggerEvent')
     payload = data.get('payload', {})
 
-    # Identificar emails en nuestra db paciente y doctor
     doctor_email = payload.get('organizer', {}).get('email')
     attendees = payload.get('attendees', [{}])
     pacient_email = attendees[0].get('email') if attendees else None
 
     print(f"\n--- WEBHOOK RECIBIDO: {trigger_event} ---")
 
+    # 🔹 Doctor
     doctor = Doctors.query.filter_by(email=doctor_email).first()
+    if not doctor:
+        return jsonify({"msg": "Doctor no encontrado"}), 404
+
+    # 🔹 Paciente (crear si no existe)
     pacient = Pacient.query.filter_by(email=pacient_email).first()
+    if not pacient:
+        pacient = Pacient(
+            name=attendees[0].get("name", "Paciente Cal.com"),
+            email=pacient_email,
+            password="calcom"
+        )
+        db.session.add(pacient)
+        db.session.commit()
 
-    if not doctor or not pacient:
-        print(" Doctor o Paciente no encontrados en DB. Ignorando evento.")
-        return jsonify({"msg": "Actor no encontrado"}), 404
-
+    # ===============================
+    # 📅 BOOKING CREATED
+    # ===============================
     if trigger_event == "BOOKING_CREATED":
         try:
-            start_time_str = payload.get('startTime').replace('Z', '')
+            # 1️⃣ UID único de Cal.com
+            cal_uid = payload.get("uid")
+
+            # 2️⃣ Evitar duplicados
+            existing = Appointments.query.filter_by(
+                cal_booking_uid=cal_uid
+            ).first()
+
+            if existing:
+                return jsonify({"msg": "Appointment already exists"}), 200
+
+            # 3️⃣ Fecha
+            start_time_str = payload.get("startTime").replace("Z", "")
             dt_object = datetime.fromisoformat(start_time_str)
 
+            # 4️⃣ Crear cita
             new_appointment = Appointments(
                 pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
-                reason=f"Cal.com: {payload.get('title')}",
+                reason=f"Cal.com: {payload.get('title', 'Consulta')}",
+                cal_booking_uid=cal_uid,
                 status=StatusAppointment.confirmed
             )
+
             db.session.add(new_appointment)
             db.session.commit()
-            print(f" Cita CREADA exitosamente")
+
+            print("✅ Cita CREADA exitosamente")
             return jsonify({"msg": "Cita creada"}), 201
+
         except Exception as e:
             db.session.rollback()
             return jsonify({"msg": str(e)}), 500
 
-    # Cancelacion de cita
+    # ===============================
+    # ❌ BOOKING CANCELLED
+    # ===============================
     elif trigger_event == "BOOKING_CANCELLED":
-        try:
-            # Busco la cita existente por fecha, doctor y paciente
-            start_time_str = payload.get('startTime').replace('Z', '')
-            dt_object = datetime.fromisoformat(start_time_str)
+        appointment = Appointments.query.filter_by(
+            cal_booking_uid=payload.get("uid")
+        ).first()
 
-            appointment = Appointments.query.filter_by(
-                doctor_id=doctor.id,
-                pacient_id=pacient.id,
-                dateTime=dt_object
-            ).first()
+        if appointment:
+            appointment.status = StatusAppointment.cancelled
+            db.session.commit()
+            return jsonify({"msg": "Cita cancelada"}), 200
 
-            if appointment:
-                appointment.status = StatusAppointment.cancelled
-                db.session.commit()
-                print(f" Cita CANCELADA en base de datos")
-                return jsonify({"msg": "Cita cancelada correctamente"}), 200
-            else:
-                print(" No se encontró la cita para cancelar")
-                return jsonify({"msg": "Cita no encontrada"}), 404
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"msg": str(e)}), 500
+        return jsonify({"msg": "Cita no encontrada"}), 404
+
+    # ===============================
+    # 🔁 BOOKING RESCHEDULED
+    # ===============================
+    elif trigger_event == "BOOKING_RESCHEDULED":
+        appointment = Appointments.query.filter_by(
+            cal_booking_uid=payload.get("uid")
+        ).first()
+
+        if appointment:
+            new_start = payload.get("startTime").replace("Z", "")
+            appointment.dateTime = datetime.fromisoformat(new_start)
+            appointment.status = StatusAppointment.confirmed
+            db.session.commit()
+            return jsonify({"msg": "Cita reagendada"}), 200
+
+        return jsonify({"msg": "Cita no encontrada"}), 404
 
     return jsonify({"msg": "Evento no soportado"}), 400
+
 
 # Appointments
 
@@ -674,6 +711,36 @@ def update_appointment_status(apt_id):
     return jsonify({
         'appointment': appointment.serialize()
     }), 200
+
+# esta cita para guarda los appoint.... del doctor en la base de datos
+
+
+@app.route('/api/appointments', methods=['POST'])
+@jwt_required()
+def create_appointment():
+    pacient_email = get_jwt_identity()
+    data = request.get_json()
+
+    pacient = Pacient.query.filter_by(email=pacient_email).first()
+    if not pacient:
+        return jsonify({"msg": "Patient not found"}), 404
+
+    doctor = Doctors.query.get(data.get("doctor_id"))
+    if not doctor:
+        return jsonify({"msg": "Doctor not found"}), 404
+
+    new_appointment = Appointments(
+        pacient_id=pacient.id,
+        doctor_id=doctor.id,
+        dateTime=datetime.fromisoformat(data["dateTime"].replace("Z", "")),
+        reason=data.get("reason", ""),
+        status=StatusAppointment.confirmed
+    )
+
+    db.session.add(new_appointment)
+    db.session.commit()
+
+    return jsonify(new_appointment.serialize()), 201
 
 
 # this only runs if `$ python src/main.py` is executed

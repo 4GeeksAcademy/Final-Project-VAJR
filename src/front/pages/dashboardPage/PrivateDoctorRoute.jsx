@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 
 export const PrivateDoctorRoute = ({ children }) => {
-  const { store } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer();
   const token = store.token;
 
   if (!token) {
@@ -11,15 +11,17 @@ export const PrivateDoctorRoute = ({ children }) => {
   }
 
   try {
-    const decoded = jwtDecode(token);
+    const { exp } = jwtDecode(token);
     const now = Date.now() / 1000;
 
-    if (decoded.exp < now) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("doctor");
+    if (exp < now) {
+      dispatch({ type: "logout" });
+      localStorage.clear();
       return <Navigate to="/doctor/login" replace />;
     }
-  } catch (err) {
+  } catch {
+    dispatch({ type: "logout" });
+    localStorage.clear();
     return <Navigate to="/doctor/login" replace />;
   }
 

@@ -82,20 +82,12 @@ export const DoctorSearchCard = ({ doctor }) => {
 
                 <div className="col-md-4 border-start-md d-flex align-items-stretch bg-light bg-opacity-25">
                     <div className="p-4 d-flex flex-column justify-content-center w-100">
-                        {/* <button
-                            data-cal-link={doctor.cal_link}
-                            className="btn-book-appointment mb-2"
-                        >
-                            <i className="fa-regular fa-calendar-check"></i>
-                            Book Appointment
-                        </button> */}
 
                         <button className="btn-book-appointment mb-2"
                             onClick={verifyToken}>
                             <i className="fa-regular fa-calendar-check"></i>
                             Book Appointment
                         </button>
-
 
 
                         <button

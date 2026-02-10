@@ -121,9 +121,11 @@ export const PacientAppointments = () => {
                 const errorData = await response.json();
                 Swal.fire("Error", errorData.msg || "Error al guardar en BD", "error");
             }
+
         } catch (error) {
             console.error("Error guardando cita:", error);
         }
+        dispatch({ type: "set_appointments", payload: [] });
     };
 
 

@@ -71,14 +71,60 @@ export const ListAppointments = () => {
 
 
 
-    const handleReschedule = (appt) => {
-        if (appt.doctor_cal_username) {
-            setSelectedDoctorSlug(appt.doctor_cal_username);
-            setAppointmentIdToUpdate(appt.id);
-            setEditForm({ reason: appt.reason });
-            setShowCal(true);
-        } else {
-            Swal.fire("Error", "This doctor does not have Cal.com configured.", "warning");
+    const handleRescheduleAndCancel = async (appt) => {
+
+        const result = await Swal.fire({
+            title: "Reschedule Appointment?",
+            text: "The current appointment will be cancelled and a new one will be created",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: colors.accent,
+            cancelButtonColor: colors.secondary,
+            confirmButtonText: "Yes, reschedule",
+            cancelButtonText: "Keep it",
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/appointments/${appt.id}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                        },
+                    }
+                );
+
+                if (response.ok) {
+
+                    setAppointments(prev =>
+                        prev.map(a => a.id === appt.id ? { ...a, status: "cancelled" } : a)
+                    );
+
+                    setSelectedDoctorSlug(appt.cal_link);
+                    setAppointmentIdToUpdate(null); // No vamos a actualizar, es una nueva cita
+                    setEditForm({ reason: appt.reason });
+                    setShowCal(true);
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Reschedule",
+                        text: "Please select a new time for your appointment",
+                        confirmButtonColor: colors.primary
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Could not cancel appointment",
+                    confirmButtonColor: colors.primary
+                });
+            }
         }
     };
 
@@ -197,7 +243,7 @@ export const ListAppointments = () => {
                             <small className="text-secondary">{new Date(appt.dateTime).toLocaleString()}</small>
                         </div>
                         <div className="d-flex gap-2">
-                            <button className="btn btn-outline-primary btn-sm px-3" onClick={() => handleReschedule(appt)}>
+                            <button className="btn btn-outline-primary btn-sm px-3" onClick={() => handleRescheduleAndCancel(appt)}>
                                 <i className="fa-solid fa-clock-rotate-left"></i> Reschedule
                             </button>
                             <button className="btn btn-outline-danger btn-sm px-3" onClick={() => deleteAppointments(appt.id)}>
