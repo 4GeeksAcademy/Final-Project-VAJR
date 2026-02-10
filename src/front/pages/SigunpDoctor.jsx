@@ -93,7 +93,7 @@ export const SignupDoctor = () => {
 
     return (
 
-    <div className="vip-background">
+    <div className="vip-background my-5">
       <div className="fondo-form">
 
             <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "100vh"}}>
@@ -132,7 +132,7 @@ export const SignupDoctor = () => {
                                         <strong>{form.specialties || "Select a specialty"}</strong>
                                     </button>
                                     <ul className="dropdown-menu w-60">
-                                        {["CARDIOLOGY", "DERMATOLOGY", "PEDIATRICS", "GENERAL_PRACTICE", "NEUROLOGY"].map(special => (
+                                        {["Cardiology", "Dermatology", "Psychology", "General_Practice", "Neurology", "Gastroenterology"].map(special => (
                                             <li key={special}>
                                                 <button type="button" className={`dropdown-item ${form.specialties === special ? "active" : ""}`}
                                                     onClick={() => hadleSpecialty(special)}

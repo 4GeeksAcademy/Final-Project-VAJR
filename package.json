@@ -65,6 +65,7 @@
 		"@fullcalendar/react": "^6.1.20",
 		"@fullcalendar/timegrid": "^6.1.20",
 		"cors": "^2.8.6",
+		"jspdf": "^4.1.0",
 		"jwt-decode": "^4.0.0",
 		"leaflet": "^1.9.4",
 		"prop-types": "^15.8.1",

@@ -114,62 +114,6 @@ export const MapView = ({ doctors }) => {
                     return null;
                 })}
             </MapContainer>
-            {showSlots && (
-                <div className="modal d-block shadow" style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1050 }}>
-                    <div className="modal-dialog modal-sm modal-dialog-centered">
-                        <div className="modal-content border-0 shadow-lg">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Horarios disponibles</h5>
-                                <button className="btn-close" onClick={() => setShowSlots(false)}></button>
-                            </div>
-                            <div className="modal-body p-3">
-                                {loadingSlots ? (
-                                    <div className="text-center py-3">Cargando...</div>
-                                ) : slots.length > 0 ? (
-                                    <div className="d-flex flex-column gap-2">
-                                        {slots.map((s, i) => (
-                                            <button key={i} className="btn btn-outline-primary" onClick={async () => {
-                                                const token = localStorage.getItem('token');
-                                                if (!token) {
-                                                    Swal.fire('Login requerido', 'Debes iniciar sesión para reservar.', 'warning');
-                                                    return;
-                                                }
-                                                const today = new Date().toISOString().split('T')[0];
-                                                const dateTime = `${today}T${s.hour}:00Z`;
-                                                try {
-                                                    const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                                                    const res = await fetch(`${backendUrl}/api/appointments/`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'Authorization': `Bearer ${token}`
-                                                        },
-                                                        body: JSON.stringify({ doctor_id: selectedDoctor.id, dateTime, reason: 'Reserva desde mapa' })
-                                                    });
-                                                    const data = await res.json();
-                                                    if (res.ok) {
-                                                        Swal.fire('Reservado', 'Tu cita se ha creado correctamente.', 'success');
-                                                        setShowSlots(false);
-                                                    } else {
-                                                        Swal.fire('Error', data.msg || 'No se pudo reservar la cita.', 'error');
-                                                    }
-                                                } catch (err) {
-                                                    console.error(err);
-                                                    Swal.fire('Error', 'Error al comunicarse con el servidor.', 'error');
-                                                }
-                                            }}>
-                                                {s.day} — {s.hour}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-muted">No hay horarios disponibles.</div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

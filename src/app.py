@@ -178,11 +178,12 @@ def register_doctor():
     new_doctor.specialties = SpecialtyType[body['specialties']].value
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_doctor.password = pw_hash
-    new_doctor.biography = ''
+    new_doctor.biography = body['biography']
     new_doctor.address = body['address']
-    new_doctor.latitud = 0.0
-    new_doctor.longitud = 0.0
+    new_doctor.latitud = body['latitud']
+    new_doctor.longitud = body['longitud']
     new_doctor.picture = body.get('picture', '')
+    new_doctor.cal_link = body['cal_link']
     db.session.add(new_doctor)
     db.session.commit()
     return jsonify({'msg': 'User create succesfully.'}), 200
@@ -371,6 +372,8 @@ def specialidad():
         doctors = Doctors.query.all()
 
     return jsonify({'msg': [doct.serialize() for doct in doctors]}), 200
+
+#Call booking 
 
 @app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
