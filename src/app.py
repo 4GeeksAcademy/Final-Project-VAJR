@@ -23,6 +23,9 @@ from datetime import datetime, time, timedelta
 from flask_cors import CORS
 import os
 from api.models import StatusAppointment
+import requests
+import time
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -729,6 +732,101 @@ def create_appointment():
 
     return jsonify(new_appointment.serialize()), 201
 
+
+
+
+# ruben endpoint
+
+def local_time_to_cal_format(local_start, local_end):
+    """
+    Recibe horas en formato 'HH:MM'
+    Devuelve formato ISO que Cal.com acepta (sin conversión UTC)
+    """
+
+    start = f"1970-01-01T{local_start}:00.000Z"
+    end = f"1970-01-01T{local_end}:00.000Z"
+
+    return start, end
+
+@app.route('/api/doctor/<int:doctor_id>/sync-cal', methods=['POST'])
+def sync_doctor_schedule_to_cal(doctor_id):
+    print(f"\n🚀 SINCRONIZACIÓN QUIRÚRGICA - Doc ID: {doctor_id}")
+
+    CAL_API_KEY = os.getenv("CAL_API_KEY")
+    params = {"apiKey": CAL_API_KEY}
+
+    # 1. Obtener disponibilidad de tu DB local (PostgreSQL)
+    local_availability = Availability.query.filter_by(
+        id_doctor=doctor_id).all()
+    print(f"🔎 Reglas locales encontradas: {len(local_availability)}")
+
+    try:
+        # 2. Obtener el ID del horario 'ruben'
+        get_resp = requests.get(
+            "https://api.cal.com/v1/schedules", params=params)
+        schedules = get_resp.json().get('schedules', [])
+        print(schedules)
+        target_schedule = next(
+            (s for s in schedules if s.get('name') == "ruben"), None)
+        print(target_schedule)
+
+        if not target_schedule:
+            return jsonify({"msg": "No se encontró el horario 'ruben'"}), 404
+
+        schedule_id = target_schedule['id']
+        existing_rules = target_schedule.get('availability', [])
+
+        if existing_rules:
+            print(
+                f"🧹 Borrando {len(existing_rules)} reglas antiguas para evitar conflictos...")
+            for old_rule in existing_rules:
+                requests.delete(
+                    f"https://api.cal.com/v1/availabilities/{old_rule['id']}", params=params)
+
+            print("⏳ Esperando propagación de borrado...")
+            time.sleep(2)
+
+        # 4. INSERCIÓN LIMPIA: Solo los campos estrictamente necesarios
+        day_mapping = {
+            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
+            "Thursday": 4, "Friday": 5, "Saturday": 6
+        }
+
+        success_count = 0
+        for rule in local_availability:
+            # Mapear días
+            active_days = [day_mapping[d.capitalize()]
+                           for d in day_mapping if d.lower() in rule.days.lower()]
+
+            if active_days:
+                # PAYLOAD MÍNIMO: Sin 'date', sin 'eventTypeId', sin nada extra.
+                # Usamos formato HH:MM (algunos DBs de Cal preferen esto en el POST)
+                start, end = local_time_to_cal_format(
+                    rule.start_time.strftime("%H:%M"),
+                    rule.end_time.strftime("%H:%M")
+                )
+                payload = {
+                    "scheduleId": schedule_id,
+                    "days": active_days,
+                    "startTime": start,
+                    "endTime": end,
+                }
+
+                print(f"📤 Enviando: {json.dumps(payload)}")
+                post_resp = requests.post(
+                    "https://api.cal.com/v1/availabilities", json=payload, params=params)
+
+                if post_resp.status_code in [200, 201]:
+                    print(f"   ✅ Éxito: Días {active_days}")
+                    success_count += 1
+                else:
+                    print(f"   ❌ Error: {post_resp.text}")
+
+        return jsonify({"msg": f"Sincronización terminada. {success_count} reglas creadas."}), 200
+
+    except Exception as e:
+        print(f"❌ Error crítico: {str(e)}")
+        return jsonify({"msg": f"Error: {str(e)}"}), 500
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ export const DoctorProfileCard = ({ doctor }) => {
 
             <button
                 className="btn btn-outline-primary btn-sm mt-3 w-100"
-            // onClick={() => }
+            
             >
                 Send schedule
             </button>

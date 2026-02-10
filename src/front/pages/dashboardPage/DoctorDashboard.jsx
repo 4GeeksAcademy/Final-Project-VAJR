@@ -5,6 +5,7 @@ import { AppointmentsTable } from "./AppointmentsTable"
 import './doctorDashboard.css'
 import { DoctorProfileCard } from "./DoctorProfileCard"
 
+
 export const DoctorDashboard = () => {
 
   const { store, dispatch } = useGlobalReducer()
