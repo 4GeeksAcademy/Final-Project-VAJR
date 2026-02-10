@@ -11,35 +11,6 @@ export const DoctorDashboard = () => {
   const { store, dispatch } = useGlobalReducer()
   const doctor = store.doctor
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments`, {
-          headers: {
-            // Authorization: `Bearer ${localStorage.getItem("doctorToken")}`
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        })
-
-        if (!res.ok) {
-          console.error("Error fetching appointments", res.status)
-          return
-        }
-
-        const data = await res.json()
-        console.log(data)
-        dispatch({
-          type: "set_appointments",
-          payload: data.appointments
-        })
-      } catch (err) {
-        console.error("Network error:", err)
-      }
-    }
-
-    fetchAppointments()
-  }, [])
-
   const updateAppointmentStatus = async (id, status) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments/${id}`, {

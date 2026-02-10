@@ -10,11 +10,8 @@ export const initialStore = () => {
 
     selectedAppointment: { doctor: null, hour: null, day: null },
     pacient: null,
-    userType: null,
   };
 };
-
-
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
@@ -46,7 +43,6 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         appointments: action.payload,
-        userType: 'pacient'
       };
 
     case "login_doctor":
@@ -54,7 +50,7 @@ export default function storeReducer(store, action = {}) {
         ...store,
         doctor: action.payload.doctor,
         token: action.payload.token,
-        userType: 'doctor'
+        userType: "doctor",
       };
 
     case "logout":
@@ -71,3 +67,5 @@ export default function storeReducer(store, action = {}) {
       return store;
   }
 }
+
+// userType: null,

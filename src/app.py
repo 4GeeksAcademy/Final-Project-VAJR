@@ -300,7 +300,8 @@ def pacient_login():
     token = create_access_token(identity=pacient.email)
     return jsonify({
         'msg': 'Login successful',
-        'token': token
+        'token': token,
+        'pacient': pacient.serialize()
     }), 200
 
 
@@ -433,84 +434,114 @@ def specialidad():
 @app.route('/api/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
     print("🔥 WEBHOOK CAL.COM DISPARADO 🔥")
-    data = request.get_json(silent=True)
 
-    if data and data.get("triggerEvent") == "PING":
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"msg": "No data received"}), 400
+
+    # --- PING ---
+    if data.get("triggerEvent") == "PING":
         print("✅ PING RECIBIDO DESDE CAL.COM")
         return jsonify({"msg": "pong"}), 200
 
-    trigger_event = data.get('triggerEvent')
-    payload = data.get('payload', {})
+    trigger_event = data.get("triggerEvent")
+    payload = data.get("payload", {})
 
-    doctor_email = payload.get('organizer', {}).get('email')
-    attendees = payload.get('attendees', [{}])
-    pacient_email = attendees[0].get('email') if attendees else None
+    print(f"\n--- EVENTO: {trigger_event} ---")
 
-    print(f"\n--- WEBHOOK RECIBIDO: {trigger_event} ---")
+    # --- DATOS IMPORTANTES ---
+    doctor_email = payload.get("organizer", {}).get("email")
+    attendees = payload.get("attendees", [])
+    pacient_email = attendees[0].get("email") if attendees else None
 
+    print("Doctor email:", doctor_email)
+    print("Paciente email:", pacient_email)
+
+    # --- DOCTOR ---
     doctor = Doctors.query.filter_by(email=doctor_email).first()
     if not doctor:
         return jsonify({"msg": "Doctor no encontrado"}), 404
 
+    # --- PACIENT ---
     pacient = Pacient.query.filter_by(email=pacient_email).first()
     if not pacient:
+        hashed_pw = bcrypt.generate_password_hash("calcom").decode("utf-8")
         pacient = Pacient(
             name=attendees[0].get("name", "Paciente Cal.com"),
             email=pacient_email,
-            password="calcom"
+            password=hashed_pw,
+            is_active=True
         )
         db.session.add(pacient)
         db.session.commit()
+        print("🆕 Paciente creado desde Cal.com")
 
+    # ======================================================
+    # =============== BOOKING CREATED ======================
+    # ======================================================
     if trigger_event == "BOOKING_CREATED":
         try:
-
             cal_uid = payload.get("uid")
+            if not cal_uid:
+                return jsonify({"msg": "UID missing"}), 400
 
             existing = Appointments.query.filter_by(
-                cal_booking_uid=cal_uid
+                cal_event_id=cal_uid
             ).first()
 
             if existing:
                 return jsonify({"msg": "Appointment already exists"}), 200
 
-            start_time_str = payload.get("startTime").replace("Z", "")
-            dt_object = datetime.fromisoformat(start_time_str)
+            start_time_str = payload.get("startTime")
+            if not start_time_str:
+                return jsonify({"msg": "startTime missing"}), 400
+
+            dt_object = datetime.fromisoformat(
+                start_time_str.replace("Z", "")
+            )
 
             new_appointment = Appointments(
                 pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
-                reason=f"Cal.com: {payload.get('title', 'Consulta')}",
-                cal_booking_uid=cal_uid,
+                reason=f"Cal.com: {payload.get('title', 'Consultation')}",
+                cal_event_id=cal_uid,
                 status=StatusAppointment.pending
             )
 
             db.session.add(new_appointment)
             db.session.commit()
 
-            print("✅ Cita CREADA exitosamente")
-            return jsonify({"msg": "Cita creada"}), 201
+            print("✅ CITA CREADA DESDE CAL.COM")
+            return jsonify({"msg": "Appointment created"}), 201
 
         except Exception as e:
             db.session.rollback()
+            print("❌ ERROR BOOKING_CREATED:", str(e))
             return jsonify({"msg": str(e)}), 500
 
+    # ======================================================
+    # =============== BOOKING CANCELLED ====================
+    # ======================================================
     elif trigger_event == "BOOKING_CANCELLED":
         appointment = Appointments.query.filter_by(
-            cal_booking_uid=payload.get("uid")
+            cal_event_id=payload.get("uid")
         ).first()
 
         if appointment:
             appointment.status = StatusAppointment.cancelled
             db.session.commit()
-            return jsonify({"msg": "Cita cancelada"}), 200
+            print("❌ CITA CANCELADA")
+            return jsonify({"msg": "Appointment cancelled"}), 200
 
-        return jsonify({"msg": "Cita no encontrada"}), 404
+        return jsonify({"msg": "Appointment not found"}), 404
 
+    # ======================================================
+    # =============== BOOKING RESCHEDULED ==================
+    # ======================================================
     elif trigger_event == "BOOKING_RESCHEDULED":
         appointment = Appointments.query.filter_by(
-            cal_booking_uid=payload.get("uid")
+            cal_event_id=payload.get("uid")
         ).first()
 
         if appointment:
@@ -518,11 +549,35 @@ def cal_webhook_receiver():
             appointment.dateTime = datetime.fromisoformat(new_start)
             appointment.status = StatusAppointment.confirmed
             db.session.commit()
-            return jsonify({"msg": "Cita reagendada"}), 200
+            print("🔁 CITA REPROGRAMADA")
+            return jsonify({"msg": "Appointment rescheduled"}), 200
 
-        return jsonify({"msg": "Cita no encontrada"}), 404
+        return jsonify({"msg": "Appointment not found"}), 404
 
-    return jsonify({"msg": "Evento no soportado"}), 400
+    # --- EVENTO NO SOPORTADO ---
+    return jsonify({"msg": "Event ignored"}), 200
+
+
+# Appointments
+
+# listar citas pacientes
+# @app.route('/api/appointments/<int:id>', methods=['GET'])
+# @jwt_required()
+# def get_appointments_p(id):
+#     pacient_email = get_jwt_identity()
+
+#     pacient = Pacient.query.filter_by(email=pacient_email).first()
+
+#     if not pacient:
+#         return jsonify({"msg": "Usuario no encontrado"}), 404
+
+#     appointment = Appointments.query.filter_by(
+#         id=id, pacient_id=pacient.id).first()
+
+#     if not appointment:
+#         return jsonify({"msg": "Cita no encontrada"}), 404
+
+#     return jsonify(appointment.serialize()), 200
 
 
 # Appointments
@@ -569,41 +624,18 @@ def get_appt_pacient():
     return jsonify([a.serialize() for a in appointments]), 200
 
 
-@app.route('/api/appointments/doctor', methods=['GET'])
-@jwt_required()
-def get_doctor_appointments():
-    doctor_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
-    if not appointments:
-        return jsonify([]), 200
-        return jsonify({"msg": "No hay citas para este doctor"}), 404
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
-
-# listar cita especifica doctor
-
-
 @app.route('/api/appointments/doctor/<int:id>', methods=['GET'])
 @jwt_required()
 def get_doctor_appointment_d(id):
     doctor_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(
+    appointment = Appointments.query.filter_by(
         id=id, doctor_id=doctor_id).first()
 
-    if not appointments:
+    if not appointment:
         return jsonify({"msg": "Cita no encontrada"}), 404
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
+    return jsonify(appointment.serialize()), 200
 
 # listar citas pacientes
-
-
-@app.route('/api/appointments', methods=['GET'])
-@jwt_required()
-def get_appointments():
-    user_id = get_jwt_identity()
-    appointments = Appointments.query.filter_by(pacient_id=user_id).all()
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
-
-# modificar appointments
 
 
 @app.route('/api/appointments/<int:id>', methods=['PUT'])
@@ -654,17 +686,17 @@ def cancel_appointment(id):
     return jsonify({"msg": "Cita cancelada correctamente"}), 200
 
 
-# @app.route('/doctor/appointments', methods=['GET'])
-# @jwt_required()
-# def get_doctor_appointments():
-#     doctor_email = get_jwt_identity()
+@app.route('/doctor/appointments', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+    doctor_email = get_jwt_identity()
 
-#     doctor = Doctors.query.filter_by(email=doctor_email).first()
-#     if not doctor:
-#         return jsonify({'msg': 'doctor not found'}), 404
+    doctor = Doctors.query.filter_by(email=doctor_email).first()
+    if not doctor:
+        return jsonify({'msg': 'doctor not found'}), 404
 
-#     appointments = Appointments.query.filter_by(doctor_id=doctor.id).all()
-#     return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
+    appointments = Appointments.query.filter_by(doctor_id=doctor.id).all()
+    return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
 @app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
