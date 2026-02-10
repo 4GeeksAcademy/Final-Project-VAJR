@@ -7,6 +7,10 @@ export const initialStore = () => {
     appointments: [],
     doctor: token ? JSON.parse(localStorage.getItem("doctor")) : null,
     token: token || null,
+
+    selectedAppointment: { doctor: null, hour: null, day: null },
+    pacient: null,
+    userType: null,
   };
 };
 
@@ -14,6 +18,11 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
+    case "set_doctors":
+      return {
+        ...store,
+        doctors: action.payload,
+      };
     case "set_doctors":
       return {
         ...store,
@@ -37,6 +46,7 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         appointments: action.payload,
+        userType: 'pacient'
       };
 
     case "login_doctor":
@@ -44,6 +54,7 @@ export default function storeReducer(store, action = {}) {
         ...store,
         doctor: action.payload.doctor,
         token: action.payload.token,
+        userType: 'doctor'
       };
 
     case "logout":
@@ -52,6 +63,8 @@ export default function storeReducer(store, action = {}) {
         doctor: null,
         token: null,
         appointments: [],
+        pacient: null,
+        userType: null,
       };
 
     default:

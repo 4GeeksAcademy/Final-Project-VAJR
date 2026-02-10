@@ -10,11 +10,13 @@ db = SQLAlchemy()
 
 
 class SpecialtyType(enum.Enum):
-    CARDIOLOGY = "Cardiology"
-    DERMATOLOGY = "Dermatology"
-    PEDIATRICS = "Pediatrics"
-    GENERAL_PRACTICE = "General Practice"
-    NEUROLOGY = "Neurology"
+    Cardiology = "Cardiology"
+    Dermatology = "Dermatology"
+    General_Practice = "General Practice"
+    Psychology = "Psychology"
+    Orthopedics = "Orthopedics"
+    Neurology = "Neurology"
+    Gastroenterology = "Gastroenterology"
 
 
 class StatusAppointment(enum.Enum):
@@ -32,7 +34,7 @@ class Pacient(db.Model):
     password: Mapped[str] = mapped_column(String(120), nullable=False)
     phone: Mapped[str] = mapped_column(String(50), unique=True, nullable=True)
     reset_token: Mapped[str] = mapped_column(String(255), nullable=True)
-    reset_expires: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    reset_expires:Mapped[datetime]=mapped_column(DateTime, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
     appointments: Mapped[List["Appointments"]
                          ] = relationship(back_populates="pacient")
@@ -60,28 +62,24 @@ class Doctors(db.Model):
     latitud: Mapped[float] = mapped_column(Float)
     longitud: Mapped[float] = mapped_column(Float)
     reset_token: Mapped[str] = mapped_column(String(255), nullable=True)
-    reset_expires: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    reset_expires:Mapped[datetime]=mapped_column(DateTime, nullable=True)
     cal_link: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    cal_username: Mapped[Optional[str]] = mapped_column(
-        String(200), nullable=True)
     picture: Mapped[Optional[str]] = mapped_column(String(500))
     phone: Mapped[str] = mapped_column(String(50), unique=True)
-    appointments: Mapped[List["Appointments"]
-                         ] = relationship(back_populates="doctor")
-    availability: Mapped[List["Availability"]
-                         ] = relationship(back_populates="doctor")
-    cal_link = db.Column(db.String(200), nullable=True)
-    appointments: Mapped[List["Appointments"]
-                         ] = relationship(back_populates="doctor")
-    availability: Mapped[List["Availability"]
-                         ] = relationship(back_populates="doctor")
+    appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
+    availability: Mapped[List["Availability"]] = relationship(back_populates="doctor")
 
     def serialize(self):
+
+        specialty = self.specialties
+        if hasattr(specialty, 'value'):
+            specialty = specialty.value
+
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "specialties": self.specialties.value,
+            "specialties": specialty,
             "biography": self.biography,
             "picture": self.picture,
             "address": self.address,
@@ -90,10 +88,9 @@ class Doctors(db.Model):
                 "lng": self.longitud
             },
             "phone": self.phone,
-
             "cal_link": self.cal_link,
-            "cal_username": self.cal_username
-
+            
+            
         }
 
 
@@ -106,31 +103,32 @@ class Appointments(db.Model):
         ForeignKey('doctors.id'), nullable=False)
     dateTime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     reason: Mapped[str] = mapped_column(String(120), nullable=False)
-    cal_booking_uid: Mapped[Optional[str]] = mapped_column(
-        String(100), unique=True, nullable=True)
-    status: Mapped[StatusAppointment] = mapped_column(
-        Enum(StatusAppointment), nullable=False)
+    cal_event_id:Mapped[str]=mapped_column(String(255), nullable=True) 
+    status: Mapped[StatusAppointment] = mapped_column(Enum(StatusAppointment), nullable=False)
     pacient: Mapped["Pacient"] = relationship(back_populates="appointments")
     doctor: Mapped["Doctors"] = relationship(back_populates="appointments")
 
     def appointment_hour(self):
-        return self.dateTime.strftime("%H:%M")
+        return self.dateTime.strftime("%H:%M");
 
     def serialize(self):
         return {
             "id": self.id,
-            "pacient_id": self.pacient_id,
-            "doctor_id": self.doctor_id,
-            "doctor_name": self.doctor.name if self.doctor else None,
-            "dateTime": self.dateTime.strftime("%Y-%m-%d %H:%M"),
-            "reason": self.reason,
-            "pacient_name": self.pacient.name if self.pacient else "Unknown",
+            "pacient_id":self.pacient_id,
+            "doctor_id":self.doctor_id,
+            "doctor_name":self.doctor.name if self.doctor else None,
+            
+            "dateTime":self.dateTime.strftime("%Y-%m-%d %H:%M"),
+            "reason":self.reason,
+            "status":self.status.value,
+        
+            "pacient_name":self.pacient.name if self.pacient else None,
             "pacient_email": self.pacient.email if self.pacient else "",
             "pacient_phone": self.pacient.phone if self.pacient else "",
-            "doctor_cal_username": self.doctor.cal_username if self.doctor else None,
-            "status": self.status.value,
-            "appointment_date": self.dateTime.strftime("%Y-%m-%d"),
-            "appointment_hour": self.dateTime.strftime("%H:%M")
+            "cal_link": self.doctor.cal_link if self.doctor else None,
+            "cal_event_id":self.cal_event_id
+            
+
         }
 
 
@@ -153,3 +151,4 @@ class Availability(db.Model):
             "start_time": self.start_time.strftime("%H:%M"),
             "end_time": self.end_time.strftime("%H:%M")
         }
+

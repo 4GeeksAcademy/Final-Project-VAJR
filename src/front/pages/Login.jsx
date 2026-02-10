@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import Swal from "sweetalert2";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export const Login = () => {
       console.log("Respuesta:", text);
 
       if (!text) {
-        alert("El servidor no respondió");
+        Swal.fire({ icon: "error", title: "Server Error", text: "The server did not return a valid response.", confirmButtonColor: "#d33" });
         return;
       }
 
@@ -49,11 +50,16 @@ export const Login = () => {
           }
         });
 
-        console.log("login exitoso");
-        navigate('/');
-        //navigate("/api/listappointments");
+        Swal.fire({
+          icon: "success",
+          title: "Welcome back!",
+          timer: 1000,
+          showConfirmButton: false
+        });
+
+        navigate("/api/listappointments");
       } else {
-        alert(data.msg || "Error al iniciar sesión");
+        Swal.fire({ title: "Error", text: data.msg || "Incorrect email or password", icon: "error", confirmButtonColor: "#d33" });
       }
 
     } catch (error) {
@@ -91,11 +97,11 @@ export const Login = () => {
                   </button>
                 </div>
                 <div className="d-flex justify-content-center pb-2">
-                  <button type="button" className="btn btn-link ">
-                    <Link to="/api/pacient/forgotpassword">
-                      Forgot Password
-                    </Link>
-                  </button>
+
+                  <Link to="/api/pacient/forgotpassword">
+                    Forgot Password
+                  </Link>
+
                 </div>
               </form>
             </div>

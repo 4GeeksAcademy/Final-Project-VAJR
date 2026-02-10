@@ -6,11 +6,6 @@ from flask_mail import Mail, Message
 from api.commands import setup_commands
 from api.admin import setup_admin
 from api.routes import api
-
-from api.commands import setup_commands
-from api.admin import setup_admin
-from api.routes import api
-from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from api.utils import APIException, generate_sitemap
 from flask_swagger import swagger
 from flask_migrate import Migrate
@@ -18,15 +13,17 @@ from flask import Flask, request, jsonify, url_for, send_from_directory, Bluepri
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 import datetime
-from datetime import time, timedelta, timezone
 from datetime import datetime, time, timedelta
-from flask_cors import CORS
 import os
 from api.models import StatusAppointment
 import requests
 import time
 import json
+from datetime import datetime, time, timedelta, timezone
+from flask_cors import cross_origin
+from flask_cors import CORS
 from dotenv import load_dotenv
+from sqlalchemy import text
 load_dotenv()
 
 
@@ -190,14 +187,15 @@ def register_doctor():
     new_doctor.name = body['name']
     new_doctor.phone = body['phone']
     new_doctor.email = body['email']
-    new_doctor.specialties = SpecialtyType[body['specialties']]
+    new_doctor.specialties = SpecialtyType[body['specialties']].value
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_doctor.password = pw_hash
-    new_doctor.biography = ''
+    new_doctor.biography = body['biography']
     new_doctor.address = body['address']
-    new_doctor.latitud = 0.0
-    new_doctor.longitud = 0.0
+    new_doctor.latitud = body['latitud']
+    new_doctor.longitud = body['longitud']
     new_doctor.picture = body.get('picture', '')
+    new_doctor.cal_link = body['cal_link']
     db.session.add(new_doctor)
     db.session.commit()
     return jsonify({'msg': 'User create succesfully.'}), 200
@@ -543,13 +541,13 @@ def get_appointments_p(id):
     if not pacient:
         return jsonify({"msg": "Usuario no encontrado"}), 404
 
-    appointments = Appointments.query.filter_by(
+    appointment = Appointments.query.filter_by(
         id=id, pacient_id=pacient.id).first()
 
-    if not appointments:
+    if not appointment:
         return jsonify({"msg": "Cita no encontrada"}), 404
 
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
+    return jsonify(appointment.serialize()), 200
 
 # listar cita
 
@@ -573,16 +571,15 @@ def get_appt_pacient():
     return jsonify([a.serialize() for a in appointments]), 200
 
 
-# # listar citas doctor
-# @app.route('/api/appointments/doctor', methods=['GET'])
-# @jwt_required()
-# def get_doctor_appointment():
-#     doctor_id = get_jwt_identity()
-#     appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
-#     if not appointments:
-#         return jsonify([]), 200
-#         return jsonify({"msg": "No hay citas para este doctor"}), 404
-#     return jsonify([appointment.serialize() for appointment in appointments]), 200
+@app.route('/api/appointments/doctor', methods=['GET'])
+@jwt_required()
+def get_doctor_appointments():
+    doctor_id = get_jwt_identity()
+    appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+    if not appointments:
+        return jsonify([]), 200
+        return jsonify({"msg": "No hay citas para este doctor"}), 404
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
 
 # listar cita especifica doctor
 
@@ -648,11 +645,6 @@ def cancel_appointment(id):
     db.session.commit()
     return jsonify({"msg": "Cita cancelada exitosamente"}), 200
 
-
-# this only runs if `$ python src/main.py` is execute
-
-# Doctor-only endpoint
-# Returns appointments for the authenticated doctor
 
 @app.route('/doctor/appointments', methods=['GET'])
 @jwt_required()
@@ -828,7 +820,50 @@ def sync_doctor_schedule_to_cal(doctor_id):
         print(f"❌ Error crítico: {str(e)}")
         return jsonify({"msg": f"Error: {str(e)}"}), 500
 
-# this only runs if `$ python src/main.py` is executed
+# Available appointments for doctor profile page
+
+@app.route('/api/doctor/<int:doctor_id>/calendar', methods=['GET'])
+def get_doctor_calendar(doctor_id):
+    availabilities = Availability.query.filter_by(id_doctor=doctor_id).all()
+    booked_appointments = Appointments.query.filter_by(doctor_id=doctor_id).all()
+    booked_slots = {appt.dateTime.strftime("%Y-%m-%d %H:%M") for appt in booked_appointments}
+
+    calendar_data = []
+    today = datetime.now()
+
+    for i in range(14):
+        current_date = today + timedelta(days=i)
+        current_day_name = current_date.strftime("%A")
+        
+        day_slots = set()
+
+        for rule in availabilities:
+            rule_days = [day.strip().lower() for day in rule.days.split(',')]
+            
+            if current_day_name.lower() in rule_days:
+                slot_time = datetime.combine(current_date.date(), rule.start_time)
+                end_time = datetime.combine(current_date.date(), rule.end_time)
+
+                while slot_time + timedelta(minutes=30) <= end_time:
+                    slot_iso = slot_time.strftime("%Y-%m-%d %H:%M")
+                    
+                    if slot_time > today and slot_iso not in booked_slots:
+                        day_slots.add(slot_time.strftime("%H:%M"))
+                    
+                    slot_time += timedelta(minutes=30)
+
+        if day_slots:
+            calendar_data.append({
+                "date": current_date.strftime("%Y-%m-%d"),
+                "day_name": current_date.strftime("%a"), 
+                "day_number": current_date.day,
+                "slots": sorted(day_slots)
+            })
+
+    return jsonify(calendar_data), 200
+
+
+# this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)

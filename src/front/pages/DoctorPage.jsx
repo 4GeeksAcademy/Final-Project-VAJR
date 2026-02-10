@@ -27,7 +27,7 @@ export const DoctorPage = () => {
     const [showSticky, setShowSticky] = useState(false)
 
     const getDoctor = async () => {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/doctor/${doctorId}`)
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/${doctorId}`)
         const data = await response.json()
         setDoctor(data.data)
     }
@@ -91,9 +91,9 @@ export const DoctorPage = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="pt-4 fw-light">
+                        {/* <div className="pt-4 fw-light">
                             < Biography text={doctor.biography} />
-                        </div>
+                        </div> */}
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">
                             <span
@@ -123,10 +123,18 @@ export const DoctorPage = () => {
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
-                        <div className="me-2 fs-2" style={{ color: "#1A5799" }}><FontAwesomeIcon icon={faCalendar} /></div>
+                        {/* <div className="me-2 fs-2" style={{ color: "#1A5799" }}><FontAwesomeIcon icon={faCalendar} /></div>
                         <div className="mt-2" ref={highLightsRef}>
                             <span className="fs-5 fw-medium ">New patient appointments </span>
                             <p className="fw-light">Appointments available for new patients on <span className="fw-semibold">HiDoc</span></p>
+                        </div> */}
+                        <div style={{width: "500px"}}>
+                            <h1 style={{fontSize: "20px", fontWeight: "bold"}}>Trusted Care You Can Count On</h1>
+                            <p className="d-flex text-justify">Dr. {doctor.name} is a licensed, board-certified {doctor.specialties} with years of dedicated
+                                    experience providing compassionate, patient-centered care. Committed to your health and well-being,
+                                    they combine clinical expertise with a personalized approach to ensure you receive the highest
+                                    quality treatment. Every consultation is handled with professionalism, confidentiality, and
+                                    respect—because your trust is the foundation of great healthcare.</p>
                         </div>
                     </div>
                     <hr className="ms-5" />
@@ -141,24 +149,29 @@ export const DoctorPage = () => {
                                 color: "#1A5799"
                             }}
                         />
-                        <div className="mt-1">
-                            <p className="fs-5 fw-medium">In-network insurances</p>
-                            <p> AmeriHealth, Ambether, Aetna, UnitedHealthOne </p>
-                            <p className=" fw-medium">(10+) more in-network plans</p>
+                        <div className="d-flex flex-column">
+                            <div className="mt-1">
+                                <p className="fs-5 fw-medium">In-network insurances</p>
+                                <p> AmeriHealth, Ambether, Aetna, UnitedHealthOne </p>
+                                <p className=" fw-medium">(10+) more in-network plans</p>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
                 <div className="ms-5 p-5 calendar-doctor"
                     ref={calendarRef}
                 >
-                    <h5>Book an appointment for free</h5>
+                    <h3>Service days available</h3>
                     <p>The office partners with HiDoc to schedule appointments</p>
                     <div className="mt-3">
-                        <p className="fw-semibold "> Available appointments</p>
-                        <div className="mt-3">
-                            <DocttoCalendar />
+                        <div className="mt-3 d-flex justify-content-center" style={{maxWidth: "100%"}}>
+                            <DocttoCalendar doctorId={doctor.id}/>
                         </div>
                     </div>
+                    <p className="text-muted text-center my-4"
+                    style={{fontSize: "15px"}}
+                    >This is only referencial, to book an appointment look for the doctor on the booking page.</p>
                 </div>
             </div>
 
@@ -193,7 +206,7 @@ export const DoctorPage = () => {
                 </div>
                 <div className="mt-4">
                     <h5 className="fw-medium">Getting to know Dr. {doctor.name}</h5>
-                    <p>< Biography text={doctor.biography} /> </p>
+                    < Biography text={doctor.biography} />
                 </div>
 
                 <div className="mt-4" ref={insurancesRef}>
@@ -278,26 +291,18 @@ export const DoctorPage = () => {
                 <div className="mt-4 p-2 d-flex justify-content-between"
                     style={{
                         width: "80%", borderRadius: "1rem",
-                        border: "4px, solid, #E9F5FF"
+                        border: "2px solid #1a5799"
                     }} ref={locationRef}>
 
-                    <div className="mt-1 rounded-2 border border-primary p-2"
-                        style={{ width: "30%" }}>
+                    <div className="mt-1 rounded-2 border p-2"
+                        style={{ width: "30%"}}>
                         <h6>Direction</h6>
                         <p> {doctor.address} </p>
                         <hr />
                         <h6 className="mt-1">Business hours</h6>
                         <p className="mt-1">Check availability.</p>
-                        <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${doctor.latitud},${doctor.longitud}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-outline-info mt-2 "
-                        >
-                            Get directions
-                        </a>
                     </div>
-                    <div className=" rounded-2 border border-primary" style={{ width: "67%", height: "300px" }}>
+                    <div className=" rounded-2 border" style={{ width: "67%", height: "300px" }}>
                         <DoctorMap doctor={doctor} />
                     </div>
                 </div>
@@ -328,26 +333,7 @@ export const DoctorPage = () => {
                                 cursor: "pointer"
                             }}
                         >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
-                    <p className="mt-3 fw-medium">Can I make an appointment with Dr. {doctor.name} online? </p>
-                    <p className="faqs-p mt-2">Yes, you can
-                        <span className="fw-medium"
-                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
-                            style={{
-                                cursor: "pointer"
-                            }}
-                        >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
-                    <p className="mt-3 fw-medium">Can I make an appointment with Dr. {doctor.name} online? </p>
-                    <p className="faqs-p mt-2">Yes, you can
-                        <span className="fw-medium"
-                            onClick={() => calendarRef.current?.scrollIntoView({ behavior: "smooth" })}
-                            style={{
-                                cursor: "pointer"
-                            }}
-                        >  make an appointment online</span> with Dr. {doctor.name}  on HiDoc. It’s simple, secure, and free.</p>
-
-
-
-
+                    <div className="mx-5 p-5"></div>
                 </div>
             </div>
         </>

@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import React, { useEffect, useState } from "react";
-
+import Swal from "sweetalert2";
+ 
 
 export const Signup = () => {
     const navigate = useNavigate();
@@ -16,40 +17,46 @@ export const Signup = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
 
-    const handleSignupPacients = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/signup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form)
-            });
+ const handleSignupPacients = async (e) => {
+    e.preventDefault();
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(form) 
+        });
 
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem("token", data.token);
+      const data = await response.json();
+      if (response.ok) {
+        Swal.fire({
+                       title: "You have registered successfully.!",
+                       text: "Your account has been created. Please log in to access your dashboard.",
+                       icon: "success",
+                       confirmButtonText: "Go to Login",
+                       confirmButtonColor: "#035aa6"
+                   }).then((result) => {
+                       if (result.isConfirmed) {
+                           navigate("/api/pacient/login");
+                       }
+                   });
+                   
+               } else {
+                   Swal.fire({
+                       title: "Error",
+                       text: data.msg || "There was an issue with your registration.",
+                       icon: "error",
+                       confirmButtonColor: "#d33"
+                   });
+               }
+    } catch (error) {
+      console.error("Error en login:", error);
+      alert("Error de conexion con el servidor");
+    }
 
-                dispatch({
-                    type: "login_pacient",
-                    payload: {
-                        token: data.token,
-                        pacient: data.pacient
-                    }
-                });
+  };
 
-                navigate("/");
-            } else {
-                alert(data.msg || "Error al iniciar sesion");
-            }
-        } catch (error) {
-            console.error("Error en login:", error);
-            alert("Error de conexion con el servidor");
-        }
-
-    };
-
-    return (
-        <div className="vip-background">
+return (
+        <div className="vip-background my-5">
             <div className="fondo-form">
 
                 <div className="container d-flex align-items-center justify-content-center m-2" style={{ minHeight: "100vh" }}>

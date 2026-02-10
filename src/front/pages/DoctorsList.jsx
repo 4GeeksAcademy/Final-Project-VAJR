@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { MapView } from "../components/MapView.jsx";
 import { DoctorSearchCard } from "../components/DoctorSearchCard";
@@ -6,9 +7,29 @@ import "./DoctorsList.css";
 
 export const DoctorsList = () => {
     const { store, dispatch } = useGlobalReducer();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const specialtyParam = params.get("specialty");
+        const qParam = params.get("q");
+
+        if (specialtyParam) {
+            setSelectedSpecialty(specialtyParam);
+        } else {
+            setSelectedSpecialty("Todas");
+        }
+
+        if (qParam) {
+            setSearchTerm(qParam);
+        } else {
+            setSearchTerm("");
+        }
+    }, [location.search]);
 
     useEffect(() => {
         const fetchDoctors = async () => {
@@ -29,11 +50,37 @@ export const DoctorsList = () => {
         fetchDoctors();
     }, []);
 
+    const handleSpecialtyChange = (e) => {
+        const newSpecialty = e.target.value;
+        setSelectedSpecialty(newSpecialty);
+
+        const params = new URLSearchParams(location.search);
+        if (newSpecialty === "Todas") {
+            params.delete("specialty");
+        } else {
+            params.set("specialty", newSpecialty);
+        }
+        navigate({ search: params.toString() }, { replace: true });
+    };
+
+    const handleSearchChange = (e) => {
+        const newSearch = e.target.value;
+        setSearchTerm(newSearch);
+
+        const params = new URLSearchParams(location.search);
+        if (newSearch) {
+            params.set("q", newSearch);
+        } else {
+            params.delete("q");
+        }
+        navigate({ search: params.toString() }, { replace: true });
+    };
+
     const uniqueSpecialties = ["Todas", ...new Set(store.doctors?.map(doc => doc.specialties).filter(s => s))];
 
     const filteredDoctors = store.doctors?.filter((doc) => {
         const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesSpecialty = selectedSpecialty === "Todas" || doc.specialties === selectedSpecialty;
+        const matchesSpecialty = selectedSpecialty === "Todas" || (doc.specialties && doc.specialties.toLowerCase() === selectedSpecialty.toLowerCase())
         return matchesSearch && matchesSpecialty;
     }) || [];
 
@@ -59,7 +106,7 @@ export const DoctorsList = () => {
                                         className="form-control form-control-clean"
                                         placeholder="Search by doctor name..."
                                         value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onChange={handleSearchChange}
                                     />
                                 </div>
                             </div>
@@ -72,7 +119,7 @@ export const DoctorsList = () => {
                                     <select
                                         className="form-select form-select-clean"
                                         value={selectedSpecialty}
-                                        onChange={(e) => setSelectedSpecialty(e.target.value)}
+                                        onChange={handleSpecialtyChange}
                                     >
                                         {uniqueSpecialties.map((spec, index) => (
                                             <option key={index} value={spec}>
@@ -107,13 +154,17 @@ export const DoctorsList = () => {
                                 <div className="mb-3 p-3 rounded-circle d-inline-block bg-light">
                                     <i className="fa-solid fa-user-doctor fa-3x text-muted opacity-50"></i>
                                 </div>
-                                <h4 className="fw-bold text-dark">No hay resultados</h4>
-                                <p className="text-muted">Intenta con otro nombre o especialidad.</p>
+                                <h4 className="fw-bold text-dark">No results</h4>
+                                <p className="text-muted">Try another name or specialty.</p>
                                 <button
                                     className="btn-pill-primary"
-                                    onClick={() => { setSearchTerm(""); setSelectedSpecialty("Todas") }}
+                                    onClick={() => {
+                                        setSearchTerm("");
+                                        setSelectedSpecialty("Todas");
+                                        navigate("/find-doctors", { replace: true });
+                                    }}
                                 >
-                                    Ver todos
+                                    View all
                                 </button>
                             </div>
                         )}

@@ -417,6 +417,7 @@ h3 {
 .vip-background {
   /* Reemplaza con una URL válida de imagen */
 
+  
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -501,3 +502,673 @@ doctor profile  */
   }
 }
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+/* PacientAppointments.css */
+
+/* ============================================
+   VARIABLES DE COLOR
+   ============================================ */
+.appt-root {
+  --appt-primary: #035aa6;
+  --appt-secondary: #c7e5f2;
+  --appt-accent: #18aded;
+  --appt-white: #ffffff;
+  --appt-light: #f8fbfd;
+  --appt-danger: #dc2626;
+  --appt-danger-light: #fee2e2;
+  --appt-text: #1a1a2e;
+  --appt-shadow: rgba(3, 90, 166, 0.15);
+  --appt-shadow-hover: rgba(3, 90, 166, 0.25);
+}
+
+/* ============================================
+   LAYOUT PRINCIPAL
+   ============================================ */
+.appt-container {
+  min-height: 100vh;
+  padding: 1.5rem 0;
+  background-color: var(--appt-white);
+}
+
+.appt-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.appt-header {
+  border: none;
+  border-radius: 15px;
+  background-color: var(--appt-primary);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  margin-bottom: 1.5rem;
+}
+
+.appt-header-body {
+  padding: 1rem;
+  color: var(--appt-white);
+}
+
+.appt-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appt-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.appt-header-icon {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.appt-header-icon i {
+  font-size: 1.25rem;
+  color: var(--appt-white);
+}
+
+.appt-header-text h5 {
+  margin: 0;
+  font-weight: 700;
+  color: var(--appt-white);
+}
+
+.appt-header-text small {
+  opacity: 0.8;
+  color: var(--appt-white);
+}
+
+.appt-btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* ============================================
+   CARD PRINCIPAL
+   ============================================ */
+.appt-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.2s ease;
+  background-color: var(--appt-white);
+}
+
+.appt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem var(--appt-shadow);
+}
+
+.appt-card-body {
+  padding: 1.5rem;
+}
+
+/* ============================================
+   FORMULARIOS
+   ============================================ */
+.appt-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.appt-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--appt-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.appt-label i {
+  font-size: 0.875rem;
+}
+
+.appt-select,
+.appt-input {
+  border: none;
+  border-radius: 12px;
+  background-color: var(--appt-light);
+  color: var(--appt-primary);
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.appt-select:focus,
+.appt-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(3, 90, 166, 0.25);
+  background-color: var(--appt-white);
+  outline: none;
+}
+
+.appt-select::placeholder,
+.appt-input::placeholder {
+  color: rgba(3, 90, 166, 0.5);
+}
+
+/* ============================================
+   INFO DEL DOCTOR
+   ============================================ */
+.appt-doctor-info {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--appt-light);
+  border-radius: 12px;
+  border-left: 4px solid var(--appt-accent);
+  margin-bottom: 1.5rem;
+}
+
+.appt-doctor-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--appt-white);
+  margin-right: 1rem;
+}
+
+.appt-doctor-name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--appt-primary);
+  font-size: 1rem;
+}
+
+.appt-doctor-specialty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--appt-accent);
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+.appt-btn-primary {
+  background-color: var(--appt-accent);
+  color: var(--appt-white);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 0.875rem 1.5rem;
+  font-size: 1.125rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.appt-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 173, 237, 0.3);
+}
+
+.appt-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.appt-btn-secondary {
+  background-color: var(--appt-white);
+  color: var(--appt-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.appt-btn-secondary:hover {
+  background-color: var(--appt-secondary);
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+.appt-loading {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.appt-spinner {
+  color: var(--appt-primary);
+  width: 2rem;
+  height: 2rem;
+  border: 0.2em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: appt-spin 0.75s linear infinite;
+  display: inline-block;
+}
+
+@keyframes appt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.appt-loading-text {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  color: var(--appt-primary);
+  font-weight: 500;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+.appt-modal-overlay {
+  background-color: rgba(3, 90, 166, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.appt-modal-dialog {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.appt-modal-content {
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+  animation: appt-modal-in 0.3s ease-out;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  background-color: var(--appt-white);
+}
+
+@keyframes appt-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.appt-modal-header {
+  border: none;
+  color: var(--appt-white);
+  padding: 1rem 1.5rem;
+  background-color: var(--appt-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appt-modal-title {
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.appt-modal-body {
+  padding: 0;
+}
+
+.appt-modal-info {
+  padding: 1rem;
+  background-color: var(--appt-secondary);
+  border-bottom: 1px solid rgba(3, 90, 166, 0.1);
+}
+
+.appt-modal-doctor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.appt-modal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--appt-white);
+}
+
+.appt-modal-doctor-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--appt-primary);
+}
+
+.appt-modal-doctor-spec {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--appt-accent);
+}
+
+.appt-modal-reason {
+  margin-left: auto;
+  text-align: right;
+}
+
+.appt-modal-reason-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--appt-primary);
+}
+
+.appt-modal-reason-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--appt-primary);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appt-calendar {
+  height: 400px;
+}
+
+.appt-modal-footer {
+  padding: 0.5rem 1rem;
+  background-color: var(--appt-secondary);
+  border-top: none;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.appt-d-grid {
+  display: grid;
+}
+
+.appt-gap-2 {
+  gap: 0.5rem;
+}
+
+.appt-me-2 {
+  margin-right: 0.5rem;
+}
+
+.appt-ms-auto {
+  margin-left: auto;
+}
+
+.appt-text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appt-fade-in {
+  animation: appt-fade 0.3s ease-in;
+}
+
+@keyframes appt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.appt-slide-up {
+  animation: appt-slide-up 0.3s ease-out;
+}
+
+@keyframes appt-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 576px) {
+  .appt-wrapper {
+    padding: 0 0.75rem;
+  }
+
+  .appt-card-body {
+    padding: 1rem;
+  }
+
+  .appt-doctor-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .appt-doctor-avatar {
+    margin-right: 0;
+  }
+
+  .appt-modal-reason {
+    margin-left: 0;
+    text-align: left;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .appt-modal-reason-text {
+    max-width: none;
+  }
+
+  .appt-modal-doctor {
+    flex-wrap: wrap;
+  }
+
+  .appt-modal-dialog {
+    margin: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .appt-calendar {
+    height: 350px;
+  }
+}
+.appt-doctor-card {
+  background-color: var(--appt-white);
+  border-radius: 15px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(3, 90, 166, 0.1);
+}
+
+.appt-doctor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.appt-doctor-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+.appt-doctor-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--appt-white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appt-doctor-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.appt-doctor-title {
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+  color: var(--appt-primary);
+  font-size: 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-doctor-badge {
+  display: inline-block;
+  background-color: var(--appt-secondary);
+  color: var(--appt-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.appt-doctor-rating {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.appt-doctor-rating .text-warning {
+  color: #ffc107;
+}
+
+.appt-doctor-location {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.appt-doctor-location i {
+  color: #dc3545;
+  opacity: 0.75;
+}
+
+/* Actions Column */
+.appt-doctor-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: rgba(199, 229, 242, 0.3);
+  border-left: 1px solid rgba(3, 90, 166, 0.1);
+  min-width: 250px;
+  gap: 0.75rem;
+}
+
+.appt-btn-book {
+  background-color: var(--appt-accent);
+  color: var(--appt-white);
+  border: none;
+  border-radius: 12px;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.appt-btn-book:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 173, 237, 0.3);
+}
+
+.appt-btn-view {
+  background-color: transparent;
+  color: var(--appt-primary);
+  border: 2px solid var(--appt-primary);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.appt-btn-view:hover {
+  background-color: var(--appt-primary);
+  color: var(--appt-white);
+}
+
+/* Reason Section */
+.appt-reason-section {
+  padding: 1.5rem;
+  background-color: var(--appt-light);
+  border-top: 1px solid rgba(3, 90, 166, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appt-doctor-row {
+    flex-direction: column;
+  }
+  
+  .appt-doctor-main {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .appt-doctor-actions {
+    border-left: none;
+    border-top: 1px solid rgba(3, 90, 166, 0.1);
+  }
+  
+  .appt-doctor-title {
+    white-space: normal;
+  }
+}

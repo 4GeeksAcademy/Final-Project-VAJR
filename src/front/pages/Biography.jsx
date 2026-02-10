@@ -7,18 +7,16 @@ export const Biography = ({ text }) => {
     if (!text) return null
 
     return (
-        <>
-            <p style={{ lineHeight: "1.5", color: "#050505" }} >
+        <p style={{ lineHeight: "1.5", color: "#050505" }} >
 
-                {expandTexto ? text : text.slice(0, 58) + ("....")}
+            {expandTexto ? text : text.slice(0, 58) + ("....")}
 
-                <span style={{ color: "#468BE6", cursor: "pointer", fontWeight: "500" }}
-                    onClick={() => setExpandTexto(!expandTexto)} >
-                    {expandTexto ? "read less" : "read more "}
-                </span>
+            <span style={{ color: "#468BE6", cursor: "pointer", fontWeight: "500" }}
+                onClick={() =>  setExpandTexto(!expandTexto)} > <br />
+                {expandTexto ? "read less" : "read more "}
+            </span>
 
-            </p>
-        </>
+        </p>
 
 
     )

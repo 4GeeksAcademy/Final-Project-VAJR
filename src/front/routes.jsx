@@ -25,6 +25,7 @@ import { DoctorCard } from "./components/DoctorCard.jsx";
 import { DoctorPage } from "./pages/DoctorPage";
 import { DoctorDashboard } from "./pages/dashboardPage/DoctorDashboard";
 import { PrivateDoctorRoute } from "./pages/dashboardPage/PrivateDoctorRoute"
+import { DoctorPage } from "./pages/DoctorPage.jsx";
 
 
 export const router = createBrowserRouter(
@@ -47,6 +48,8 @@ export const router = createBrowserRouter(
       <Route path="/api/doctor/register" element={<SignupDoctor />} />
       
       <Route path="/api/appointments/:doctor_id" element={<PacientAppointments />} />
+      <Route path="/doctor/login" element={<LoginDoctor />} />
+      <Route path="/api/pacient/appointments" element={<PacientAppointments />} />
       <Route path="/api/listappointments" element={<ListAppointments />} />
       <Route path="/api/pacient/forgotpassword" element={<ForgotPassword />} />
       <Route path="/api/pacient/resetpassword" element={<ResetPassword />} />
@@ -58,7 +61,7 @@ export const router = createBrowserRouter(
       <Route path="/" element={<Home />} />
       <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
       {/* <Route path="/demo" element={<Demo />} /> */}
-      <Route path="/doctorpage/:doctorId" element={<DoctorPage />} />
+  
       <Route path="/doctor/login" element={<LoginDoctor />} />
 
       <Route
@@ -70,6 +73,7 @@ export const router = createBrowserRouter(
         }
       />
       <Route path="/find-doctors" element={<DoctorsList />} />
+      <Route path="/doctorpage/:doctorId" element={<DoctorPage />} />
 
     </Route>
   )
