@@ -1177,3 +1177,19 @@ doctor profile  */
     white-space: normal;
   }
 }
+
+.btn-edit-synch:hover {
+  background-color: #1a5799;
+  color: #f8fbfd !important;
+}
+
+.btn-synch {
+  background-color: #1a5799;
+  color: #f8fbfd !important;
+  border-color: #1a5799;
+}
+
+.btn-synch:hover {
+  border-color: #f8fbfd;
+  background-color: #0d2846;
+}

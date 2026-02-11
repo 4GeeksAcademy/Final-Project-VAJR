@@ -23,13 +23,13 @@ export const DoctorProfileCard = ({ doctor }) => {
 
             if (response.ok) {
                 Swal.fire({
-                    title: "Sincronizado",
-                    text: "El horario se ha enviado correctamente a Cal.com",
+                    title: "Sincronized!",
+                    text: "Your schedule has been synchronized",
                     icon: "success",
                     confirmButtonColor: "#092F64"
                 });
             } else {
-                Swal.fire("Error", data.msg || "No se pudo sincronizar", "error");
+                Swal.fire("Error", data.msg || "Could not synchronize schedule", "error");
             }
         } catch (error) {
             Swal.fire("Error", "Fallo de conexión con el servidor", "error");
@@ -55,15 +55,15 @@ export const DoctorProfileCard = ({ doctor }) => {
                 </div>`,
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Guardar y Sincronizar',
+            confirmButtonText: 'Save & Sync',
             confirmButtonColor: '#092F64',
-            cancelButtonText: 'Cancelar',
+            cancelButtonText: 'Cancel',
             preConfirm: () => {
                 const days = document.getElementById('swal-days').value;
                 const start = document.getElementById('swal-start').value;
                 const end = document.getElementById('swal-end').value;
                 if (!days || !start || !end) {
-                    Swal.showValidationMessage('Por favor completa todos los campos');
+                    Swal.showValidationMessage('Please fill in all fields');
                 }
                 return { days, start, end };
             }
@@ -83,16 +83,16 @@ export const DoctorProfileCard = ({ doctor }) => {
 
                 if (response.ok) {
                     Swal.fire({
-                        title: "¡Éxito!",
-                        text: "Tu horario ha sido guardado y sincronizado correctamente.",
+                        title: "Success!",
+                        text: "Your schedule has been saved and synchronized successfully.",
                         icon: "success",
                         confirmButtonColor: "#092F64"
                     });
                 } else {
-                    Swal.fire("Error", data.msg || "No se pudo procesar la solicitud", "error");
+                    Swal.fire("Error", data.msg || "Could not process the request", "error");
                 }
             } catch (error) {
-                Swal.fire("Error", "Fallo de conexión con el servidor", "error");
+                Swal.fire("Error", "Connection error with the server", "error");
             } finally {
                 setSyncing(false);
             }
@@ -114,25 +114,25 @@ export const DoctorProfileCard = ({ doctor }) => {
                 {/* BOTÓN DE EDICIÓN */}
                 <button
                     onClick={handleUpdateSchedule}
-                    className="btn btn-outline-primary mb-2"
-                    disabled={syncing}
+                    className="btn btn-outline-primary my-2 btn-edit-synch"
+                    disabled={syncing} style={{ color: "#1A5799", borderColor: "#1A5799" }}
                 >
                     <i className="fa-solid fa-pen-to-square me-2"></i>
-                    {syncing ? "Procesando..." : "Edit availability"}
+                    {syncing ? "Processing..." : "Edit availability"}
                 </button>
 
                 {/* BOTÓN DE SINCRONIZACIÓN INICIAL (Ahora hace lo mismo) */}
                 <button
                     onClick={handleUpdateSchedule}
                     disabled={syncing}
-                    className="btn btn-dark"
+                    className="btn btn-outline-primary btn-synch" 
                 >
                     <i className="fa-solid fa-rotate me-2"></i>
-                    {syncing ? "Sincronizando..." : "Schedule Sync"}
+                    {syncing ? "Synchronizing..." : "Sync Schedule"}
                 </button>
 
                 <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                    * Configura o actualiza tu horario para habilitar las citas online.
+                    Submit your schedule first.
                 </small>
             </div>
         </div>
