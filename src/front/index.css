@@ -1183,6 +1183,12 @@ doctor profile  */
   color: #f8fbfd !important;
 }
 
+.btn-edit-synch:disabled {
+  background-color: #636363;
+  color: #f8fbfd !important;
+  border-color: #636363;
+}
+
 .btn-synch {
   background-color: #1a5799;
   color: #f8fbfd !important;
@@ -1192,4 +1198,10 @@ doctor profile  */
 .btn-synch:hover {
   border-color: #f8fbfd;
   background-color: #0d2846;
+}
+
+.btn-synch:disabled {
+  background-color: #636363;
+  color: #f8fbfd !important;
+  border-color: #636363;
 }

@@ -5,6 +5,7 @@ import { use } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 import Swal from "sweetalert2";
 import { jsPDF } from "jspdf";
+import HiDoc from "../assets/img/HiDoc.png"
 
 export const ListAppointments = () => {
     const { doctor_id } = useParams();
@@ -37,11 +38,7 @@ export const ListAppointments = () => {
         doc.rect(0, 0, 210, 40, "F");
 
         // Doctor Icon 
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(1);
-        doc.circle(25, 20, 8, 'S');
-        doc.line(21, 20, 29, 20);
-        doc.line(25, 16, 25, 24);
+        doc.addImage(HiDoc, 'PNG', 15, 8, 22, 22);
         // hiDOC
         doc.setFontSize(26);
         doc.setFont("helvetica", "bold");

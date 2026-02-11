@@ -734,6 +734,7 @@ def get_doctor_calendar(doctor_id):
     return jsonify(calendar_data), 200
 
 
+
 def local_time_to_cal_format(local_start, local_end):
 
     start = f"1970-01-01T{local_start}:00.000Z"
@@ -744,84 +745,79 @@ def local_time_to_cal_format(local_start, local_end):
 
 @app.route('/api/doctor/<int:doctor_id>/sync-cal', methods=['POST'])
 def sync_doctor_schedule_to_cal(doctor_id):
-    print(f"\n🚀 SINCRONIZACIÓN QUIRÚRGICA - Doc ID: {doctor_id}")
+    # 1. Buscamos al doctor en la tabla Doctors
+    doctor = Doctors.query.get(doctor_id)
+    if not doctor:
+        return jsonify({"msg": "Doctor no encontrado"}), 404
 
+    # Variables dinámicas para búsqueda por nombre
+    target_schedule_name = f"Horario {doctor.name}" 
+    # Extraemos el slug esperado (ej: "Andrea Quintana" -> "andrea")
+    target_event_slug = doctor.name.split()[0].lower() 
+    
     CAL_API_KEY = os.getenv("CAL_API_KEY")
     params = {"apiKey": CAL_API_KEY}
 
-    # 1. Obtener disponibilidad de tu DB local (PostgreSQL)
-    local_availability = Availability.query.filter_by(
-        id_doctor=doctor_id).all()
-    print(f"🔎 Reglas locales encontradas: {len(local_availability)}")
+    # 2. Obtener disponibilidad local
+    local_availability = Availability.query.filter_by(id_doctor=doctor_id).all()
 
     try:
-        # 2. Obtener el ID del horario 'ruben'
-        get_resp = requests.get(
-            "https://api.cal.com/v1/schedules", params=params)
+        # 3. Localizar o Crear el Horario (Schedule) en Cal.com
+        get_resp = requests.get("https://api.cal.com/v1/schedules", params=params)
         schedules = get_resp.json().get('schedules', [])
-        print(schedules)
-        target_schedule = next(
-            (s for s in schedules if s.get('name') == "ruben"), None)
-        print(target_schedule)
+        target_schedule = next((s for s in schedules if s.get('name') == target_schedule_name), None)
 
         if not target_schedule:
-            return jsonify({"msg": "No se encontró el horario 'ruben'"}), 404
+            print(f"✨ Creando horario nuevo para: {target_schedule_name}")
+            create_resp = requests.post("https://api.cal.com/v1/schedules",
+                json={"name": target_schedule_name, "timeZone": "America/Caracas"}, params=params)
+            target_schedule = create_resp.json().get('schedule')
 
         schedule_id = target_schedule['id']
         existing_rules = target_schedule.get('availability', [])
 
+        # 4. LIMPIEZA: Borramos reglas antiguas
         if existing_rules:
-            print(
-                f"🧹 Borrando {len(existing_rules)} reglas antiguas para evitar conflictos...")
             for old_rule in existing_rules:
-                requests.delete(
-                    f"https://api.cal.com/v1/availabilities/{old_rule['id']}", params=params)
+                requests.delete(f"https://api.cal.com/v1/availabilities/{old_rule['id']}", params=params)
+            time.sleep(1.5)
 
-            print("⏳ Esperando propagación de borrado...")
-            time.sleep(2)
-
-        # 4. INSERCIÓN LIMPIA: Solo los campos estrictamente necesarios
-        day_mapping = {
-            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
-            "Thursday": 4, "Friday": 5, "Saturday": 6
-        }
-
+        # 5. INSERCIÓN: Cargamos las horas de la tabla Availability
+        day_mapping = {"Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 0}
         success_count = 0
-        for rule in local_availability:
-            # Mapear días
-            active_days = [day_mapping[d.capitalize()]
-                           for d in day_mapping if d.lower() in rule.days.lower()]
 
+        for rule in local_availability:
+            active_days = [day_mapping[d.capitalize()] for d in day_mapping if d.lower() in rule.days.lower()]
             if active_days:
-                # PAYLOAD MÍNIMO: Sin 'date', sin 'eventTypeId', sin nada extra.
-                # Usamos formato HH:MM (algunos DBs de Cal preferen esto en el POST)
-                start, end = local_time_to_cal_format(
-                    rule.start_time.strftime("%H:%M"),
-                    rule.end_time.strftime("%H:%M")
-                )
+                # Usamos tu función ISO 8601 que ya te funciona
+                start_iso, end_iso = local_time_to_cal_format(
+                    rule.start_time.strftime("%H:%M"), rule.end_time.strftime("%H:%M"))
+                
                 payload = {
                     "scheduleId": schedule_id,
                     "days": active_days,
-                    "startTime": start,
-                    "endTime": end,
+                    "startTime": start_iso,
+                    "endTime": end_iso,
                 }
+                requests.post("https://api.cal.com/v1/availabilities", json=payload, params=params)
+                success_count += 1
 
-                print(f"📤 Enviando: {json.dumps(payload)}")
-                post_resp = requests.post(
-                    "https://api.cal.com/v1/availabilities", json=payload, params=params)
+        events_resp = requests.get("https://api.cal.com/v1/event-types", params=params)
+        event_types = events_resp.json().get('event_types', [])
+        
+        # Intentamos encontrar el evento que coincida con el slug del doctor
+        target_event = next((e for e in event_types if e.get('slug') == target_event_slug), None)
 
-                if post_resp.status_code in [200, 201]:
-                    print(f"   ✅ Éxito: Días {active_days}")
-                    success_count += 1
-                else:
-                    print(f"   ❌ Error: {post_resp.text}")
+        if target_event:
+            print(f"🔗 Vinculando evento '/{target_event_slug}' al horario {schedule_id}")
+            # Patch al evento para cambiar "ruben Predeterminado" por el nuevo horario
+            patch_url = f"https://api.cal.com/v1/event-types/{target_event['id']}"
+            requests.patch(patch_url, json={"scheduleId": schedule_id}, params=params)
 
-        return jsonify({"msg": f"Sincronización terminada. {success_count} reglas creadas."}), 200
+        return jsonify({"msg": f"Éxito: Horario de {doctor.name} sincronizado y vinculado."}), 200
 
     except Exception as e:
-        print(f"❌ Error crítico: {str(e)}")
-        return jsonify({"msg": f"Error: {str(e)}"}), 500
-
+        return jsonify({"msg": str(e)}), 500
 
 @app.route('/api/doctor/<int:doctor_id>/edit-availability', methods=['PUT'])
 def edit_doctor_availability(doctor_id):
