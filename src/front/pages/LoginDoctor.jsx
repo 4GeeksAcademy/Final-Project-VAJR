@@ -22,7 +22,7 @@ export const LoginDoctor = () => {
   const handleLoginDoctor = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/doctor/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

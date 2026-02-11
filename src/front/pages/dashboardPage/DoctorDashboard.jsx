@@ -9,11 +9,11 @@ import { DoctorProfileCard } from "./DoctorProfileCard"
 export const DoctorDashboard = () => {
 
   const { store, dispatch } = useGlobalReducer()
-  const doctor = store.doctor
+  const doctor = store.doctor || JSON.parse(localStorage.getItem("doctor"))
 
   const updateAppointmentStatus = async (id, status) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}doctor/appointments/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/appointments/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const DoctorDashboard = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}doctor/appointments`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/doctor/appointments`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -75,7 +75,7 @@ export const DoctorDashboard = () => {
 
 
   return (
-    <div className="container-dashboard">
+    <div className="container-dashboard my-5">
 
       <div className="profile-doc">
         <DoctorProfileCard

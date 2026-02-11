@@ -85,15 +85,8 @@ export const DoctorPage = () => {
                                 <h4 className="fs-3"> Dr. {doctor.name} </h4>
                                 <p className=" mt-1" style={{ color: "#468BE6" }}>{doctor.specialties}</p>
                                 <p className="fw-lighter"> {doctor.address} </p>
-
-                                {localStorage.getItem("token") && (
-                                    <Link to="/doctor/dashboard" className="btn btn-outline-primary btn-sm mt-2"> Go to dashboard</Link>
-                                )}
                             </div>
                         </div>
-                        {/* <div className="pt-4 fw-light">
-                            < Biography text={doctor.biography} />
-                        </div> */}
 
                         <div className="d-flex gap-5 flex-sm-row mt-4 ">
                             <span
@@ -123,11 +116,6 @@ export const DoctorPage = () => {
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
-                        {/* <div className="me-2 fs-2" style={{ color: "#1A5799" }}><FontAwesomeIcon icon={faCalendar} /></div>
-                        <div className="mt-2" ref={highLightsRef}>
-                            <span className="fs-5 fw-medium ">New patient appointments </span>
-                            <p className="fw-light">Appointments available for new patients on <span className="fw-semibold">HiDoc</span></p>
-                        </div> */}
                         <div style={{width: "500px"}}>
                             <h1 style={{fontSize: "20px", fontWeight: "bold"}}>Trusted Care You Can Count On</h1>
                             <p className="d-flex text-justify">Dr. {doctor.name} is a licensed, board-certified {doctor.specialties} with years of dedicated

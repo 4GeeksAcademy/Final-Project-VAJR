@@ -42,7 +42,7 @@ export const Navbar = () => {
         </a>
         <ul className="dropdown-menu dropdown-menu-end mt-2 shadow">
           <li>
-            <Link className="dropdown-item dropdown-button" to="/doctor/profile">
+            <Link className="dropdown-item dropdown-button" to="/doctor/dashboard">
               <i className="fa-solid fa-id-card"></i> Professional Profile
             </Link>
           </li>

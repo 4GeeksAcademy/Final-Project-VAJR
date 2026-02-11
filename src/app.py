@@ -1,3 +1,4 @@
+
 from api.models import StatusAppointment
 from api.models import db, Pacient, Doctors, Appointments, Availability, SpecialtyType, StatusAppointment
 from sendgrid.helpers.mail import Mail as SendGridMail
@@ -187,7 +188,7 @@ def register_doctor():
     new_doctor.name = body['name']
     new_doctor.phone = body['phone']
     new_doctor.email = body['email']
-    new_doctor.specialties = SpecialtyType[body['specialties']].value
+    new_doctor.specialties = body['specialties']
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_doctor.password = pw_hash
     new_doctor.biography = body['biography']
@@ -431,125 +432,74 @@ def specialidad():
         return jsonify([doct.serialize() for doct in doctors]), 200
 
 
-@app.route('/api/hooks/cal-booking', methods=['POST'])
+@app.route('/hooks/cal-booking', methods=['POST'])
 def cal_webhook_receiver():
-    print("🔥 WEBHOOK CAL.COM DISPARADO 🔥")
-
     data = request.get_json(silent=True)
     if not data:
-        return jsonify({"msg": "No data received"}), 400
+        return jsonify({"msg": "Payload vacío"}), 400
 
-    
-    if data.get("triggerEvent") == "PING":
-        print("✅ PING RECIBIDO DESDE CAL.COM")
-        return jsonify({"msg": "pong"}), 200
+    trigger_event = data.get('triggerEvent')
+    payload = data.get('payload', {})
 
-    trigger_event = data.get("triggerEvent")
-    payload = data.get("payload", {})
+    print(f"\n--- 🔔 WEBHOOK RECIBIDO: {trigger_event} ---")
 
-    print(f"\n--- EVENTO: {trigger_event} ---")
+    # 1. IDENTIFICACIÓN POR EL CAMPO 'type'
+    # Según tus logs, el slug está en payload['type'] o en la metadata
+    event_slug = payload.get('type')  # Ej: "vanessa" o "Reunión de 30 min"
 
-  
-    doctor_email = payload.get("organizer", {}).get("email")
-    attendees = payload.get("attendees", [])
-    pacient_email = attendees[0].get("email") if attendees else None
+    # Si el 'type' es el nombre largo, intentamos sacarlo de la metadata o el bookerUrl
+    if not event_slug or " " in event_slug:
+        # Cal.com a menudo guarda el slug técnico aquí:
+        event_slug = payload.get('metadata', {}).get('eventSlug')
 
-    print("Doctor email:", doctor_email)
-    print("Paciente email:", pacient_email)
+    # 2. Identificar email del paciente (el que hizo la reserva)
+    attendees = payload.get('attendees', [{}])
+    pacient_email = attendees[0].get('email') if attendees else None
 
-    
-    doctor = Doctors.query.filter_by(email=doctor_email).first()
-    if not doctor:
-        return jsonify({"msg": "Doctor no encontrado"}), 404
+    print(f"🔎 Buscando Doctor para el slug: '{event_slug}'")
+    print(f"🔎 Buscando Paciente por email: '{pacient_email}'")
 
-    
+    # 3. BUSQUEDA EN DB
+    # Buscamos al doctor cuyo 'cal_link' contenga el slug (ej: "ruben.../vanessa")
+    doctor = None
+    if event_slug:
+        # Filtramos ignorando mayúsculas/minúsculas
+        doctor = Doctors.query.filter(
+            Doctors.cal_link.ilike(f"%/{event_slug}")).first()
+
     pacient = Pacient.query.filter_by(email=pacient_email).first()
-    if not pacient:
-        hashed_pw = bcrypt.generate_password_hash("calcom").decode("utf-8")
-        pacient = Pacient(
-            name=attendees[0].get("name", "Paciente Cal.com"),
-            email=pacient_email,
-            password=hashed_pw,
-            is_active=True
-        )
-        db.session.add(pacient)
-        db.session.commit()
-        print("🆕 Paciente creado desde Cal.com")
 
-    
+    if not doctor or not pacient:
+        print(
+            f" ❌ ERROR: Doctor ({'No hallado' if not doctor else 'OK'}) o Paciente ({'No hallado' if not pacient else 'OK'})")
+        # Devolvemos 200 para que Cal.com no reintente, pero avisamos que no procesamos
+        return jsonify({"msg": "Actor no encontrado", "debug_slug": event_slug}), 200
+
+    # --- Lógica de Creación de Cita ---
     if trigger_event == "BOOKING_CREATED":
         try:
-            cal_uid = payload.get("uid")
-            if not cal_uid:
-                return jsonify({"msg": "UID missing"}), 400
-
-            existing = Appointments.query.filter_by(
-                cal_event_id=cal_uid
-            ).first()
-
-            if existing:
-                return jsonify({"msg": "Appointment already exists"}), 200
-
-            start_time_str = payload.get("startTime")
-            if not start_time_str:
-                return jsonify({"msg": "startTime missing"}), 400
-
-            dt_object = datetime.fromisoformat(
-                start_time_str.replace("Z", "")
-            )
+            # Procesamos la fecha
+            start_time_str = payload.get('startTime').replace('Z', '+00:00')
+            dt_object = datetime.fromisoformat(start_time_str)
 
             new_appointment = Appointments(
                 pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
-                reason=f"Cal.com: {payload.get('title', 'Consultation')}",
-                cal_event_id=cal_uid,
-                status=StatusAppointment.pending
+                reason=f"Cita Cal.com: {payload.get('title')}",
+                status=StatusAppointment.confirmed
             )
-
             db.session.add(new_appointment)
             db.session.commit()
-
-            print("✅ CITA CREADA DESDE CAL.COM")
-            return jsonify({"msg": "Appointment created"}), 201
-
+            print(
+                f" ✅ CITA CREADA: Dr. {doctor.name} con paciente {pacient.email}")
+            return jsonify({"msg": "Cita creada exitosamente"}), 201
         except Exception as e:
             db.session.rollback()
-            print("❌ ERROR BOOKING_CREATED:", str(e))
+            print(f" ❌ Error en DB: {str(e)}")
             return jsonify({"msg": str(e)}), 500
 
-    
-    elif trigger_event == "BOOKING_CANCELLED":
-        appointment = Appointments.query.filter_by(
-            cal_event_id=payload.get("uid")
-        ).first()
-
-        if appointment:
-            appointment.status = StatusAppointment.cancelled
-            db.session.commit()
-            print("❌ CITA CANCELADA")
-            return jsonify({"msg": "Appointment cancelled"}), 200
-
-        return jsonify({"msg": "Appointment not found"}), 404
-
-   
-    elif trigger_event == "BOOKING_RESCHEDULED":
-        appointment = Appointments.query.filter_by(
-            cal_event_id=payload.get("uid")
-        ).first()
-
-        if appointment:
-            new_start = payload.get("startTime").replace("Z", "")
-            appointment.dateTime = datetime.fromisoformat(new_start)
-            appointment.status = StatusAppointment.confirmed
-            db.session.commit()
-            print("🔁 CITA REPROGRAMADA")
-            return jsonify({"msg": "Appointment rescheduled"}), 200
-
-        return jsonify({"msg": "Appointment not found"}), 404
-
-    
-    return jsonify({"msg": "Event ignored"}), 200
+    return jsonify({"msg": "Evento ignorado"}), 200
 
 
 # Appointments
@@ -680,7 +630,7 @@ def cancel_appointment(id):
     return jsonify({"msg": "Cita cancelada correctamente"}), 200
 
 
-@app.route('/doctor/appointments', methods=['GET'])
+@app.route('/api/doctor/appointments', methods=['GET'])
 @jwt_required()
 def get_doctor_appointments():
     doctor_email = get_jwt_identity()
@@ -693,7 +643,7 @@ def get_doctor_appointments():
     return jsonify({'appointments': [app.serialize() for app in appointments]}), 200
 
 
-@app.route('/doctor/appointments/<int:apt_id>', methods=['PUT'])
+@app.route('/api/doctor/appointments/<int:apt_id>', methods=['PUT'])
 @jwt_required()
 def update_appointment_status(apt_id):
     doctor_email = get_jwt_identity()
@@ -805,6 +755,128 @@ def get_doctor_calendar(doctor_id):
 
     return jsonify(calendar_data), 200
 
+
+def local_time_to_cal_format(local_start, local_end):
+
+    start = f"1970-01-01T{local_start}:00.000Z"
+    end = f"1970-01-01T{local_end}:00.000Z"
+
+    return start, end
+
+
+@app.route('/api/doctor/<int:doctor_id>/sync-cal', methods=['POST'])
+def sync_doctor_schedule_to_cal(doctor_id):
+    print(f"\n🚀 SINCRONIZACIÓN QUIRÚRGICA - Doc ID: {doctor_id}")
+
+    CAL_API_KEY = os.getenv("CAL_API_KEY")
+    params = {"apiKey": CAL_API_KEY}
+
+    # 1. Obtener disponibilidad de tu DB local (PostgreSQL)
+    local_availability = Availability.query.filter_by(
+        id_doctor=doctor_id).all()
+    print(f"🔎 Reglas locales encontradas: {len(local_availability)}")
+
+    try:
+        # 2. Obtener el ID del horario 'ruben'
+        get_resp = requests.get(
+            "https://api.cal.com/v1/schedules", params=params)
+        schedules = get_resp.json().get('schedules', [])
+        print(schedules)
+        target_schedule = next(
+            (s for s in schedules if s.get('name') == "ruben"), None)
+        print(target_schedule)
+
+        if not target_schedule:
+            return jsonify({"msg": "No se encontró el horario 'ruben'"}), 404
+
+        schedule_id = target_schedule['id']
+        existing_rules = target_schedule.get('availability', [])
+
+        if existing_rules:
+            print(
+                f"🧹 Borrando {len(existing_rules)} reglas antiguas para evitar conflictos...")
+            for old_rule in existing_rules:
+                requests.delete(
+                    f"https://api.cal.com/v1/availabilities/{old_rule['id']}", params=params)
+
+            print("⏳ Esperando propagación de borrado...")
+            time.sleep(2)
+
+        # 4. INSERCIÓN LIMPIA: Solo los campos estrictamente necesarios
+        day_mapping = {
+            "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3,
+            "Thursday": 4, "Friday": 5, "Saturday": 6
+        }
+
+        success_count = 0
+        for rule in local_availability:
+            # Mapear días
+            active_days = [day_mapping[d.capitalize()]
+                           for d in day_mapping if d.lower() in rule.days.lower()]
+
+            if active_days:
+                # PAYLOAD MÍNIMO: Sin 'date', sin 'eventTypeId', sin nada extra.
+                # Usamos formato HH:MM (algunos DBs de Cal preferen esto en el POST)
+                start, end = local_time_to_cal_format(
+                    rule.start_time.strftime("%H:%M"),
+                    rule.end_time.strftime("%H:%M")
+                )
+                payload = {
+                    "scheduleId": schedule_id,
+                    "days": active_days,
+                    "startTime": start,
+                    "endTime": end,
+                }
+
+                print(f"📤 Enviando: {json.dumps(payload)}")
+                post_resp = requests.post(
+                    "https://api.cal.com/v1/availabilities", json=payload, params=params)
+
+                if post_resp.status_code in [200, 201]:
+                    print(f"   ✅ Éxito: Días {active_days}")
+                    success_count += 1
+                else:
+                    print(f"   ❌ Error: {post_resp.text}")
+
+        return jsonify({"msg": f"Sincronización terminada. {success_count} reglas creadas."}), 200
+
+    except Exception as e:
+        print(f"❌ Error crítico: {str(e)}")
+        return jsonify({"msg": f"Error: {str(e)}"}), 500
+
+
+@app.route('/api/doctor/<int:doctor_id>/edit-availability', methods=['PUT'])
+def edit_doctor_availability(doctor_id):
+    data = request.json
+    print(f"📥 Recibiendo edición para Doc ID: {doctor_id}")
+
+    # 1. Buscar si el doctor ya tiene una disponibilidad creada
+    # Usamos .filter_by(id_doctor=...) porque así se llama tu FK en el modelo
+    availability = Availability.query.filter_by(id_doctor=doctor_id).first()
+
+    try:
+        if not availability:
+            print("✨ Creando nueva disponibilidad local...")
+            availability = Availability(id_doctor=doctor_id)
+            db.session.add(availability)
+
+        # 2. Actualizar los campos según tu modelo
+        # Importante: convertimos el string "08:00" a un objeto 'time' de Python
+        availability.days = data.get('days')
+        availability.start_time = datetime.strptime(data.get('start'), "%H:%M").time()
+        availability.end_time = datetime.strptime(data.get('end'), "%H:%M").time()
+
+        db.session.commit()
+        print(f"✅ DB Local actualizada para Doc {doctor_id}")
+
+        # 3. Disparar la sincronización automática
+        # Llamamos a tu función de sincronización que ya funciona
+        return sync_doctor_schedule_to_cal(doctor_id)
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error al editar: {str(e)}")
+        return jsonify({"msg": f"Error al guardar: {str(e)}"}), 500
 
 # this only runs if `$ python src/main.py` is execute
 if __name__ == '__main__':
