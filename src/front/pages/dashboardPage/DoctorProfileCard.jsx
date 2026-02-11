@@ -118,7 +118,7 @@ export const DoctorProfileCard = ({ doctor }) => {
                     disabled={syncing} style={{ color: "#1A5799", borderColor: "#1A5799" }}
                 >
                     <i className="fa-solid fa-pen-to-square me-2"></i>
-                    {syncing ? "Processing..." : "Edit availability"}
+                    {syncing ? "Processing..." : "Edit schedule"}
                 </button>
 
                 {/* BOTÓN DE SINCRONIZACIÓN INICIAL (Ahora hace lo mismo) */}

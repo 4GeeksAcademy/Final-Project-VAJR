@@ -41,6 +41,9 @@ class Pacient(db.Model):
     appointments: Mapped[List["Appointments"]
                          ] = relationship(back_populates="pacient")
 
+    def __str__(self):
+        return self.name
+
     def serialize(self):
         return {
             "id": self.id,
@@ -72,6 +75,9 @@ class Doctors(db.Model):
                          ] = relationship(back_populates="doctor")
     availability: Mapped[List["Availability"]
                          ] = relationship(back_populates="doctor")
+
+    def __str__(self):
+        return f"Dr. {self.name}"
 
     def serialize(self):
 
@@ -130,7 +136,13 @@ class Appointments(db.Model):
             "pacient_name": self.pacient.name if self.pacient else None,
             "pacient_email": self.pacient.email if self.pacient else "",
             "pacient_phone": self.pacient.phone if self.pacient else "",
-            "doctor_cal_username": self.doctor.cal_link if self.doctor else None
+            "doctor_cal_username": self.doctor.cal_link if self.doctor else None,
+            "specialty": (
+                self.doctor.specialties.value
+                if self.doctor and self.doctor.specialties
+                else None
+            )
+
         }
 
 

@@ -45,6 +45,7 @@ bcrypt = Bcrypt(app)
 app.url_map.strict_slashes = False
 
 app.config["JWT_SECRET_KEY"] = os.getenv('SUPER_SECRET_TOKEN')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 
@@ -486,7 +487,7 @@ def cal_webhook_receiver():
                 pacient_id=pacient.id,
                 doctor_id=doctor.id,
                 dateTime=dt_object,
-                reason=f"Cita Cal.com: {payload.get('title')}",
+                reason=f"{payload.get('title')}",
                 status=StatusAppointment.confirmed
             )
             db.session.add(new_appointment)
@@ -500,29 +501,6 @@ def cal_webhook_receiver():
             return jsonify({"msg": str(e)}), 500
 
     return jsonify({"msg": "Evento ignorado"}), 200
-
-
-# Appointments
-
-# listar citas pacientes
-# @app.route('/api/appointments/<int:id>', methods=['GET'])
-# @jwt_required()
-# def get_appointments_p(id):
-#     pacient_email = get_jwt_identity()
-
-#     pacient = Pacient.query.filter_by(email=pacient_email).first()
-
-#     if not pacient:
-#         return jsonify({"msg": "Usuario no encontrado"}), 404
-
-#     appointment = Appointments.query.filter_by(
-#         id=id, pacient_id=pacient.id).first()
-
-#     if not appointment:
-#         return jsonify({"msg": "Cita no encontrada"}), 404
-
-#     return jsonify(appointment.serialize()), 200
-
 
 # Appointments
 

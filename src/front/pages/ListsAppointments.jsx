@@ -116,6 +116,7 @@ export const ListAppointments = () => {
             });
 
             const data = await response.json();
+            console.log("Datos recibidos:", data);
 
             if (response.ok) {
                 setAppointments(data);
@@ -323,6 +324,8 @@ export const ListAppointments = () => {
         const isToday = new Date().toDateString() === dateObj.toDateString();
         const isPast = dateObj < new Date() && !isToday;
 
+    
+
         return (
             <div className="card mb-3 border-0 shadow-sm"
                 style={{ borderRadius: "12px", transition: "all 0.2s ease" }}>
@@ -433,7 +436,7 @@ export const ListAppointments = () => {
             <p className="mb-3 text-muted" style={{ fontSize: "0.9rem" }}>Schedule your first appointment</p>
             <button
                 className="btn btn-sm px-4 py-2"
-                onClick={() => navigate("/api/appointments")}
+                onClick={() => navigate("/find-doctors")}
                 style={{
                     backgroundColor: colors.accent,
                     color: "white",
