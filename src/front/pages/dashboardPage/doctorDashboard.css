@@ -1,0 +1,29 @@
+.container-dashboard {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.profile-doc {
+  width: 22%;
+  margin-top: 3rem;
+}
+
+.doctor-profile-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.doctor-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.container-stat{
+    width: 79%;
+}

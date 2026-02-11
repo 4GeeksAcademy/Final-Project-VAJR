@@ -117,7 +117,6 @@ export const SymptomChecker = () => {
 
     const getDoctorSpecialty = (mainSymptom) => {
         const data = symptomDatabase[mainSymptom]
-
         if (!data) {
             alert("Please select a symptom first.")
         }
@@ -153,7 +152,6 @@ export const SymptomChecker = () => {
         }
 
         setIsLoading(true)
-
         setTimeout(() => {
             const result = getDoctorSpecialty(selectedSymptom)
             setSuggestedDoctors(result)
@@ -167,7 +165,6 @@ export const SymptomChecker = () => {
         <div className="container mt-5">
             <h1 className="text-center fw-bold mb-2">What is the main issue you want to address?</h1>
             <p className="text-center text-muted fs-5 mb-4">Choose your main symptom below to begin your consultation.</p>
-
             {selectedSymptom === "ChestPain" && (
                 <div className="alert alert-danger text-center mb-4 shadow-sm">
                     <i className="fa-solid fa-triangle-exclamation me-2"></i>

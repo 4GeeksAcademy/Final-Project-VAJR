@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useEffect, useState } from "react";
+import { use } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 import Swal from "sweetalert2";
 import { jsPDF } from "jspdf";

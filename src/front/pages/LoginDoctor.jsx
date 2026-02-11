@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { jwtDecode } from "jwt-decode";
 import SweetAlert from "sweetalert2";
+
 
 export const LoginDoctor = () => {
   const navigate = useNavigate();
@@ -18,19 +19,25 @@ export const LoginDoctor = () => {
     setPassword(e.target.value);
   }
 
-
   const handleLoginDoctor = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/doctor/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
       });
 
       const data = await response.json();
+      console.log(data)
 
       if (response.ok) {
+        localStorage.setItem("doctor", JSON.stringify(data.doctor))
         localStorage.setItem("token", data.token);
         localStorage.setItem("userType", "doctor");
 
@@ -58,7 +65,7 @@ export const LoginDoctor = () => {
           showConfirmButton: false
         });
 
-        navigate("/");
+        navigate("/doctor/dashboard");
       } else {
         SweetAlert.fire({
           title: data.msg,
@@ -68,9 +75,15 @@ export const LoginDoctor = () => {
       }
     } catch (error) {
       console.error("Error en login:", error);
-      alert("Error de conexion con el servidor");
+      alert("Error de conexión con el servidor");
     }
   };
+
+  useEffect(() => {
+    if (store.token && store.doctor) {
+      navigate("/doctor/dashboard", { replace: true });
+    }
+  }, [store.token, store.doctor]);
 
   return (
     <div className="vip-background">

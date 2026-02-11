@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
@@ -21,7 +22,7 @@ export const Login = () => {
     e.preventDefault();
     try {
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/pacient/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/pacient/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -30,6 +31,8 @@ export const Login = () => {
       });
 
       const text = await response.text();
+      console.log("Respuesta:", text);
+
       if (!text) {
         Swal.fire({ icon: "error", title: "Server Error", text: "The server did not return a valid response.", confirmButtonColor: "#d33" });
         return;
@@ -43,7 +46,10 @@ export const Login = () => {
 
         dispatch({
           type: "login_pacient",
-          payload: { pacient: data.pacient, token: data.token }
+          payload: {
+            token: data.token,
+            pacient: data.pacient
+          }
         });
 
         Swal.fire({
@@ -63,6 +69,7 @@ export const Login = () => {
       alert("Error de conexión: ", error.message);
     }
   };
+
 
   return (
     <div className="vip-background">
