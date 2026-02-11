@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import { useNavigate , Link} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { jwtDecode } from "jwt-decode";
+import SweetAlert from "sweetalert2";
+
 
 export const LoginDoctor = () => {
   const navigate = useNavigate();
@@ -19,7 +22,7 @@ export const LoginDoctor = () => {
   const handleLoginDoctor = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/doctor/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -31,19 +34,56 @@ export const LoginDoctor = () => {
       });
 
       const data = await response.json();
+      console.log(data)
+
       if (response.ok) {
+        localStorage.setItem("doctor", JSON.stringify(data.doctor))
         localStorage.setItem("token", data.token);
-        console.log("login exitoso")
-        navigate("/appointments");
+        localStorage.setItem("userType", "doctor");
+
+        const decoded = jwtDecode(data.token);
+        console.log("Decoded token:", decoded);
+
+        const doctorFromToken = {
+          email: decoded.sub,
+          id: decoded.user_id || decoded.id || null,
+          name: decoded.name || decoded.sub || "Doctor"
+        };
+
+        dispatch({
+          type: "login_doctor",
+          payload: {
+            doctor: data.doctor || doctorFromToken,
+            token: data.token
+          }
+        });
+
+        SweetAlert.fire({
+          icon: "success",
+          title: "Welcome back!",
+          timer: 1000,
+          showConfirmButton: false
+        });
+
+        navigate("/doctor/dashboard");
       } else {
-        alert(data.msg || "Error al iniciar sesion");
+        SweetAlert.fire({
+          title: data.msg,
+          icon: "error",
+          confirmButtonText: "Try Again"
+        })
       }
     } catch (error) {
       console.error("Error en login:", error);
-      alert("Error de conexion con el servidor");
+      alert("Error de conexión con el servidor");
     }
-
   };
+
+  useEffect(() => {
+    if (store.token && store.doctor) {
+      navigate("/doctor/dashboard", { replace: true });
+    }
+  }, [store.token, store.doctor]);
 
   return (
     <div className="vip-background">
@@ -54,7 +94,7 @@ export const LoginDoctor = () => {
               <h1 id="titlesigun">Doctor Access</h1>
             </div>
 
-          <div className="col-12">
+            <div className="col-12">
               <form onSubmit={handleLoginDoctor}>
 
                 <div className="mb-3">
@@ -62,34 +102,34 @@ export const LoginDoctor = () => {
                     <strong><i className="fa-regular fa-envelope"></i> Email:</strong>
                   </label>
                   <input type="email" className="form-control" id="email" name="email" onChange={handleChangeEmail} />
-              </div>
+                </div>
 
-              <div className="mb-3">
+                <div className="mb-3">
                   <label htmlFor="password" className="form-label">
                     <strong><i className="fa-solid fa-key"></i> Password:</strong>
                   </label>
                   <input type="password" className="form-control" id="password" name="password" onChange={handleChangePassword} />
-              </div>
-                   {/*botones */}
-              <div className="d-flex justify-content-center pb-2">
+                </div>
+                {/*botones */}
+                <div className="d-flex justify-content-center pb-2">
                   <button type="submit" className="btn text-light" id="btn-drop">
                     Sign in
                   </button>
-              </div>
-               <div className="d-flex justify-content-center pb-2">
+                </div>
+                <div className="d-flex justify-content-center pb-2">
                   <button type="button" className="btn btn-link ">
-                      <Link to="/api/doctor/forgotpassword">
-                                  Forgot Password
-                      </Link>
-                   </button>
-              </div>
-                 </form>
+                    <Link to="/api/doctor/forgotpassword">
+                      Forgot Password
+                    </Link>
+                  </button>
+                </div>
+              </form>
             </div>
-  
+
+          </div>
         </div>
       </div>
     </div>
-</div>
   );
 };
 

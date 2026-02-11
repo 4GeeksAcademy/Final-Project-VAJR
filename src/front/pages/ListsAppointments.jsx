@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer"; 
+import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useEffect, useState } from "react";
+import { use } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 import Swal from "sweetalert2";
 import { jsPDF } from "jspdf";
@@ -15,7 +16,7 @@ export const ListAppointments = () => {
     const [appointmentIdToUpdate, setAppointmentIdToUpdate] = useState(null);
     const [editForm, setEditForm] = useState({ reason: "" });
     const [loading, setLoading] = useState(true);
-    
+
     const pacientName = store.pacient?.name || "Paciente";
     const pacientEmail = store.pacient?.email || "";
 
@@ -34,19 +35,19 @@ export const ListAppointments = () => {
         //cabecara ---
         doc.setFillColor(3, 90, 166); // Blue color (#035aa6)
         doc.rect(0, 0, 210, 40, "F");
-        
+
         // Doctor Icon 
         doc.setDrawColor(255, 255, 255);
         doc.setLineWidth(1);
-        doc.circle(25, 20, 8, 'S'); 
-        doc.line(21, 20, 29, 20);   
-        doc.line(25, 16, 25, 24);   
+        doc.circle(25, 20, 8, 'S');
+        doc.line(21, 20, 29, 20);
+        doc.line(25, 16, 25, 24);
         // hiDOC
         doc.setFontSize(26);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(255, 255, 255);
         doc.text("hiDOC", 38, 23);
-        
+
         doc.setFontSize(14);
         doc.setFont("helvetica", "normal");
         doc.text("Medical Appointment Summary", 38, 32);
@@ -56,7 +57,7 @@ export const ListAppointments = () => {
         doc.setTextColor(0, 0, 0);
         doc.setFont("helvetica", "bold");
         doc.text("PATIENT INFORMATION", 20, 55);
-        
+
         doc.setFont("helvetica", "normal");
         doc.text(`Name: ${pacientName}`, 20, 65);
         doc.text(`Email: ${pacientEmail}`, 20, 72);
@@ -68,7 +69,7 @@ export const ListAppointments = () => {
         // ---consulta detalle---
         doc.setFont("helvetica", "bold");
         doc.text("APPOINTMENT DETAILS", 20, 95);
-        
+
         doc.setFont("helvetica", "normal");
         doc.text(`Doctor: Dr. ${appt.doctor_name}`, 20, 105);
         doc.text(`Date: ${dateObj.toLocaleDateString('en-US')}`, 20, 112);
@@ -80,19 +81,20 @@ export const ListAppointments = () => {
         doc.setTextColor(120);
         doc.setDrawColor(230, 230, 230);
         doc.line(20, 140, 190, 140); // Decorative line
-        
+
         doc.text("Please arrive 10 minutes prior to your scheduled time.", 20, 150);
-      
+
         doc.setFont("helvetica", "italic");
         doc.text("Thank you for choosing hiDOC for your healthcare needs.", 20, 165);
 
         // descarga 
-        doc.save(`hiDOC_Appt_${appt.id}.pdf`);}
+        doc.save(`hiDOC_Appt_${appt.id}.pdf`);
+    }
 
     const getAppointments = async () => {
         setLoading(true);
         const token = localStorage.getItem("token");
-        
+
         if (!token) {
             Swal.fire({
                 icon: "warning",
@@ -112,21 +114,22 @@ export const ListAppointments = () => {
                     "Authorization": `Bearer ${token}`
                 }
             });
-            
+
             const data = await response.json();
-            
+            console.log("Datos recibidos:", data);
+
             if (response.ok) {
                 setAppointments(data);
-                
+
                 if (!store.pacient && data.length > 0) {
                     dispatch({
                         type: "login_pacient",
-                        payload: { 
-                            pacient: { 
-                                name: data[0].pacient_name, 
-                                email: data[0].pacient_email 
+                        payload: {
+                            pacient: {
+                                name: data[0].pacient_name,
+                                email: data[0].pacient_email
                             },
-                            token: token 
+                            token: token
                         }
                     });
                 }
@@ -194,19 +197,60 @@ export const ListAppointments = () => {
         }
     };
 
-    const handleReschedule = (appt) => {
-        if (appt.cal_link && appt.cal_link.trim() !== "") {
-            setSelectedDoctorSlug(appt.cal_link);
-            setAppointmentIdToUpdate(appt.id);
-            setEditForm({ reason: appt.reason });
-            setShowCal(true);
-        } else {
-            Swal.fire({
-                icon: "info",
-                title: "Not Available",
-                text: "This doctor hasn't linked their calendar yet",
-                confirmButtonColor: colors.primary
-            });
+    const handleRescheduleAndCancel = async (appt) => {
+
+        const result = await Swal.fire({
+            title: "Reschedule Appointment?",
+            text: "The current appointment will be cancelled and a new one will be created",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: colors.accent,
+            cancelButtonColor: colors.secondary,
+            confirmButtonText: "Yes, reschedule",
+            cancelButtonText: "Keep it",
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/appointments/${appt.id}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                        },
+                    }
+                );
+
+                if (response.ok) {
+
+                    setAppointments(prev =>
+                        prev.map(a => a.id === appt.id ? { ...a, status: "cancelled" } : a)
+                    );
+
+                    setSelectedDoctorSlug(appt.cal_link);
+                    setAppointmentIdToUpdate(null); // No vamos a actualizar, es una nueva cita
+                    setEditForm({ reason: appt.reason });
+                    setShowCal(true);
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Reschedule",
+                        text: "Please select a new time for your appointment",
+                        confirmButtonColor: colors.primary
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Could not cancel appointment",
+                    confirmButtonColor: colors.primary
+                });
+            }
         }
     };
 
@@ -253,7 +297,7 @@ export const ListAppointments = () => {
                 setShowCal(false);
                 setAppointmentIdToUpdate(null);
                 await getAppointments();
-                
+
                 Swal.fire({
                     icon: "success",
                     title: "Updated!",
@@ -279,19 +323,21 @@ export const ListAppointments = () => {
         const dateObj = new Date(appt.dateTime);
         const isToday = new Date().toDateString() === dateObj.toDateString();
         const isPast = dateObj < new Date() && !isToday;
-        
+
+    
+
         return (
-            <div className="card mb-3 border-0 shadow-sm" 
-                 style={{ borderRadius: "12px", transition: "all 0.2s ease" }}>
+            <div className="card mb-3 border-0 shadow-sm"
+                style={{ borderRadius: "12px", transition: "all 0.2s ease" }}>
                 <div className="card-body p-3">
                     <div className="d-flex align-items-center gap-3">
                         {/* Fecha compacta */}
-                        <div className="text-center px-3 py-2 text-white" 
-                             style={{ 
-                                 background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
-                                 borderRadius: "10px",
-                                 minWidth: "70px"
-                             }}>
+                        <div className="text-center px-3 py-2 text-white"
+                            style={{
+                                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
+                                borderRadius: "10px",
+                                minWidth: "70px"
+                            }}>
                             <div className="fw-bold" style={{ fontSize: "1.5rem", lineHeight: "1" }}>
                                 {dateObj.getDate()}
                             </div>
@@ -300,7 +346,7 @@ export const ListAppointments = () => {
                             </small>
                         </div>
 
-                       
+
                         <div className="flex-grow-1" style={{ minWidth: 0 }}>
                             <div className="d-flex justify-content-between align-items-start">
                                 <div>
@@ -317,23 +363,23 @@ export const ListAppointments = () => {
                                         {isToday && <span className="badge ms-2" style={{ backgroundColor: colors.accent, fontSize: "0.6rem" }}>TODAY</span>}
                                     </small>
                                 </div>
-                              
+
                                 <div className="d-flex gap-1">
-                                    <button 
-                                        className="btn btn-sm p-1"  onClick={() => handleReschedule(appt)} disabled={isPast}
-                                        style={{ 
-                                            backgroundColor: colors.secondary,    color: colors.primary,   border: "none",  width: "32px",   height: "32px",  borderRadius: "8px"
+                                    <button
+                                        className="btn btn-sm p-1" onClick={() => handleRescheduleAndCancel(appt)} disabled={isPast}
+                                        style={{
+                                            backgroundColor: colors.secondary, color: colors.primary, border: "none", width: "32px", height: "32px", borderRadius: "8px"
                                         }}
                                         title="Reschedule"
                                     >
                                         <i className="fa-solid fa-clock-rotate-left" style={{ fontSize: "0.8rem" }}></i>
                                     </button>
-                                    <button 
+                                    <button
                                         className="btn btn-sm p-1"
                                         onClick={() => deleteAppointments(appt.id)}
                                         disabled={isPast}
-                                        style={{ 
-                                            backgroundColor: "#fee2e2", 
+                                        style={{
+                                            backgroundColor: "#fee2e2",
                                             color: "#dc2626",
                                             border: "none",
                                             width: "32px",
@@ -344,11 +390,11 @@ export const ListAppointments = () => {
                                     >
                                         <i className="fa-solid fa-trash" style={{ fontSize: "0.8rem" }}></i>
                                     </button>
-                                    <button 
+                                    <button
                                         className="btn btn-sm p-1"
-                                        onClick={() =>downloadPDF(appt)}
-                                        style={{ 
-                                            backgroundColor: colors.accent, 
+                                        onClick={() => downloadPDF(appt)}
+                                        style={{
+                                            backgroundColor: colors.accent,
                                             color: "white",
                                             border: "none",
                                             width: "32px",
@@ -361,14 +407,14 @@ export const ListAppointments = () => {
                                     </button>
                                 </div>
                             </div>
-                            
-                          
-                            <div className="mt-2 p-2" 
-                                 style={{ 
-                                     backgroundColor: colors.light, 
-                                     borderRadius: "6px",
-                                     borderLeft: `3px solid ${colors.accent}`
-                                 }}>
+
+
+                            <div className="mt-2 p-2"
+                                style={{
+                                    backgroundColor: colors.light,
+                                    borderRadius: "6px",
+                                    borderLeft: `3px solid ${colors.accent}`
+                                }}>
                                 <small className="text-muted" style={{ fontSize: "0.7rem" }}>Reason:</small>
                                 <p className="mb-0 text-truncate" style={{ color: colors.primary, fontSize: "0.8rem" }}>
                                     {appt.reason}
@@ -388,11 +434,11 @@ export const ListAppointments = () => {
             </div>
             <h5 className="mb-2" style={{ color: colors.primary }}>No appointments</h5>
             <p className="mb-3 text-muted" style={{ fontSize: "0.9rem" }}>Schedule your first appointment</p>
-            <button 
+            <button
                 className="btn btn-sm px-4 py-2"
-                onClick={() => navigate("/api/pacient/appointments")}
-                style={{ 
-                    backgroundColor: colors.accent, 
+                onClick={() => navigate("/find-doctors")}
+                style={{
+                    backgroundColor: colors.accent,
                     color: "white",
                     borderRadius: "20px",
                     fontWeight: "600",
@@ -427,8 +473,8 @@ export const ListAppointments = () => {
     return (
         <div className="min-vh-100 py-4" style={{ backgroundColor: colors.white }}>
             <div className="container" style={{ maxWidth: "800px" }}>
-                
-           
+
+
                 <div className="card border-0 shadow-sm mb-3" style={{ borderRadius: "15px", backgroundColor: colors.primary }}>
                     <div className="card-body p-3 text-white">
                         <div className="d-flex justify-content-between align-items-center">
@@ -451,17 +497,17 @@ export const ListAppointments = () => {
                     </div>
                 </div>
 
-          
+
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h4 className="mb-0 fw-bold" style={{ color: colors.primary }}>My Appointments</h4>
                         <small className="text-muted">{activeAppointments.length} upcoming</small>
                     </div>
-                    <button 
+                    <button
                         className="btn btn-sm px-3 py-2 d-flex align-items-center gap-2"
                         onClick={() => navigate("/api/pacient/appointments")}
-                        style={{ 
-                            backgroundColor: colors.accent, 
+                        style={{
+                            backgroundColor: colors.accent,
                             color: "white",
                             borderRadius: "20px",
                             fontWeight: "600",
@@ -501,8 +547,8 @@ export const ListAppointments = () => {
                                         <i className="fa-solid fa-calendar-pen me-2"></i>
                                         Reschedule
                                     </h6>
-                                    <button 
-                                        type="button"  className="btn-close btn-close-white"  onClick={() => setShowCal(false)}
+                                    <button
+                                        type="button" className="btn-close btn-close-white" onClick={() => setShowCal(false)}
                                     ></button>
                                 </div>
                                 <div className="modal-body p-0">
@@ -533,12 +579,12 @@ export const ListAppointments = () => {
                                     </div>
                                 </div>
                                 <div className="modal-footer py-2" style={{ backgroundColor: colors.secondary }}>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="btn btn-sm px-3"
                                         onClick={() => setShowCal(false)}
-                                        style={{ 
-                                            backgroundColor: colors.white,   color: colors.primary,  borderRadius: "8px", fontWeight: "600"
+                                        style={{
+                                            backgroundColor: colors.white, color: colors.primary, borderRadius: "8px", fontWeight: "600"
                                         }}
                                     >
                                         Close

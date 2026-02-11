@@ -47,7 +47,7 @@ export const PacientAppointments = () => {
                         allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            navigate("/pacient/listappointments");
+                            navigate("/api/listappointments");
                         }
                     });
                 },

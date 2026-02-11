@@ -21,12 +21,15 @@ import { ResetPassword } from "./pages/ResetPassword";
 import { ForgotPwDoctor } from "./pages/ForgotPwDoctor";
 import { ResetPwDoctor } from "./pages/ResetPwDoctor";
 import { DoctorCard } from "./components/DoctorCard.jsx";
+// import { Demo } from "./pages/Demo";
+import { DoctorDashboard } from "./pages/dashboardPage/DoctorDashboard";
+import { PrivateDoctorRoute } from "./pages/dashboardPage/PrivateDoctorRoute"
 import { DoctorPage } from "./pages/DoctorPage.jsx";
-
 
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
+
     // CreateRoutesFromElements function allows you to build route elements declaratively.
     // Create your routes here, if you want to keep the Navbar and Footer in all views, add your new routes inside the containing Route.
     // Root, on the contrary, create a sister Route, if you have doubts, try it!
@@ -42,6 +45,8 @@ export const router = createBrowserRouter(
       <Route path="/api/pacient/signup" element={<Signup />} />
       <Route path="/api/pacient/login" element={<Login />} />
       <Route path="/api/doctor/register" element={<SignupDoctor />} />
+      
+      <Route path="/api/appointments/:doctor_id" element={<PacientAppointments />} />
       <Route path="/doctor/login" element={<LoginDoctor />} />
       <Route path="/api/pacient/appointments" element={<PacientAppointments />} />
       <Route path="/api/listappointments" element={<ListAppointments />} />
@@ -51,6 +56,18 @@ export const router = createBrowserRouter(
       <Route path="/api/doctor/resetpassword" element={<ResetPwDoctor />} />
       <Route path="/find-doctors" element={<DoctorsList />} />
       <Route path="/doctorcard" element={<DoctorCard />} />
+  
+      <Route path="/doctor/login" element={<LoginDoctor />} />
+
+      <Route
+        path="/doctor/dashboard"
+        element={
+          <PrivateDoctorRoute>
+            <DoctorDashboard />
+          </PrivateDoctorRoute>
+        }
+      />
+      <Route path="/find-doctors" element={<DoctorsList />} />
       <Route path="/doctorpage/:doctorId" element={<DoctorPage />} />
 
     </Route>

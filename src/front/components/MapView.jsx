@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { getCalApi } from "@calcom/embed-react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import Swal from "sweetalert2";
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -16,6 +18,11 @@ L.Icon.Default.mergeOptions({
 
 export const MapView = ({ doctors }) => {
     const caracasCenter = [10.4806, -66.9036];
+    const { store } = useGlobalReducer();
+    const [showSlots, setShowSlots] = useState(false);
+    const [slots, setSlots] = useState([]);
+    const [loadingSlots, setLoadingSlots] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
 
     useEffect(() => {
         (async function () {
@@ -75,6 +82,27 @@ export const MapView = ({ doctors }) => {
                                             data-cal-link={doc.cal_link}
                                             className="btn btn-sm btn-primary w-100 fw-bold"
                                             style={{ backgroundColor: "#468be6", fontSize: "12px" }}
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                setSelectedDoctor(doc);
+                                                setLoadingSlots(true);
+                                                try {
+                                                    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+                                                    const res = await fetch(`${backendUrl}/api/doctor/${doc.id}/availability`);
+                                                    if (res.ok) {
+                                                        const data = await res.json();
+                                                        setSlots(data || []);
+                                                        setShowSlots(true);
+                                                    } else {
+                                                        Swal.fire('Error', 'No se pudieron cargar los horarios.', 'error');
+                                                    }
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    Swal.fire('Error', 'Error de conexión al cargar horarios.', 'error');
+                                                } finally {
+                                                    setLoadingSlots(false);
+                                                }
+                                            }}
                                         >
                                             Book Appointment
                                         </button>

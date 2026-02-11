@@ -56,7 +56,7 @@ export const Signup = () => {
   };
 
 return (
-        <div className="vip-background">
+        <div className="vip-background my-5">
             <div className="fondo-form">
 
                 <div className="container d-flex align-items-center justify-content-center m-2" style={{ minHeight: "100vh" }}>
