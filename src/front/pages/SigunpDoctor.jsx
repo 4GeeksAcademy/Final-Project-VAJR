@@ -108,25 +108,25 @@ export const SignupDoctor = () => {
                             <form onSubmit={handleSignupDoctor}>
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">
-                                        <strong>Name:</strong>
+                                        <strong>Name</strong>
                                     </label>
                                     <input type="text" className="form-control" id="name" name="name" onChange={hadleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="email" className="form-label">
-                                        <strong> Email:</strong>
+                                        <strong> Email</strong>
                                     </label>
                                     <input type="email" className="form-control" id="email" name="email" onChange={hadleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="password" className="form-label">
-                                        <strong> Password:</strong>
+                                        <strong> Password</strong>
                                     </label>
                                     <input type="password" className="form-control" id="password" name="password" onChange={hadleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">
-                                        <strong>Specialties:</strong>
+                                        <strong>Specialties</strong>
                                     </label>
                                     <div className="dropdown">
                                         <button className="btn dropdown-toggle text-light" id="btn-drop" type="button" data-bs-toggle="dropdown" aria-expanded="false" >
@@ -156,49 +156,49 @@ export const SignupDoctor = () => {
 
                                 <div className="mb-3">
                                     <label htmlFor="biography" className="form-label">
-                                        <strong>Biography:</strong>
+                                        <strong>Biography</strong>
                                     </label>
                                     <label htmlFor="exampleFormControlTextarea1" className="form-label"></label>
                                     <textarea className="form-control" id="biography" name="biography" value={form.biography} onChange={hadleChange} rows="3"></textarea>
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="picture" className="form-label">
-                                        <strong>Picture:</strong>
+                                        <strong>Picture</strong>
                                     </label><div className="mb-3">
                                         <input className="form-control" type="file" id="formFile" onChange={uploadImagen} />
-                                        {uploading && <small className="text-warning">Subiendo imagen...</small>}
-                                        {form.picture && <small className="text-success d-block">Imagen lista </small>}
+                                        {uploading && <small className="text-warning">Uploading Image...</small>}
+                                        {form.picture && <small className="text-success d-block">Image ready </small>}
                                     </div>
 
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="address" className="form-label">
-                                        <strong>Address:</strong>
+                                        <strong>Address</strong>
                                     </label>
                                     <input type="text" className="form-control" id="address" name="address" onChange={hadleChange} required />
                                 </div>
                                 <div>
                                     <label htmlFor="name" className="form-label">
-                                        <strong>Latitud:</strong>
+                                        <strong>Latitud</strong>
                                     </label>
                                     <input type="text" className="form-control" id="latitud" name="latitud" onChange={hadleChange} required />
                                 </div>
                                 <div>
                                     <label htmlFor="longitud" className="form-label">
-                                        <strong>Longitud:</strong>
+                                        <strong>Longitud</strong>
                                     </label>
                                     <input type="text" className="form-control" id="longitud" name="longitud" onChange={hadleChange} required />
                                 </div>
 
                                 <div>
                                     <label htmlFor="phone" className="form-label">
-                                        <strong>Phone:</strong>
+                                        <strong>Phone</strong>
                                     </label>
                                     <input type="text" className="form-control" id="phone" name="phone" onChange={hadleChange} required />
                                 </div>
                                 <div>
                                     <label htmlFor="cal_link" className="form-label">
-                                        <strong>Calendario link:</strong>
+                                        <strong>Calendario link</strong>
                                     </label>
                                     <input type="text" className="form-control" id="cal_link" name="cal_link" onChange={hadleChange} required />
                                 </div>

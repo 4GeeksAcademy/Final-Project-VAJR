@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getCalApi } from "@calcom/embed-react";
 import "./DoctorSearchCard.css";
 
-export const DoctorSearchCard = ({ doctor }) => {
+export const DoctorSearchCard = ({ doctor, specialties = [] }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -17,13 +17,18 @@ export const DoctorSearchCard = ({ doctor }) => {
             });
         })();
     }, []);
-    
+
+    console.log("Doctor specialties:", doctor.specialties);
+    console.log("Specialties array:", specialties);
+
     const getLocationString = (loc) => {
         if (!loc) return "Location not available";
         return typeof loc === 'object' ? "Caracas, Venezuela" : loc;
     };
 
-    const specialty = doctor.specialties || "Specialist";
+    const specialtyKey = doctor.specialties || "SPECIALIST";
+    const specialtyObj = specialties.find(s => s.key === specialtyKey);
+    const specialtyLabel = specialtyObj ? specialtyObj.label : specialtyKey;
 
     return (
         <div className="card doctor-card mb-4 shadow-sm border-0">
@@ -43,7 +48,7 @@ export const DoctorSearchCard = ({ doctor }) => {
                         
                         <div>
                             <span className="doc-specialty">
-                                {specialty}
+                                {specialtyLabel}
                             </span>
                         </div>
                         

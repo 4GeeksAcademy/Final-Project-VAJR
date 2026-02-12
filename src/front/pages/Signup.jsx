@@ -70,25 +70,25 @@ return (
                             <form onSubmit={handleSignupPacients}>
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">
-                                        <strong>Name:</strong>
+                                        <strong>Name</strong>
                                     </label>
                                     <input type="text" className="form-control" id="name" name="name" onChange={handleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="email" className="form-label">
-                                        <strong> Email:</strong>
+                                        <strong> Email</strong>
                                     </label>
                                     <input type="email" className="form-control" id="email" name="email" onChange={handleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="password" className="form-label">
-                                        <strong> Password:</strong>
+                                        <strong> Password</strong>
                                     </label>
                                     <input type="password" className="form-control" id="password" name="password" onChange={handleChange} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="phone" className="form-label">
-                                        <strong>Phone:</strong>
+                                        <strong>Phone</strong>
                                     </label>
                                     <input type="text" className="form-control" id="phone" name="phone" onChange={handleChange} required />
                                 </div>

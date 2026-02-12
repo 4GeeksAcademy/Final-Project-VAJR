@@ -6,21 +6,28 @@ export const FoundDoc = () => {
     const { store, dispatch } = useGlobalReducer();
     const [loading, setLoading] = useState(false);
 
-    const specialties = ["Cardiology", "Dermatology", "General Practice", "Psychology", "Orthopedics", "Neurology", "Gastroenterology"];
+    const specialties = [
+        { key: "CARDIOLOGY", label: "Cardiology" },
+        { key: "DERMATOLOGY", label: "Dermatology" },
+        { key: "PSYCHOLOGY", label: "Psychology" },
+        { key: "GENERAL_PRACTICE", label: "General Practice" },
+        { key: "NEUROLOGY", label: "Neurology" },
+        { key: "GASTROENTEROLOGY", label: "Gastroenterology" }
+    ]
 
-    const fetchDoctors = async (specialty = null) => {
+    const fetchDoctors = async (specialtyKey  = null) => {
         setLoading(true);
         try {
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
-            const url = specialty
-                ? `${backendUrl}/api/doctors?specialty=${encodeURIComponent(specialty)}`
+            const url = specialtyKey
+                ? `${backendUrl}/api/doctors?specialty=${encodeURIComponent(specialtyKey)}`
                 : `${backendUrl}/api/doctor`;
 
             const response = await fetch(url);
 
             if (response.ok) {
                 const data = await response.json();
-                const payload = data.msg || data; 
+                const payload = data.msg || data;
 
                 dispatch({ type: "set_doctors", payload: payload || [] });
             } else {
@@ -51,7 +58,7 @@ export const FoundDoc = () => {
                 >
                     <option value="All">All Specialties</option>
                     {specialties.map(spec => (
-                        <option key={spec} value={spec}>{spec}</option>
+                        <option key={spec.key} value={spec.key}>{spec.label}</option>
                     ))}
                 </select>
             </div>
@@ -64,7 +71,7 @@ export const FoundDoc = () => {
                 <div className="d-flex overflow-auto pb-4 custom-scrollbar" style={{ gap: "1.25rem" }}>
                     {store.doctors && store.doctors.length > 0 ? (
                         store.doctors.map((doctor, index) => (
-                            <DoctorCard key={doctor.id || index} doctor={doctor} />
+                            <DoctorCard key={doctor.id || index} doctor={doctor} specialties={specialties}/>
                         ))
                     ) : (
                         <div className="alert alert-info w-100">No doctors found.</div>

@@ -83,13 +83,13 @@ export const Login = () => {
               <form onSubmit={handleLogin}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
-                    <strong><i className="fa-regular fa-envelope"></i> Email:</strong>
+                    <strong><i className="fa-regular fa-envelope"></i> Email</strong>
                   </label>
                   <input type="email" className="form-control" id="email" name="email" onChange={handleChangeEmail} />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
-                    <strong><i className="fa-solid fa-key"></i> Password:</strong>
+                    <strong><i className="fa-solid fa-key"></i> Password</strong>
                   </label>
                   <input type="password" className="form-control" id="password" name="password" onChange={handleChangePassword} />
                 </div>

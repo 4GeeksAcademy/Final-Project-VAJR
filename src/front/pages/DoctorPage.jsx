@@ -112,7 +112,7 @@ export const DoctorPage = () => {
                             </span>
                             <span className={`fw-semibold pb-2 ${activeTab === "faqs" ? "border-bottom border-primary border-2 text-primary" : "text-dark"}`}
                                 onClick={() => handleTabClick("faqs", faqsRef)}
-                                style={{ cursor: "pointer" }} >Faqs</span>
+                                style={{ cursor: "pointer" }} >FAQs</span>
                         </div>
                     </li>
                     <div className="mt-5  ms-5 d-flex">
