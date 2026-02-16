@@ -500,7 +500,7 @@ def cal_webhook_receiver():
             print(f" ❌ Error en DB: {str(e)}")
             return jsonify({"msg": str(e)}), 500
 
-    return jsonify({"msg": "Evento ignorado"}), 200
+    return jsonify({"msg": "Event ignored"}), 200
 
 # Appointments
 
@@ -514,13 +514,13 @@ def get_appointments_p(id):
     pacient = Pacient.query.filter_by(email=pacient_email).first()
 
     if not pacient:
-        return jsonify({"msg": "Usuario no encontrado"}), 404
+        return jsonify({"msg": "User not found"}), 404
 
     appointment = Appointments.query.filter_by(
         id=id, pacient_id=pacient.id).first()
 
     if not appointment:
-        return jsonify({"msg": "Cita no encontrada"}), 404
+        return jsonify({"msg": "Appointment not found"}), 404
 
     return jsonify(appointment.serialize()), 200
 
@@ -535,7 +535,7 @@ def get_appt_pacient():
     pacient = Pacient.query.filter_by(email=pacient_email).first()
 
     if not pacient:
-        return jsonify({"msg": "Usuario no encontrado"}), 404
+        return jsonify({"msg": "User not found"}), 404
 
     appointments = Appointments.query.filter_by(pacient_id=pacient.id).all()
 
@@ -554,7 +554,7 @@ def get_doctor_appointment_d(id):
         id=id, doctor_id=doctor_id).first()
 
     if not appointment:
-        return jsonify({"msg": "Cita no encontrada"}), 404
+        return jsonify({"msg": "Appointment not found"}), 404
     return jsonify(appointment.serialize()), 200
 
 # listar citas pacientes
@@ -565,7 +565,7 @@ def get_doctor_appointment_d(id):
 def update_appointments(id):
     data = request.get_json(silent=True)
     if not data:
-        return jsonify({"msg": "Datos inválidos"}), 400
+        return jsonify({"msg": "Data invalid"}), 400
 
     pacient_email = get_jwt_identity()
     pacient = Pacient.query.filter_by(email=pacient_email).first()
@@ -592,7 +592,7 @@ def cancel_appointment(id):
     pacient = Pacient.query.filter_by(email=pacient_email).first()
 
     if not pacient:
-        return jsonify({"msg": "Paciente no encontrado"}), 404
+        return jsonify({"msg": "Pacient not found"}), 404
 
     appointment = Appointments.query.filter_by(
         id=id,
@@ -600,12 +600,12 @@ def cancel_appointment(id):
     ).first()
 
     if not appointment:
-        return jsonify({"msg": "Cita no encontrada"}), 404
+        return jsonify({"msg": "Appointment not found"}), 404
 
     appointment.status = StatusAppointment.cancelled
     db.session.commit()
 
-    return jsonify({"msg": "Cita cancelada correctamente"}), 200
+    return jsonify({"msg": "Appoinment cancelled correctly"}), 200
 
 
 @app.route('/api/doctor/appointments', methods=['GET'])

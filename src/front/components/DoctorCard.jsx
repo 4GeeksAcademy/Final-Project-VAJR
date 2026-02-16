@@ -30,49 +30,6 @@ export const DoctorCard = ({ doctor }) => {
         fetchAvailability();
     }, [doctor.id]);
 
-    const handleBooking = async (slot) => {
-        const result = await Swal.fire({
-            title: 'Confirm Appointment?',
-            text: `Do you want to schedule with Dr. ${doctor.name} at ${slot.hour}?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#468BE6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, book it!',
-            cancelButtonText: 'Cancel'
-        });
-
-        if (result.isConfirmed) {
-            try {
-                const backendUrl = import.meta.env.VITE_BACKEND_URL;
-                const response = await fetch(`${backendUrl}/api/appointments`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        doctor_id: doctor.id,
-                        patient_id: store.user?.id,
-                        hour: slot.hour,
-                        day: slot.day
-                    })
-                });
-
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Booked!',
-                        text: 'Your appointment has been successfully registered.',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error("Booking failed");
-                }
-            } catch (error) {
-                Swal.fire('Error', 'Could not process the appointment. Please try again.', 'error');
-            }
-        }
-    };
-
     return (
         <div className="card border-0 shadow-sm h-100 mx-2" style={{ minWidth: "260px", maxWidth: "260px", borderRadius: "12px" }}>
             <div className="card-body p-3 d-flex flex-column">
@@ -109,7 +66,6 @@ export const DoctorCard = ({ doctor }) => {
                             slots.map((slot, i) => (
                                 <button
                                     key={i}
-                                    onClick={() => handleBooking(slot)}
                                     className="btn btn-sm px-2 fw-semibold"
                                     style={{ backgroundColor: "#E9F5FF", color: "#1A5799", border: "1px solid #93BFEF", fontSize: "0.75rem" }}
                                 >

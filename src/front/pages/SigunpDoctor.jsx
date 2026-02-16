@@ -93,126 +93,139 @@ export const SignupDoctor = () => {
     };
 
     return (
+        <div className="container-fluid p-0" style={{ height: "100vh", overflow: "hidden" }}>
+            <div className="row g-0" style={{ height: "100%" }}>
 
-        <div className="vip-background my-5">
-            <div className="fondo-form">
 
-                <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
-
-                    <div className="row g-3">
-                        <div className="col-12 text-center text-primary text-success">
-                            <h1 id="titlesigun">Create your account</h1>
-                        </div>
-
-                        <div className="col-12">
-                            <form onSubmit={handleSignupDoctor}>
-                                <div className="mb-3">
-                                    <label htmlFor="name" className="form-label">
-                                        <strong>Name</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="name" name="name" onChange={hadleChange} required />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="email" className="form-label">
-                                        <strong> Email</strong>
-                                    </label>
-                                    <input type="email" className="form-control" id="email" name="email" onChange={hadleChange} required />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="password" className="form-label">
-                                        <strong> Password</strong>
-                                    </label>
-                                    <input type="password" className="form-control" id="password" name="password" onChange={hadleChange} required />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="name" className="form-label">
-                                        <strong>Specialties</strong>
-                                    </label>
-                                    <div className="dropdown">
-                                        <button className="btn dropdown-toggle text-light" id="btn-drop" type="button" data-bs-toggle="dropdown" aria-expanded="false" >
-                                            <strong>{form.specialties || "Select a specialty"}</strong>
-                                        </button>
-                                        <ul className="dropdown-menu w-60">
-                                            {[
-                                                { key: "CARDIOLOGY", label: "Cardiology" },
-                                                { key: "DERMATOLOGY", label: "Dermatology" },
-                                                { key: "PSYCHOLOGY", label: "Psychology" },
-                                                { key: "GENERAL_PRACTICE", label: "General Practice" },
-                                                { key: "NEUROLOGY", label: "Neurology" },
-                                                { key: "GASTROENTEROLOGY", label: "Gastroenterology" }
-                                            ].map(({ key, label }) => (
-                                                <li key={key}>
-                                                    <button
-                                                        type="button"
-                                                        className={`dropdown-item ${form.specialties === key ? "active" : ""}`}
-                                                        onClick={() => hadleSpecialty(key)}
-                                                        style={{ cursor: 'pointer' }}>
-                                                        {label}
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div></div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="biography" className="form-label">
-                                        <strong>Biography</strong>
-                                    </label>
-                                    <label htmlFor="exampleFormControlTextarea1" className="form-label"></label>
-                                    <textarea className="form-control" id="biography" name="biography" value={form.biography} onChange={hadleChange} rows="3"></textarea>
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="picture" className="form-label">
-                                        <strong>Picture</strong>
-                                    </label><div className="mb-3">
-                                        <input className="form-control" type="file" id="formFile" onChange={uploadImagen} />
-                                        {uploading && <small className="text-warning">Uploading Image...</small>}
-                                        {form.picture && <small className="text-success d-block">Image ready </small>}
-                                    </div>
-
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="address" className="form-label">
-                                        <strong>Address</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="address" name="address" onChange={hadleChange} required />
-                                </div>
-                                <div>
-                                    <label htmlFor="name" className="form-label">
-                                        <strong>Latitud</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="latitud" name="latitud" onChange={hadleChange} required />
-                                </div>
-                                <div>
-                                    <label htmlFor="longitud" className="form-label">
-                                        <strong>Longitud</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="longitud" name="longitud" onChange={hadleChange} required />
-                                </div>
-
-                                <div>
-                                    <label htmlFor="phone" className="form-label">
-                                        <strong>Phone</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="phone" name="phone" onChange={hadleChange} required />
-                                </div>
-                                <div>
-                                    <label htmlFor="cal_link" className="form-label">
-                                        <strong>Calendario link</strong>
-                                    </label>
-                                    <input type="text" className="form-control" id="cal_link" name="cal_link" onChange={hadleChange} required />
-                                </div>
-                                <div className="d-flex justify-content-center p-2">
-                                    <button type="submit" className="btn text-light" id="btn-drop">Register</button>
-                                </div>
-
-                            </form>
-                        </div>
-                    </div>
+                <div className="col-md-6 d-none d-md-block" style={{ height: "100vh" }}>
+                    <img
+                        src="/src/front/assets/img/Doctor2.jpg"
+                        alt="Doctor Presentation"
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover"
+                        }}
+                    />
                 </div>
 
+
+                <div className="col-12 col-md-6 d-flex justify-content-center bg-white"
+                    style={{
+                        height: "100vh",
+                        overflowY: "auto",
+                        padding: "60px 20px"
+                    }}>
+
+                    <div style={{ width: "100%", maxWidth: "480px" }}>
+                        <div className="text-center mb-4">
+                            <h1 style={{ color: "#035aa6", fontWeight: "bold", fontSize: "2.2rem" }}>Doctor Registration</h1>
+                            <p className="text-muted">Complete the form to create your professional profile</p>
+                        </div>
+
+                        <form onSubmit={handleSignupDoctor}>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Full Name</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="name" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Email</strong></label>
+                                <input type="email" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="email" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Password</strong></label>
+                                <input type="password" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="password" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Specialty</strong></label>
+                                <div className="dropdown">
+                                    <button className="btn dropdown-toggle w-100 text-white"
+                                        style={{ backgroundColor: "#035aa6", border: "none" }}
+                                        type="button" data-bs-toggle="dropdown">
+                                        {form.specialties || "Select Specialty"}
+                                    </button>
+                                    <ul className="dropdown-menu w-100 shadow">
+                                        {[
+                                            { key: "CARDIOLOGY", label: "Cardiology" },
+                                            { key: "DERMATOLOGY", label: "Dermatology" },
+                                            { key: "PSYCHOLOGY", label: "Psychology" },
+                                            { key: "GENERAL_PRACTICE", label: "General Practice" },
+                                            { key: "NEUROLOGY", label: "Neurology" },
+                                            { key: "GASTROENTEROLOGY", label: "Gastroenterology" }
+                                        ].map(({ key, label }) => (
+                                            <li key={key}>
+                                                <button
+                                                    type="button"
+                                                    className={`dropdown-item ${form.specialties === key ? "active" : ""}`}
+                                                    onClick={() => hadleSpecialty(key)}
+                                                    style={{ cursor: 'pointer' }}>
+                                                    {label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Biography</strong></label>
+                                <textarea className="form-control" style={{ border: "1px solid #c7e5f2" }} name="biography" value={form.biography} onChange={hadleChange} rows="3"></textarea>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Profile Picture</strong></label>
+                                <input className="form-control" type="file" style={{ border: "1px solid #c7e5f2" }} onChange={uploadImagen} />
+                                {uploading && <small style={{ color: "#18aded" }}>Uploading...</small>}
+                                {form.picture && <small style={{ color: "#035aa6" }}>✓ Image ready</small>}
+                            </div>
+
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Phone</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="phone" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Address</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="address" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Latitude</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="latitud" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Longitude</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="longitud" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-5">
+                                <label className="form-label" style={{ color: "#035aa6" }}><strong>Calendar Link</strong></label>
+                                <input type="text" className="form-control" style={{ border: "1px solid #c7e5f2" }} name="cal_link" onChange={hadleChange} required />
+                            </div>
+
+                            <div className="mb-2 d-flex justify-content-center pb-5">
+                                <button
+                                    type="submit"
+                                    className="btn w-50 text-white py-2 shadow"
+                                    style={{
+                                        backgroundColor: "#035aa6",
+                                        fontSize: "1 rem",
+                                        fontWeight: "bold",
+                                        border: "none"
+                                    }}>
+                                    REGISTER DOCTOR
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-
     );
 };
