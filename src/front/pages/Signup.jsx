@@ -61,7 +61,7 @@ export const Signup = () => {
 
                 <div className="col-md-6 d-none d-md-block" style={{ height: "100vh" }}>
                     <img
-                        src="/src/front/assets/img/paciente2.jpg"
+                        src="https://res.cloudinary.com/dvcvlvscy/image/upload/v1771266597/paciente2_o8vujq.jpg"
                         alt="Patient Presentation"
                         style={{
                             width: "100%",

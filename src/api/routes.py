@@ -190,7 +190,7 @@ def forgot_pw_pacient():
 
     <div style="background: linear-gradient(135deg, #035aa6 0%, #18aded 100%); padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0;">
         <img src="https://res.cloudinary.com/dvcvlvscy/image/upload/v1771025685/HiDoc_il6i8t.png" alt="Logo" style="width: 80px; height: 80px; margin-bottom: 15px;">
- <h1 style="color: white; margin: 0; font-size: 28px;">HiDoc/h1>
+        <h1 style="color: white; margin: 0; font-size: 28px;">HiDoc</h1>
         <h5 style="color: white; margin: 0; font-size: 28px;">Password Reset</h5>
     </div>
    
